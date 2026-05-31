@@ -1,0 +1,378 @@
+/* =======================================================
+   1. CORE WRAPPER DEFINITIONS
+======================================================= */
+.ep-profile-app-container {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.ep-profile-dashboard-layout {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 1.5rem 0;
+}
+
+/* =======================================================
+   2. INTERACTIVE HEADER CARD
+======================================================= */
+.ep-profile-identity-header {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 20px) var(--radius-md, 20px) 0 0;
+  padding: 2.5rem 2.5rem 0 2.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.ep-identity-flex-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.profile-back-trigger {
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--fs-sm, 0.9rem);
+  font-weight: var(--fw-semibold, 600);
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-xs, 8px);
+  transition: all var(--transition-fast, 0.2s) ease;
+}
+
+.profile-back-trigger:hover {
+  color: var(--brand-primary, #0967d2);
+  background-color: var(--bg-main, #f1f5f9);
+}
+
+.ep-identity-meta-box h1 {
+  font-size: var(--fs-h1, 1.75rem);
+  font-weight: var(--fw-bold, 800);
+  color: var(--brand-secondary, #0f172a);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.5px;
+}
+
+.ep-identity-meta-box p {
+  font-size: var(--fs-sm, 0.95rem);
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+/* Tab Navigation System */
+.ep-profile-navigation-tabs {
+  display: flex;
+  gap: 2rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.ep-tab-link {
+  background: none;
+  border: none;
+  padding: 1rem 0.25rem;
+  font-size: var(--fs-sm, 0.9rem);
+  font-weight: var(--fw-semibold, 600);
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  position: relative;
+  transition: color var(--transition-fast, 0.2s) ease;
+}
+
+.ep-tab-link:hover {
+  color: var(--brand-secondary, #0f172a);
+}
+
+.ep-tab-link.ep-active {
+  color: var(--brand-primary, #0967d2);
+}
+
+.ep-tab-link.ep-active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--brand-primary, #0967d2);
+  border-radius: 2px 2px 0 0;
+}
+
+/* =======================================================
+   3. INTERNAL INTERACTIVE SURFACE
+======================================================= */
+.ep-profile-form-surface {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md, 20px) var(--radius-md, 20px);
+  padding: 3rem 2.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.ep-form-section-header {
+  margin-bottom: 2rem;
+}
+
+.ep-form-section-header h3 {
+  font-size: var(--fs-h2, 1.25rem);
+  font-weight: var(--fw-bold, 700);
+  color: var(--brand-secondary, #0f172a);
+  margin: 0 0 0.25rem 0;
+}
+
+.ep-form-section-header p {
+  font-size: var(--fs-sm, 0.9rem);
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+.ep-form-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.ep-single-stack-layout {
+  display: flex;
+  flex-direction: column;
+  max-width: 500px;
+  gap: 0.5rem;
+}
+
+.ep-field-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.25rem;
+}
+
+.ep-field-container label {
+  font-size: var(--fs-xs, 0.85rem);
+  font-weight: var(--fw-semibold, 600);
+  color: var(--text-main, #334155);
+  margin-bottom: 0.5rem;
+}
+
+.profile-input-field-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.field-adornment-icon {
+  position: absolute;
+  top: 50%;
+  left: 1.15rem;
+  transform: translateY(-50%);
+  color: var(--text-muted, #64748b);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.ep-field-container input,
+.ep-field-container select {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: var(--radius-sm, 12px);
+  padding: 0 1.25rem 0 3.25rem;
+  font-size: var(--fs-sm, 0.95rem);
+  font-weight: var(--fw-medium, 500);
+  color: var(--brand-secondary, #0f172a);
+  outline: none;
+  background: var(--bg-card, #ffffff);
+  box-sizing: border-box;
+  transition: all var(--transition-fast, 0.2s) ease;
+}
+
+.ep-field-container select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1.25rem center;
+  background-size: 1.1rem;
+}
+
+.ep-field-container input:focus,
+.ep-field-container select:focus {
+  border-color: var(--brand-primary, #0967d2);
+  box-shadow: 0 0 0 4px rgba(9, 103, 210, 0.08);
+}
+
+/* Action Control Buttons */
+.ep-sync-profile-btn {
+  height: 48px;
+  padding: 0 2rem;
+  border: none;
+  border-radius: var(--radius-sm, 12px);
+  background: var(--brand-primary, #0967d2);
+  color: var(--text-on-brand, #ffffff);
+  font-size: var(--fs-sm, 0.95rem);
+  font-weight: var(--fw-semibold, 600);
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all var(--transition-fast, 0.2s) ease;
+}
+
+.ep-sync-profile-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(9, 103, 210, 0.2);
+}
+
+.ep-sync-profile-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =======================================================
+   4. DANGER ACCOUNT PURGE BLOCK
+======================================================= */
+.ep-danger-zone-container {
+  border: 1px solid #fca5a5;
+  background-color: #fff5f5;
+  border-radius: var(--radius-sm, 16px);
+  padding: 2.5rem;
+}
+
+.danger-header h3 {
+  color: #b91c1c !important;
+}
+
+.danger-notice-infobox {
+  margin: 1.5rem 0 2rem 0;
+}
+
+.danger-notice-infobox h5 {
+  font-size: var(--fs-sm, 0.95rem);
+  font-weight: var(--fw-bold, 700);
+  color: #991b1b;
+  margin: 0 0 0.5rem 0;
+}
+
+.danger-notice-infobox ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #7f1d1d;
+  font-size: var(--fs-sm, 0.9rem);
+  font-weight: var(--fw-medium, 500);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ep-destroy-account-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  height: 48px;
+  padding: 0 2rem;
+  border: none;
+  border-radius: var(--radius-sm, 12px);
+  background: #dc2626;
+  color: #ffffff;
+  font-size: var(--fs-sm, 0.95rem);
+  font-weight: var(--fw-semibold, 600);
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.2s) ease;
+}
+
+.ep-destroy-account-btn:hover {
+  background: #b91c1c;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+/* =======================================================
+   5. REAL-TIME TOAST ALERT PIPELINE
+======================================================= */
+.ep-toast-notification {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-sm, 12px);
+  color: #ffffff;
+  font-weight: var(--fw-semibold, 600);
+  font-size: var(--fs-sm, 0.95rem);
+  background-color: #10b981; /* Default Safe Emerald */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+  animation: ep-slide-in 0.30s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ep-toast-notification.error {
+  background-color: #ef4444; /* Alert Crimson */
+}
+
+/* System Base Animations */
+.ep-animate-fade-in {
+  animation: ep-fade-in 0.2s ease-out;
+}
+
+@keyframes ep-slide-in {
+  from { transform: translateY(1rem); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes ep-fade-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =======================================================
+   6. RESPONSIVE LAYER ADAPTATIONS
+======================================================= */
+@media (max-width: 768px) {
+  .ep-form-grid-layout { grid-template-columns: 1fr; gap: 0; }
+  .ep-profile-form-surface { padding: 2rem 1.5rem; }
+  .ep-profile-identity-header { padding: 2rem 1.5rem 0 1.5rem; }
+  .ep-profile-navigation-tabs { gap: 1rem; }
+}
+
+.ep-skills-badges-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.ep-skill-badge-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: #1e1e24; /* Dark mode style container backdrop */
+  border: 1px solid #333;
+  color: #b3b3b3;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.25s ease-in-out;
+}
+
+.ep-skill-badge-btn:hover {
+  border-color: #4f46e5;
+  color: #fff;
+  background-color: #252530;
+}
+
+.ep-skill-badge-btn.selected {
+  background-color: #4f46e5; /* Primary Highlight Blue/Indigo accent */
+  border-color: #6366f1;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(79, 70, 229, 0.4);
+}
+
+.badge-icon {
+  font-size: 12px;
+  opacity: 0.8;
+}

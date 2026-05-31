@@ -1,0 +1,220 @@
+/* =======================================================
+   1. DASHBOARD CONTENT GRID WRAPPER
+======================================================= */
+.dashboard-content-container {
+  width: 100%;
+  max-width: 1140px; /* Slipped down slightly for tighter layout boxing */
+  margin: 0 auto;
+  padding: 1.5rem 0; /* Adds nice top/bottom breathing room */
+}
+
+/* =======================================================
+   2. DASHBOARD HEADER TYPOGRAPHY
+======================================================= */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  gap: 1.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: var(--fs-h1, 2rem);
+  font-weight: var(--fw-bold, 800);
+  letter-spacing: -0.75px;
+  color: var(--brand-secondary, #0f172a);
+  margin: 0;
+  margin-bottom: 0.35rem;
+}
+
+.dashboard-header p {
+  color: var(--text-muted, #64748b);
+  font-size: var(--fs-body, 1rem);
+  font-weight: var(--fw-medium, 500);
+  margin: 0;
+}
+
+.dashboard-header .header-badge {
+  background: rgba(9, 103, 210, 0.08);
+  color: var(--brand-primary, #0967d2);
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  font-size: var(--fs-xs, 0.85rem);
+  font-weight: var(--fw-semibold, 600);
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(9, 103, 210, 0.15);
+  flex-shrink: 0;
+}
+
+/* =======================================================
+   3. METRICS / OVERVIEW STATS CARDS
+======================================================= */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 1.75rem;
+  margin-bottom: 3.5rem;
+  width: 100%;
+}
+
+.stat-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 20px);
+  padding: 2.5rem 2rem; /* Increased top/bottom padding from 2rem to 2.5rem */
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast, 0.2s) ease, box-shadow var(--transition-fast, 0.2s) ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card h3 {
+  font-size: var(--fs-xs, 0.9rem);
+  font-weight: var(--fw-bold, 700);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+  margin-bottom: 1rem;
+}
+
+.stat-card .score-large {
+  font-size: 3rem;
+  font-weight: var(--fw-bold, 800);
+  line-height: 1;
+  letter-spacing: -1px;
+  color: var(--brand-secondary, #0f172a);
+  margin-bottom: 0.75rem;
+}
+
+.stat-card p {
+  font-size: var(--fs-sm, 0.9rem);
+  color: var(--text-main, #475569);
+  font-weight: var(--fw-medium, 500);
+  margin: 0;
+}
+
+/* Featured Accent Highlight Card Variant */
+.stat-card.primary {
+  background: linear-gradient(135deg, var(--brand-secondary, #0f172a) 0%, #1e293b 100%);
+  border: none;
+  color: var(--text-on-brand, #ffffff);
+}
+
+.stat-card.primary h3 {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stat-card.primary .score-large {
+  color: #38bdf8; /* Vibrant status indicator */
+}
+
+.stat-card.primary p {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* =======================================================
+   4. QUICK ACTIONS PORTAL CARDS
+======================================================= */
+.quick-actions .section-title {
+  margin-bottom: 1.75rem;
+}
+
+.quick-actions .section-title h2 {
+  font-size: var(--fs-h2, 1.4rem);
+  font-weight: var(--fw-bold, 800);
+  letter-spacing: -0.5px;
+  color: var(--brand-secondary, #0f172a);
+  margin: 0;
+  margin-bottom: 0.25rem;
+}
+
+.quick-actions .section-title p {
+  color: var(--text-muted, #64748b);
+  font-size: var(--fs-sm, 0.92rem);
+  font-weight: var(--fw-medium, 500);
+  margin: 0;
+}
+
+/* AUTO-ADAPTIVE COLUMNS MAPPING ENGINE */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 20px);
+  padding: 2rem 1.75rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-fast, 0.2s) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-icon {
+  width: 48px;
+  height: 48px;
+  background-color: var(--bg-main, #f1f5f9);
+  color: var(--brand-primary, #0967d2);
+  border-radius: var(--radius-sm, 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  transition: all var(--transition-fast, 0.2s) ease;
+}
+
+.action-card h4 {
+  font-size: var(--fs-body, 1.1rem);
+  font-weight: var(--fw-bold, 700);
+  color: var(--brand-secondary, #0f172a);
+  margin: 0;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.2px;
+}
+
+.action-card p {
+  color: var(--text-muted, #64748b);
+  font-size: var(--fs-sm, 0.9rem);
+  line-height: 1.5;
+  font-weight: var(--fw-normal, 400);
+  margin: 0;
+}
+
+/* CARD INTERACTIONS & ACCENTUATIONS */
+.action-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(9, 103, 210, 0.25);
+  box-shadow: var(--shadow-md);
+}
+
+.action-card:hover .action-icon {
+  background-color: var(--brand-primary, #0967d2);
+  color: var(--text-on-brand, #ffffff);
+  box-shadow: 0 6px 14px rgba(9, 103, 210, 0.2);
+}
+
+/* =======================================================
+   5. RESPONSIVE DESIGN ADAPTATIONS
+======================================================= */
+@media (max-width: 640px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr; /* Drop metrics down to single-stack row blocks on devices */
+  }
+}

@@ -1,0 +1,227 @@
+/* =======================================================
+   1. CORE SIDEBAR ARCHITECTURE CONTROLLERS
+======================================================= */
+.sidebar {
+  width: 280px;
+  height: 100vh;
+  background-color: var(--brand-secondary, #0f172a); /* Default to deep luxury slate canvas */
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  padding: 2.25rem 1.25rem;
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevents viewport squeeze mechanics from clipping the menu */
+}
+
+/* =======================================================
+   2. BRANDING / IDENTIFIER REGION
+======================================================= */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--brand-primary, #0967d2) 0%, var(--brand-primary-hover, #1d4ed8) 100%);
+  color: var(--text-on-brand, #ffffff);
+  border-radius: var(--radius-sm, 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--fw-bold, 800);
+  font-size: var(--fs-h3, 1.25rem);
+  box-shadow: 0 4px 12px rgba(9, 103, 210, 0.25);
+}
+
+.sidebar-brand h2 {
+  color: var(--text-on-brand, #ffffff);
+  font-size: var(--fs-body, 1.1rem);
+  font-weight: var(--fw-bold, 700);
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.sidebar-brand p {
+  color: rgba(255, 255, 255, 0.45); /* Elegant soft contrast descriptive subtext */
+  font-size: var(--fs-xs, 0.75rem);
+  font-weight: var(--fw-medium, 500);
+  margin: 0;
+  margin-top: 0.15rem;
+}
+
+/* =======================================================
+   3. NAVIGATION TREE SYSTEM
+======================================================= */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 2rem;
+}
+
+.nav-label {
+  color: rgba(255, 255, 255, 0.3); /* Subtle menu delimiter labeling */
+  font-size: var(--fs-xs, 0.75rem);
+  font-weight: var(--fw-bold, 700);
+  letter-spacing: 1px;
+  margin-bottom: 0.75rem;
+  padding-left: 0.75rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  font-size: var(--fs-sm, 0.95rem);
+  font-weight: var(--fw-medium, 500);
+  border-radius: var(--radius-sm, 12px);
+  transition: all var(--transition-fast, 0.2s) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-icon {
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast, 0.2s) ease;
+}
+
+/* Hover State Interactions */
+.nav-item:hover {
+  color: var(--text-on-brand, #ffffff);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Active Highlight Router Mapping State */
+.nav-item.active {
+  color: var(--text-on-brand, #ffffff);
+  background-color: var(--brand-primary, #0967d2);
+  font-weight: var(--fw-semibold, 600);
+  box-shadow: 0 4px 12px rgba(9, 103, 210, 0.15);
+}
+
+.nav-item.active .nav-icon {
+  color: var(--text-on-brand, #ffffff);
+}
+
+/* =======================================================
+   4. BASELINE FOOTER GROUP & METRIC CONSOLE
+======================================================= */
+.sidebar-bottom-group {
+  margin-top: auto; /* Pushes content down completely within the layout column */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Progress Scoring Component */
+.sidebar-score-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md, 16px);
+  padding: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.score-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+  font-size: var(--fs-xs, 0.85rem);
+  font-weight: var(--fw-semibold, 600);
+}
+
+.score-header span:first-child {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.score-header span:last-child {
+  color: #38bdf8; /* High energy cyan metric highlight readout */
+}
+
+.score-bar {
+  width: 100%;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.score-fill {
+  width: 75%;
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8 0%, var(--brand-primary, #0967d2) 100%);
+  border-radius: 999px;
+}
+
+.score-text {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: var(--fs-xs, 0.75rem);
+  line-height: 1.4;
+  font-weight: var(--fw-normal, 400);
+  margin: 0;
+}
+
+/* Profile Activation Buttons */
+.sidebar-profile-btn {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: var(--fs-sm, 0.95rem);
+  font-weight: var(--fw-semibold, 600);
+  border-radius: var(--radius-sm, 12px);
+  transition: all var(--transition-fast, 0.2s) ease;
+}
+
+.sidebar-profile-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-on-brand, #ffffff);
+}
+
+.sidebar-profile-btn.active-profile {
+  background: rgba(9, 103, 210, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+}
+
+/* Destructive Semantic Logout Action Element */
+.sidebar-logout-btn {
+  background: transparent;
+  border: none;
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  color: #ef4444; /* Clean system standard error red color accent code */
+  font-size: var(--fs-sm, 0.95rem);
+  font-weight: var(--fw-semibold, 600);
+  border-radius: var(--radius-sm, 12px);
+  cursor: pointer;
+  width: 100%;
+  transition: all var(--transition-fast, 0.2s) ease;
+}
+
+.sidebar-logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.08);
+  color: #f87171;
+}
+
+.logout-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}

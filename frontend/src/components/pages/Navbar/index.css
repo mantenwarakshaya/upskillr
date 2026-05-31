@@ -1,0 +1,183 @@
+/* =======================================================
+   NAVBAR CORE CONTAINER
+======================================================= */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 72px; /* Slightly lowered from 80px for a more modern, compact aesthetic */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color var(--transition-fast);
+}
+
+/* =======================================================
+   LEFT SECTION (BRANDING)
+======================================================= */
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.nav-logo-img {
+  width: 160px; /* Refined to fit elegantly into a 72px navbar */
+  height: auto;
+  max-height: 44px;
+  object-fit: contain;
+  display: block;
+}
+
+.nav-brand span {
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.5px;
+  color: var(--brand-secondary);
+}
+
+/* =======================================================
+   CENTER LINKS (NAVIGATION)
+======================================================= */
+.nav-center {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.nav-center a {
+  position: relative;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  padding: 0.5rem 0;
+  transition: color var(--transition-fast);
+}
+
+.nav-center a:hover {
+  color: var(--brand-primary);
+}
+
+/* Precise Hover Underline Animation */
+.nav-center a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  height: 2px;
+  background-color: var(--brand-primary);
+  border-radius: 4px;
+  transition: width var(--transition-fast);
+}
+
+.nav-center a:hover::after {
+  width: 100%;
+}
+
+/* =======================================================
+   RIGHT SECTION (USER ACTIONS)
+======================================================= */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Login link text */
+.nav-login {
+  text-decoration: none;
+  color: var(--text-main);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  transition: color var(--transition-fast);
+}
+
+.nav-login:hover {
+  color: var(--brand-primary);
+}
+
+/* Premium Signup Button */
+.nav-signup {
+  text-decoration: none;
+  background-color: var(--brand-primary);
+  color: var(--text-on-brand);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm); /* Standardized to clean app corners */
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.nav-signup:hover {
+  background-color: var(--brand-primary-hover);
+  transform: translateY(-1px);
+}
+
+/* Logout Button alternative style */
+.logout-btn {
+  border: 1px solid var(--border-color);
+  outline: none;
+  background: transparent;
+  color: var(--text-main);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.logout-btn:hover {
+  background: var(--bg-main);
+  border-color: var(--text-muted);
+}
+
+/* =======================================================
+   MOBILE RESPONSIVE ADAPTATIONS
+======================================================= */
+@media (max-width: 900px) {
+  .navbar {
+    padding: 0 1.5rem;
+  }
+
+  .nav-center {
+    display: none; /* Hides desktop navigation on tablet/mobile screens */
+  }
+
+  .nav-logo-img {
+    max-height: 38px;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    height: 64px;
+  }
+
+  .nav-actions {
+    gap: 1rem;
+  }
+
+  .nav-login {
+    font-size: var(--fs-xs);
+  }
+
+  .nav-signup {
+    padding: 0.5rem 0.85rem;
+    font-size: var(--fs-xs);
+  }
+}

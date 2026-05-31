@@ -1,0 +1,385 @@
+/* =======================================================
+   1. LANDING PAGE CORE CONTAINER
+======================================================= */
+.landing-page-container {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  background-color: var(--bg-main);
+}
+
+/* =======================================================
+   2. HERO INTERACTIVE DISPLAY SECTION
+======================================================= */
+.hero-section {
+  min-height: calc(80vh - 72px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 5rem 1.5rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.badge-pill {
+  background-color: #eff6ff; /* Soft contrast blue tint */
+  color: var(--brand-primary);
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.5px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #dbeafe;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  font-size: 3.5rem; 
+  line-height: 1.15;
+  max-width: 850px;
+  font-weight: var(--fw-bold);
+  letter-spacing: -1.5px;
+  color: var(--brand-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+  max-width: 680px;
+  font-size: var(--fs-h3);
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 2.5rem;
+}
+
+/* Landing CTA Layouts */
+.cta-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-primary {
+  text-decoration: none;
+  background-color: var(--brand-primary);
+  color: var(--text-on-brand);
+  padding: 0.85rem 1.75rem;
+  border-radius: var(--radius-sm);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  text-decoration: none;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  padding: 0.85rem 1.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-sm);
+  transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-main);
+  border-color: var(--text-muted);
+}
+
+/* =======================================================
+   3. COMMON SECTION WRAPPERS
+======================================================= */
+.how-it-works-section,
+.features-section {
+  padding: 6rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  text-align: center;
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.75px;
+  margin-bottom: 3.5rem;
+  color: var(--brand-secondary);
+}
+
+/* =======================================================
+   4. HOW IT WORKS METRIC BLOCKS
+======================================================= */
+.steps-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.step-card {
+  background: var(--bg-card);
+  padding: 2.5rem 2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.step-number {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+  color: var(--brand-primary);
+  opacity: 0.15; /* Elegant watermark aesthetic */
+  margin-bottom: 0.5rem;
+}
+
+.step-card h3 {
+  font-size: var(--fs-h3);
+  margin-bottom: 0.75rem;
+  color: var(--brand-secondary);
+  font-weight: var(--fw-semibold);
+}
+
+.step-card p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: var(--fs-sm);
+}
+
+/* =======================================================
+   5. FEATURES GRID SYSTEM
+======================================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  padding: 2.5rem 2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--text-muted);
+}
+
+.card-icon-container {
+  background-color: var(--bg-main);
+  color: var(--text-muted);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  transition: all var(--transition-fast);
+}
+
+/* Live Dynamic Indicator Highlight Loop */
+.feature-card:hover .card-icon-container {
+  background-color: var(--brand-primary);
+  color: var(--text-on-brand);
+}
+
+.feature-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* VIP Highlight Styling for AI Gap Analysis */
+.highlight-card {
+  grid-column: span 2;
+  background-color: #eff6ff;
+  border: 2px solid var(--brand-primary);
+  position: relative;
+}
+
+.highlight-card::after {
+  content: "CORE TECHNOLOGY";
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  background-color: var(--brand-primary);
+  color: var(--text-on-brand);
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.highlight-card .card-icon-container {
+  background-color: var(--bg-card);
+  color: var(--brand-primary);
+}
+
+.feature-card h3 {
+  font-size: var(--fs-h3);
+  margin-bottom: 0.75rem;
+  color: var(--brand-secondary);
+  font-weight: var(--fw-semibold);
+}
+
+.feature-card p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: var(--fs-sm);
+}
+
+/* =======================================================
+   6. PREMIUM METRICS FOOTER
+======================================================= */
+.footer {
+  margin-top: 6rem;
+  background: var(--brand-secondary);
+  color: #94a3b8;
+  padding-top: 5rem;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: 3.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+}
+
+.footer-brand h3 {
+  font-size: var(--fs-h2);
+  margin-bottom: 1rem;
+  color: var(--text-on-brand);
+  font-weight: var(--fw-bold);
+}
+
+.footer-brand p {
+  line-height: 1.6;
+  font-size: var(--fs-sm);
+  max-width: 300px;
+  color: #94a3b8;
+}
+
+.footer-links h4 {
+  margin-bottom: 1.25rem;
+  color: var(--text-on-brand);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.footer-links a {
+  display: block;
+  text-decoration: none;
+  color: #94a3b8;
+  margin-bottom: 0.75rem;
+  font-size: var(--fs-sm);
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: var(--text-on-brand);
+}
+
+.footer-bottom {
+  border-top: 1px solid #1e293b;
+  padding: 2rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--fs-xs);
+}
+
+.crafted-by {
+  color: #cbd5e1;
+  font-weight: var(--fw-medium);
+}
+
+/* =======================================================
+   7. MOBILE & TABLET ADAPTIVE RESPONSIVENESS
+======================================================= */
+@media (max-width: 1200px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .highlight-card {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 1024px) {
+  .hero-title {
+    font-size: 2.75rem;
+  }
+  .steps-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .footer-content {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.25rem;
+  }
+  .hero-subtitle {
+    font-size: var(--fs-body);
+  }
+  .how-it-works-section,
+  .features-section {
+    padding: 4rem 1.5rem;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  .highlight-card {
+    grid-column: span 1;
+  }
+  .footer-content {
+    grid-template-columns: 1fr;
+    padding: 0 1.5rem 3rem;
+  }
+  .footer-bottom {
+    padding: 2rem 1.5rem;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  .cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+}
