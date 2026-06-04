@@ -2,7 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
-import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
+// import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdEmail, MdLock } from "react-icons/md";
 import logo from "../../../assets/nav_logo.png";
 import "./index.css";
@@ -13,14 +14,14 @@ export default function Login() {
   const navigate = useNavigate();
 
   // Mode controllers: "LOGIN" or "FORGOT_PASSWORD"
-  const [viewMode, setViewMode] = useState("LOGIN");
+  // const [viewMode, setViewMode] = useState("LOGIN");
 
   const [formData, setFormData] = useState({
     emailId: "",
     password: "",
   });
 
-  const [forgotEmail, setForgotEmail] = useState("");
+  // const [forgotEmail, setForgotEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -63,9 +64,9 @@ export default function Login() {
         return;
       }
 
-      if (message.toLowerCase().includes("verify")) {
-        message = "📩 Please verify your email address before attempting to sign in.";
-      }
+      // if (message.toLowerCase().includes("verify")) {
+      //   message = "📩 Please verify your email address before attempting to sign in.";
+      // }
 
       setFormData((prev) => ({ ...prev, password: "" }));
       setErrorMsg(message);
@@ -98,30 +99,30 @@ export default function Login() {
     }
   };
 
-  const handleForgotPasswordSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setErrorMsg("");
-    setSuccessMsg("");
+  // const handleForgotPasswordSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+  //   setErrorMsg("");
+  //   setSuccessMsg("");
 
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/forgot-password`, {
-        emailId: forgotEmail,
-      });
-      setSuccessMsg(response.data?.message || "📩 Recovery link dispatched! Please check your email inbox.");
-      setForgotEmail("");
-    } catch (err) {
-      setErrorMsg(err.response?.data?.message || "Could not complete recovery request. Verify your entry.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //   try {
+  //     const response = await axios.post(`${API_BASE_URL}/api/forgot-password`, {
+  //       emailId: forgotEmail,
+  //     });
+  //     setSuccessMsg(response.data?.message || "📩 Recovery link dispatched! Please check your email inbox.");
+  //     setForgotEmail("");
+  //   } catch (err) {
+  //     setErrorMsg(err.response?.data?.message || "Could not complete recovery request. Verify your entry.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
-  const switchMode = (mode) => {
-    setViewMode(mode);
-    setErrorMsg("");
-    setSuccessMsg("");
-  };
+  // const switchMode = (mode) => {
+  //   setViewMode(mode);
+  //   setErrorMsg("");
+  //   setSuccessMsg("");
+  // };
 
   return (
     <div className="login-viewport">
@@ -156,11 +157,8 @@ export default function Login() {
       </div>
 
       {/* RIGHT AUTH CONSOLE SIDE */}
-      <div className="login-main-auth">
+      {/* <div className="login-main-auth">
         {viewMode === "LOGIN" ? (
-          /* ======================================= */
-          /* DEFAULT LOGIN VIEW MODE                 */
-          /* ======================================= */
           <form className="auth-surface-card" onSubmit={handleLogin}>
             <div className="auth-card-header">
               <h2>Welcome Back</h2>
@@ -218,7 +216,7 @@ export default function Login() {
               >
                 Forgot password?
               </button>
-            </div>
+            </div> 
 
             {showRestore && (
               <div className="restore-box">
@@ -251,9 +249,6 @@ export default function Login() {
             </div>
           </form>
         ) : (
-          /* ======================================= */
-          /* INLINE FORGOT PASSWORD VIEW MODE        */
-          /* ======================================= */
           <form className="auth-surface-card" onSubmit={handleForgotPasswordSubmit}>
             <div className="auth-card-header">
               <button 
@@ -296,6 +291,102 @@ export default function Login() {
             </button>
           </form>
         )}
+      </div> */}
+
+      <div className="login-main-auth">
+        <form className="auth-surface-card" onSubmit={handleLogin}>
+            <div className="auth-card-header">
+              <h2>Welcome Back</h2>
+              <p>Continue your AI career growth journey</p>
+            </div>
+
+            <div className="auth-input-group">
+              <label htmlFor="emailId">Email Address</label>
+              <div className="interactive-input-wrapper">
+                <MdEmail className="input-field-icon" />
+                <input
+                  id="emailId"
+                  type="email"
+                  name="emailId"
+                  placeholder="name@gmail.com"
+                  value={formData.emailId}
+                  onChange={handleChange}
+                  disabled={isLoading || isRestoring}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="auth-input-group">
+              <label htmlFor="password">Password</label>
+              <div className="interactive-input-wrapper">
+                <MdLock className="input-field-icon" />
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={isLoading || isRestoring}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle-trigger"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+
+            {showRestore && (
+              <div className="restore-box">
+                <p className="restore-text">
+                  Your account is currently deactivated. You can restore it immediately below.
+                </p>
+
+                <button
+                  type="button"
+                  className="action-submit-btn restore-btn"
+                  onClick={handleRestoreAccount}
+                  disabled={isRestoring}
+                >
+                  {isRestoring ? "Restoring Profile..." : "Restore Account Now"}
+                </button>
+              </div>
+            )}
+
+            {errorMsg && (
+              <div className="status-error-box" role="alert">
+                {errorMsg}
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="status-success-box" role="alert">
+                {successMsg}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="action-submit-btn"
+              disabled={isLoading || isRestoring}
+            >
+              {isLoading ? "Signing In..." : "Sign In"}
+            </button>
+
+            <div className="switch-auth-context">
+              New to Upskillr?{" "}
+              <Link to="/signup" className="context-action-link">
+                Create Account
+              </Link>
+            </div>
+
+        </form>
       </div>
     </div>
   );

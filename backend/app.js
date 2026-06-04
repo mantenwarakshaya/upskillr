@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/database");
 const authRouter = require("./routes/auth");
+const analysisRoutes = require("./routes/analysis");
 
 const app = express();
 
@@ -45,7 +46,7 @@ app.use(cookieParser()); // Parses cookies so req.cookies works in auth middlewa
 
 // 2. Base Routes
 app.use("/api", authRouter);
-
+app.use("/api", analysisRoutes);
 // Lightweight health endpoint — does not depend on DB
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

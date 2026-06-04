@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Target, FileText, Map, MessageSquare, Briefcase } from 'lucide-react';
+import { Target, FileText, MessageSquare, Briefcase } from 'lucide-react';
 import Navbar from '../Navbar';
 import './index.css';
 
@@ -7,36 +7,29 @@ export const FEATURES = [
   {
     id: 'gap-analysis',
     icon: <Target className="feature-icon" />,
-    title: 'AI Skill Gap Analysis',
-    description: 'The core engine. Compares your current technical stack directly against target roles. Get instant match percentages, identified missing technologies, and a priority sequence for what to learn first.',
+    title: 'AI Skill Gap Analysis & Roadmaps',
+    description: 'Our core intelligence powerhouse. Compares your technical stack directly against target roles to output live readiness metrics, missing technologies, and a personalized, structured learning roadmap built specifically for your gaps.',
     isHighlighted: true
   },
   {
     id: 'resume-analyzer',
     icon: <FileText className="feature-icon" />,
     title: 'Resume Analyzer',
-    description: 'Upload your resume PDF to extract detailed skill metrics. Receive actionable tracking scores, critical keyword improvements, and industry alignment feedback powered by deep LLM parsing.',
-    isHighlighted: false
-  },
-  {
-    id: 'roadmaps',
-    icon: <Map className="feature-icon" />,
-    title: 'Personalized Roadmaps',
-    description: 'Accelerate your growth with custom daily and weekly structured schedules. Broken down by topic order and clear estimated time-to-completion metrics so you never waste a day.',
+    description: 'Upload your resume PDF to extract detailed skill profiles. Receive actionable tracking scores, critical keyword optimizations, and industry alignment feedback powered by deep LLM parsing.',
     isHighlighted: false
   },
   {
     id: 'mock-interviews',
     icon: <MessageSquare className="feature-icon" />,
     title: 'Mock Interview System',
-    description: 'Practice with an AI interviewer covering Technical, HR, and Data Structures & Algorithms. Get precise, constructive response evaluations along with clarity benchmarks.',
+    description: 'Practice with an AI interviewer covering Technical, HR, and Data Structures & Algorithms. Get precise, constructive response evaluations along with clarity metrics.',
     isHighlighted: false
   },
   {
     id: 'job-match',
     icon: <Briefcase className="feature-icon" />,
     title: 'Smart Job Match',
-    description: 'Skip the endless job board browsing. Our engine uses real-time search vectors to pull highly compatible roles directly from major industry ecosystems tailored to your fresh skills.',
+    description: 'Skip the endless job board browsing. Our engine uses real-time search vectors to pull highly compatible roles directly from major industry ecosystems tailored to your upskilled profiles.',
     isHighlighted: false
   }
 ];

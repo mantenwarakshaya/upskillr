@@ -4,8 +4,8 @@ const User = require("../models/user");
 const validator = require("validator");
 const { userAuth } = require("../middleware/auth");
 const { validateSignUpData } = require("../utils/validation");
-const jwt = require("jsonwebtoken");
-const sendEmail = require("../utils/sendEmail");
+// const jwt = require("jsonwebtoken");
+// const sendEmail = require("../utils/sendEmail");
 const authRouter = express.Router();
 
 const isProd = process.env.NODE_ENV === "production";
@@ -30,36 +30,45 @@ authRouter.post("/signup", async (req, res) => {
       });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
 
-    const token = jwt.sign(
-      {
-        firstName,
-        emailId,
-        password: passwordHash,
-        targetRole,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" }
-    );
+    // const token = jwt.sign(
+    //   {
+    //     firstName,
+    //     emailId,
+    //     password: passwordHash,
+    //     targetRole,
+    //   },
+    //   process.env.JWT_SECRET,
+    //   { expiresIn: "15m" }
+    // );
 
-    const verifyLink = `${process.env.FRONTEND_URL}/verify-email/${token}`;
+    // const verifyLink = `${process.env.FRONTEND_URL}/verify-email/${token}`;
 
-    await sendEmail(
+    // await sendEmail(
+    //   emailId,
+    //   "Verify your UpSkillr account",
+    //   `
+    //     <h2>Welcome, ${firstName}!</h2>
+    //     <p>Click below to verify your email and create your UpSkillr account:</p>
+    //     <a href="${verifyLink}">Verify Email</a>
+    //     <p>This link will expire in 15 minutes.</p>
+    //   `
+    // );
+
+    const user = new User({
+      firstName,
       emailId,
-      "Verify your UpSkillr account",
-      `
-        <h2>Welcome, ${firstName}!</h2>
-        <p>Click below to verify your email and create your UpSkillr account:</p>
-        <a href="${verifyLink}">Verify Email</a>
-        <p>This link will expire in 15 minutes.</p>
-      `
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: "Verification email sent! Please check your inbox.",
+      password,
+      targetRole,
     });
+
+    await user.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Account created successfully",
+    });
+    
   } catch (err) {
     return res.status(400).json({
       success: false,
@@ -70,74 +79,74 @@ authRouter.post("/signup", async (req, res) => {
 
 
 // 2. EMAIL VERIFICATION
-authRouter.get("/verify-email/:token", async (req, res) => {
-  try {
-    const { token } = req.params;
+// authRouter.get("/verify-email/:token", async (req, res) => {
+//   try {
+//     const { token } = req.params;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const { firstName, emailId, password, targetRole } = decoded;
+//     const { firstName, emailId, password, targetRole } = decoded;
 
-    const existingUser = await User.findOne({ emailId });
+//     const existingUser = await User.findOne({ emailId });
 
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already verified",
-      });
-    }
+//     if (existingUser) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Email already verified",
+//       });
+//     }
 
-    await new User({
-      firstName,
-      emailId,
-      password,
-      targetRole,
-      isVerified: true,
-    }).save();
+//     await new User({
+//       firstName,
+//       emailId,
+//       password,
+//       targetRole,
+//       isVerified: true,
+//     }).save();
 
-    return res.status(201).json({
-      success: true,
-      message: "Email verified and account created successfully",
-    });
-  } catch (err) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid or expired verification link",
-    });
-  }
-});
+//     return res.status(201).json({
+//       success: true,
+//       message: "Email verified and account created successfully",
+//     });
+//   } catch (err) {
+//     return res.status(400).json({
+//       success: false,
+//       message: "Invalid or expired verification link",
+//     });
+//   }
+// });
 
-authRouter.post("/resend-verification", async (req, res) => {
-  try {
-    const { emailId } = req.body;
+// authRouter.post("/resend-verification", async (req, res) => {
+//   try {
+//     const { emailId } = req.body;
 
-    if (!emailId) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is required",
-      });
-    }
+//     if (!emailId) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Email is required",
+//       });
+//     }
 
-    const existingUser = await User.findOne({ emailId });
+//     const existingUser = await User.findOne({ emailId });
 
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already verified. Please login.",
-      });
-    }
+//     if (existingUser) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Email already verified. Please login.",
+//       });
+//     }
 
-    return res.status(400).json({
-      success: false,
-      message: "Please fill the signup form again to receive a new verification link.",
-    });
-  } catch (err) {
-    return res.status(400).json({
-      success: false,
-      message: err.message,
-    });
-  }
-});
+//     return res.status(400).json({
+//       success: false,
+//       message: "Please fill the signup form again to receive a new verification link.",
+//     });
+//   } catch (err) {
+//     return res.status(400).json({
+//       success: false,
+//       message: err.message,
+//     });
+//   }
+// });
 
 // 3. LOGIN WITH RECOVERY CHECK
 authRouter.post("/login", async (req, res) => {

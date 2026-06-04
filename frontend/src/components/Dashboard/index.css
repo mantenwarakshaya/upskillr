@@ -1,15 +1,49 @@
 /* =======================================================
-   1. DASHBOARD CONTENT GRID WRAPPER
+   1. GLOBAL VARIABLES & UTILITY TOKENS
 ======================================================= */
-.dashboard-content-container {
-  width: 100%;
-  max-width: 1140px; /* Slipped down slightly for tighter layout boxing */
-  margin: 0 auto;
-  padding: 1.5rem 0; /* Adds nice top/bottom breathing room */
+:root {
+  --brand-secondary: #0f172a;       /* Deep Slate Gray */
+  --brand-primary: #0967d2;         /* Accent Brand Blue */
+  --brand-primary-hover: #1d4ed8;
+  --bg-card: #ffffff;
+  --bg-main: #f1f5f9;
+  --text-main: #475569;
+  --text-muted: #64748b;
+  --text-on-brand: #ffffff;
+  --border-color: #e2e8f0;
+  
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  
+  --fs-xs: 0.85rem;
+  --fs-sm: 0.9rem;
+  --fs-body: 1rem;
+  --fs-h2: 1.4rem;
+  --fs-h1: 2rem;
+  
+  --transition-fast: 0.2s;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 16px -6px rgba(15, 23, 42, 0.04);
 }
 
 /* =======================================================
-   2. DASHBOARD HEADER TYPOGRAPHY
+   2. DASHBOARD CONTENT GRID WRAPPER
+======================================================= */
+.dashboard-content-container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem; /* Balanced horizontal padding inside the display layout window */
+  box-sizing: border-box;
+}
+
+/* =======================================================
+   3. DASHBOARD HEADER TYPOGRAPHY
 ======================================================= */
 .dashboard-header {
   display: flex;
@@ -48,7 +82,7 @@
 }
 
 /* =======================================================
-   3. METRICS / OVERVIEW STATS CARDS
+   4. METRICS / OVERVIEW STATS CARDS
 ======================================================= */
 .stats-grid {
   display: grid;
@@ -62,7 +96,7 @@
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: var(--radius-md, 20px);
-  padding: 2.5rem 2rem; /* Increased top/bottom padding from 2rem to 2.5rem */
+  padding: 2.5rem 2rem;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-fast, 0.2s) ease, box-shadow var(--transition-fast, 0.2s) ease;
 }
@@ -110,7 +144,7 @@
 }
 
 .stat-card.primary .score-large {
-  color: #38bdf8; /* Vibrant status indicator */
+  color: #38bdf8; /* Vibrant Cyan readout indicator */
 }
 
 .stat-card.primary p {
@@ -118,7 +152,7 @@
 }
 
 /* =======================================================
-   4. QUICK ACTIONS PORTAL CARDS
+   5. QUICK ACTIONS PORTAL CARDS
 ======================================================= */
 .quick-actions .section-title {
   margin-bottom: 1.75rem;
@@ -140,10 +174,10 @@
   margin: 0;
 }
 
-/* AUTO-ADAPTIVE COLUMNS MAPPING ENGINE */
+/* Auto-adaptive Grid Layout Block System */
 .action-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* Adjusted to flow cleanly with 4 structural cards */
   gap: 1.5rem;
   width: 100%;
 }
@@ -205,8 +239,14 @@
 }
 
 /* =======================================================
-   5. RESPONSIVE DESIGN ADAPTATIONS
+   6. RESPONSIVE DESIGN ADAPTATIONS
 ======================================================= */
+@media (max-width: 768px) {
+  .dashboard-content-container {
+    padding: 1rem;
+  }
+}
+
 @media (max-width: 640px) {
   .dashboard-header {
     flex-direction: column;
@@ -215,6 +255,8 @@
   }
 
   .stats-grid {
-    grid-template-columns: 1fr; /* Drop metrics down to single-stack row blocks on devices */
+    grid-template-columns: 1fr; /* Drops stats columns down to single-stack row grids on small viewports */
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
   }
 }

@@ -3,17 +3,16 @@ import {
   FaSearch,
   FaUserGraduate,
   FaFileAlt,
-  FaRoute,
   FaRobot,
 } from 'react-icons/fa';
 import './index.css';
 
+// Removed Personalized Roadmaps action item to maintain structural consistency
 const quickActions = [
-  { path: '/gap-analysis', title: 'AI Skill Gap Analysis', desc: 'Compare your stack directly against target roles to find gaps.', icon: <FaUserGraduate /> },
-  { path: '/resume-analyzer', title: 'Resume Analyzer', desc: 'Optimize your resume metrics and keywords for deep ATS parsing.', icon: <FaFileAlt /> },
-  { path: '/roadmaps', title: 'Personalized Roadmaps', desc: 'Accelerate your growth with custom daily and weekly structured schedules.', icon: <FaRoute /> },
-  { path: '/mock-interview', title: 'Mock Interview System', desc: 'Practice technical, HR, and DSA tracks with precise feedback.', icon: <FaRobot /> },
-  { path: '/job-match', title: 'Smart Job Match', desc: 'Pull highly compatible roles directly from real-time search vectors.', icon: <FaSearch /> },
+  { path: '/gap-analysis', title: 'AI Skill Gap Analysis & Roadmaps', desc: 'Compare your stack against target roles to uncover gaps and generate dynamic growth tracks.', icon: <FaUserGraduate /> },
+  { path: '/resume-analyzer', title: 'Resume Analyzer', desc: 'Optimize your resume metrics and keywords for deep ATS parsing engines.', icon: <FaFileAlt /> },
+  { path: '/mock-interview', title: 'Mock Interview System', desc: 'Practice technical, HR, and DSA tracks with precise real-time feedback.', icon: <FaRobot /> },
+  { path: '/job-match', title: 'Smart Job Match', desc: 'Pull highly compatible roles directly from real-time semantic search vectors.', icon: <FaSearch /> },
 ];
 
 export default function Dashboard() {

@@ -20,7 +20,7 @@ export default function Signup() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isEmailSent, setIsEmailSent] = useState(false);
+  // const [isEmailSent, setIsEmailSent] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -43,8 +43,8 @@ export default function Signup() {
       await axios.post(`${API_BASE_URL}/api/signup`, formData, {
         withCredentials: true,
       });
-
-      setIsEmailSent(true);
+      setSuccessMsg("Account created successfully!");
+      // setIsEmailSent(true);
     } catch (err) {
       setErrorMsg(
         err.response?.data?.message || "Signup failed. Please try again."
@@ -54,30 +54,30 @@ export default function Signup() {
     }
   };
 
-  const handleResendEmail = async () => {
-    if (!formData.emailId) {
-      setErrorMsg("Email address is missing.");
-      return;
-    }
+  // const handleResendEmail = async () => {
+  //   if (!formData.emailId) {
+  //     setErrorMsg("Email address is missing.");
+  //     return;
+  //   }
 
-    setIsLoading(true);
-    setErrorMsg("");
-    setSuccessMsg("");
+  //   setIsLoading(true);
+  //   setErrorMsg("");
+  //   setSuccessMsg("");
 
-    try {
-      await axios.post(`${API_BASE_URL}/api/resend-verification`, {
-        emailId: formData.emailId,
-      });
+  //   try {
+  //     await axios.post(`${API_BASE_URL}/api/resend-verification`, {
+  //       emailId: formData.emailId,
+  //     });
 
-      setSuccessMsg("Verification email sent again successfully!");
-    } catch (err) {
-      setErrorMsg(
-        err.response?.data?.message || "Could not resend email. Try again later."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     setSuccessMsg("Verification email sent again successfully!");
+  //   } catch (err) {
+  //     setErrorMsg(
+  //       err.response?.data?.message || "Could not resend email. Try again later."
+  //     );
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <div className="signup-viewport">
@@ -111,7 +111,7 @@ export default function Signup() {
       </div>
 
       <div className="signup-main-auth">
-        {isEmailSent ? (
+        {/* {isEmailSent ? ( 
           <div className="auth-surface-card" style={{ textAlign: "center" }}>
             <div className="auth-card-header">
               <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}>
@@ -181,7 +181,7 @@ export default function Signup() {
               </Link>
             </div>
           </div>
-        ) : (
+        ) : ( */}
           <form className="auth-surface-card" onSubmit={handleSignup}>
             <div className="auth-card-header">
               <h2>Create Account</h2>
@@ -320,7 +320,8 @@ export default function Signup() {
               className="action-submit-btn"
               disabled={isLoading}
             >
-              {isLoading ? "Sending Verification..." : "Create Account"}
+              {/* {isLoading ? "Sending Verification..." : "Create Account"} */}
+              {isLoading ? "Creating Account..." : "Create Account"}
             </button>
 
             <div className="switch-auth-context">
@@ -330,7 +331,7 @@ export default function Signup() {
               </Link>
             </div>
           </form>
-        )}
+        {/* )} */}
       </div>
     </div>
   );

@@ -9,6 +9,8 @@ import ShowProfile from './components/Profile/ShowProfile';
 import EditProfile from './components/Profile/EditProfile';
 import AppLayout from './AppLayout';
 
+import GapAnalysis from "./components/AI/GapAnalysis";
+
 // Base inline fallback component to verify route changes without crashing
 const Placeholder = ({ name }) => (
   <div style={{ width: "100%" }}>
@@ -35,7 +37,7 @@ function App() {
         {/* The Sidebar remains static here while the internal routes swap cleanly */}
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/gap-analysis" element={<Placeholder name="AI Skill Gap Analysis" />} />
+          <Route path="/gap-analysis" element={<GapAnalysis />} />
           <Route path="/resume-analyzer" element={<Placeholder name="Resume Analyzer" />} />
           <Route path="/roadmaps" element={<Placeholder name="Personalized Roadmaps" />} />
           <Route path="/mock-interview" element={<Placeholder name="Mock Interview System" />} />

@@ -2,10 +2,14 @@
    1. LANDING PAGE CORE CONTAINER
 ======================================================= */
 .landing-page-container {
-  min-height: 100vh;
   width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto; 
+  scroll-behavior: smooth;
+  
   position: relative;
-  background-color: var(--bg-main);
+  background-color: var(--bg-main, #f1f5f9);
 }
 
 /* =======================================================
@@ -25,11 +29,11 @@
 
 .badge-pill {
   background-color: #eff6ff; /* Soft contrast blue tint */
-  color: var(--brand-primary);
+  color: var(--brand-primary, #0967d2);
   padding: 0.5rem 1.25rem;
   border-radius: 999px;
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-size: var(--fs-xs, 0.85rem);
+  font-weight: var(--fw-semibold, 600);
   letter-spacing: 0.5px;
   margin-bottom: 1.5rem;
   border: 1px solid #dbeafe;
@@ -41,17 +45,17 @@
   font-size: 3.5rem; 
   line-height: 1.15;
   max-width: 850px;
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-bold, 700);
   letter-spacing: -1.5px;
-  color: var(--brand-secondary);
+  color: var(--brand-secondary, #0f172a);
   margin-bottom: 1.5rem;
 }
 
 .hero-subtitle {
   max-width: 680px;
-  font-size: var(--fs-h3);
+  font-size: var(--fs-h3, 1.25rem);
   line-height: 1.6;
-  color: var(--text-muted);
+  color: var(--text-muted, #64748b);
   margin-bottom: 2.5rem;
 }
 
@@ -65,36 +69,36 @@
 
 .btn-primary {
   text-decoration: none;
-  background-color: var(--brand-primary);
-  color: var(--text-on-brand);
+  background-color: var(--brand-primary, #0967d2);
+  color: var(--text-on-brand, #ffffff);
   padding: 0.85rem 1.75rem;
-  border-radius: var(--radius-sm);
-  font-weight: var(--fw-semibold);
-  font-size: var(--fs-sm);
+  border-radius: var(--radius-sm, 12px);
+  font-weight: var(--fw-semibold, 600);
+  font-size: var(--fs-sm, 0.95rem);
   box-shadow: var(--shadow-sm);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition: background-color var(--transition-fast, 0.2s), transform var(--transition-fast, 0.2s);
 }
 
 .btn-primary:hover {
-  background-color: var(--brand-primary-hover);
+  background-color: var(--brand-primary-hover, #1d4ed8);
   transform: translateY(-1px);
 }
 
 .btn-secondary {
   text-decoration: none;
-  background-color: var(--bg-card);
-  color: var(--text-main);
+  background-color: var(--bg-card, #ffffff);
+  color: var(--text-main, #475569);
   padding: 0.85rem 1.75rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  font-weight: var(--fw-medium);
-  font-size: var(--fs-sm);
-  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm, 12px);
+  border: 1px solid var(--border-color, #e2e8f0);
+  font-weight: var(--fw-medium, 500);
+  font-size: var(--fs-sm, 0.95rem);
+  transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-secondary:hover {
-  background-color: var(--bg-main);
-  border-color: var(--text-muted);
+  background-color: var(--bg-main, #f1f5f9);
+  border-color: var(--text-muted, #64748b);
 }
 
 /* =======================================================
@@ -102,18 +106,19 @@
 ======================================================= */
 .how-it-works-section,
 .features-section {
-  padding: 6rem 4rem;
+  padding: 6rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .section-title {
   text-align: center;
-  font-size: var(--fs-h2);
-  font-weight: var(--fw-bold);
+  font-size: var(--fs-h2, 1.4rem);
+  font-weight: var(--fw-bold, 700);
   letter-spacing: -0.75px;
   margin-bottom: 3.5rem;
-  color: var(--brand-secondary);
+  color: var(--brand-secondary, #0f172a);
 }
 
 /* =======================================================
@@ -126,12 +131,12 @@
 }
 
 .step-card {
-  background: var(--bg-card);
+  background: var(--bg-card, #ffffff);
   padding: 2.5rem 2rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 20px);
+  border: 1px solid var(--border-color, #e2e8f0);
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast, 0.2s), box-shadow var(--transition-fast, 0.2s);
 }
 
 .step-card:hover {
@@ -140,28 +145,28 @@
 }
 
 .step-number {
-  font-size: var(--fs-h1);
-  font-weight: var(--fw-bold);
-  color: var(--brand-primary);
+  font-size: var(--fs-h1, 2rem);
+  font-weight: var(--fw-bold, 700);
+  color: var(--brand-primary, #0967d2);
   opacity: 0.15; /* Elegant watermark aesthetic */
   margin-bottom: 0.5rem;
 }
 
 .step-card h3 {
-  font-size: var(--fs-h3);
+  font-size: var(--fs-h3, 1.25rem);
   margin-bottom: 0.75rem;
-  color: var(--brand-secondary);
-  font-weight: var(--fw-semibold);
+  color: var(--brand-secondary, #0f172a);
+  font-weight: var(--fw-semibold, 600);
 }
 
 .step-card p {
-  color: var(--text-muted);
+  color: var(--text-muted, #64748b);
   line-height: 1.6;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-sm, 0.95rem);
 }
 
 /* =======================================================
-   5. FEATURES GRID SYSTEM
+   5. FEATURES GRID SYSTEM (Re-balanced for 4 items)
 ======================================================= */
 .features-grid {
   display: grid;
@@ -170,12 +175,12 @@
 }
 
 .feature-card {
-  background: var(--bg-card);
+  background: var(--bg-card, #ffffff);
   padding: 2.5rem 2rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 20px);
+  border: 1px solid var(--border-color, #e2e8f0);
   box-shadow: var(--shadow-sm);
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 0.2s);
   display: flex;
   flex-direction: column;
 }
@@ -183,26 +188,26 @@
 .feature-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
-  border-color: var(--text-muted);
+  border-color: var(--text-muted, #64748b);
 }
 
 .card-icon-container {
-  background-color: var(--bg-main);
-  color: var(--text-muted);
+  background-color: var(--bg-main, #f1f5f9);
+  color: var(--text-muted, #64748b);
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm, 12px);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1.5rem;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 0.2s);
 }
 
 /* Live Dynamic Indicator Highlight Loop */
 .feature-card:hover .card-icon-container {
-  background-color: var(--brand-primary);
-  color: var(--text-on-brand);
+  background-color: var(--brand-primary, #0967d2);
+  color: var(--text-on-brand, #ffffff);
 }
 
 .feature-icon {
@@ -210,11 +215,11 @@
   height: 24px;
 }
 
-/* VIP Highlight Styling for AI Gap Analysis */
+/* Highlight Styling for AI Gap Analysis */
 .highlight-card {
-  grid-column: span 2;
+  grid-column: span 3; /* Spans full width of the 3-column layout on top */
   background-color: #eff6ff;
-  border: 2px solid var(--brand-primary);
+  border: 2px solid var(--brand-primary, #0967d2);
   position: relative;
 }
 
@@ -223,31 +228,31 @@
   position: absolute;
   top: -10px;
   right: 20px;
-  background-color: var(--brand-primary);
-  color: var(--text-on-brand);
+  background-color: var(--brand-primary, #0967d2);
+  color: var(--text-on-brand, #ffffff);
   font-size: 10px;
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-bold, 700);
   padding: 2px 8px;
   border-radius: 4px;
   letter-spacing: 0.5px;
 }
 
 .highlight-card .card-icon-container {
-  background-color: var(--bg-card);
-  color: var(--brand-primary);
+  background-color: var(--bg-card, #ffffff);
+  color: var(--brand-primary, #0967d2);
 }
 
 .feature-card h3 {
-  font-size: var(--fs-h3);
+  font-size: var(--fs-h3, 1.25rem);
   margin-bottom: 0.75rem;
-  color: var(--brand-secondary);
-  font-weight: var(--fw-semibold);
+  color: var(--brand-secondary, #0f172a);
+  font-weight: var(--fw-semibold, 600);
 }
 
 .feature-card p {
-  color: var(--text-muted);
+  color: var(--text-muted, #64748b);
   line-height: 1.6;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-sm, 0.95rem);
 }
 
 /* =======================================================
@@ -255,7 +260,7 @@
 ======================================================= */
 .footer {
   margin-top: 6rem;
-  background: var(--brand-secondary);
+  background: var(--brand-secondary, #0f172a);
   color: #94a3b8;
   padding-top: 5rem;
 }
@@ -267,26 +272,27 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem 4rem;
+  box-sizing: border-box;
 }
 
 .footer-brand h3 {
-  font-size: var(--fs-h2);
+  font-size: var(--fs-h2, 1.4rem);
   margin-bottom: 1rem;
-  color: var(--text-on-brand);
-  font-weight: var(--fw-bold);
+  color: var(--text-on-brand, #ffffff);
+  font-weight: var(--fw-bold, 700);
 }
 
 .footer-brand p {
   line-height: 1.6;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-sm, 0.95rem);
   max-width: 300px;
   color: #94a3b8;
 }
 
 .footer-links h4 {
   margin-bottom: 1.25rem;
-  color: var(--text-on-brand);
-  font-size: var(--fs-xs);
+  color: var(--text-on-brand, #ffffff);
+  font-size: var(--fs-xs, 0.85rem);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -296,28 +302,29 @@
   text-decoration: none;
   color: #94a3b8;
   margin-bottom: 0.75rem;
-  font-size: var(--fs-sm);
-  transition: color var(--transition-fast);
+  font-size: var(--fs-sm, 0.95rem);
+  transition: color var(--transition-fast, 0.2s);
 }
 
 .footer-links a:hover {
-  color: var(--text-on-brand);
+  color: var(--text-on-brand, #ffffff);
 }
 
 .footer-bottom {
   border-top: 1px solid #1e293b;
-  padding: 2rem 2rem;
+  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: var(--fs-xs);
+  font-size: var(--fs-xs, 0.85rem);
+  box-sizing: border-box;
 }
 
 .crafted-by {
   color: #cbd5e1;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-medium, 500);
 }
 
 /* =======================================================
@@ -351,7 +358,7 @@
     font-size: 2.25rem;
   }
   .hero-subtitle {
-    font-size: var(--fs-body);
+    font-size: var(--fs-body, 1rem);
   }
   .how-it-works-section,
   .features-section {
