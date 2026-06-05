@@ -76,6 +76,11 @@ const userSchema = new mongoose.Schema({
   
   analysisHistory: [analysisSchema], // Array of past analyses
 
+  currentSavedRoadmap: {
+    type: mongoose.Schema.Types.Mixed, // Allows storing full JSON structure from Gemini
+    default: null
+  },
+  
   // isVerified: { 
   //   type: Boolean, 
   //   default: false 

@@ -85,36 +85,29 @@ Return ONLY valid raw JSON matching this structure exactly:
     }
 
   } catch (error) {
-    console.error("Roadmap Generation Error:", error);
-    const is503 = error.status === 503 || error.message?.includes("503");
+    console.error(
+      "Roadmap Generation Error:",
+      error.status,
+      error.message
+    );
 
-    // 3. Fallback Payload aligned directly with the active visual component
-    return {
-      targetRole,
-      totalEstimatedDuration: is503 ? "Server Busy" : "Processing Error",
-      roadmap: [
-        {
-          phase: is503 ? "AI Engine Busy" : "Formatting Failure",
-          objective: is503 
-            ? "The AI server is experiencing heavy traffic spikes right now." 
-            : "The AI data configuration layout was slightly misaligned.",
-          duration: "Please retry",
-          skills: missingSkills,
-          topics: ["Click 'Generate Detailed Roadmap' once more to trigger a clean copy."],
-          projects: [],
-          resources: { courses: [], documentation: [] }
-        }
-      ],
-      capstoneProject: {
-        title: "Sandbox Pending",
-        description: "Please trigger the analysis roadmap again.",
-        skillsCovered: [],
-      },
-      jobPreparation: {
-        resumeChecklist: [],
-        interviewTopics: [],
-      },
-    };
+    const message = error.message?.toLowerCase() || "";
+
+    if (
+      error.status === 503 ||
+      message.includes("503")
+    ) {
+      throw new Error("Server is busy. Please try again later.");
+    }
+
+    if (
+      error.status === 429 ||
+      message.includes("quota")
+    ) {
+      throw new Error("AI quota exceeded. Please try again later.");
+    }
+
+    throw new Error("Failed to generate roadmap.");
   }
 };
 
