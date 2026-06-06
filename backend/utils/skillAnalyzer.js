@@ -1,38 +1,30 @@
 const roles = require("../data/roles");
 
 const analyzeSkills = (targetRole, userSkills) => {
-  // Get required skills for target role
+  // 1. Get required skills for target role safely
   const requiredSkills = roles[targetRole];
 
-  // If role not found
-  if (!requiredSkills) {
+  // Fix: If role is not found, immediately exit gracefully instead of running .filter()
+  if (!requiredSkills || !Array.isArray(requiredSkills)) {
     return {
-      error: "Target role not found",
+      error: `Target role '${targetRole}' was not found or is misconfigured in database.`,
     };
   }
 
-  // Normalize user skills
-  const normalizedUserSkills = userSkills.map(skill =>
-    skill.toLowerCase()
-  );
+  const normalizedUserSkills = userSkills.map(skill => skill.toLowerCase());
 
-  // Find matched skills
   const matchedSkills = requiredSkills.filter(skill =>
     normalizedUserSkills.includes(skill.toLowerCase())
   );
 
-  // Find missing skills
   const missingSkills = requiredSkills.filter(
-    skill =>
-      !normalizedUserSkills.includes(skill.toLowerCase())
+    skill => !normalizedUserSkills.includes(skill.toLowerCase())
   );
 
-  // Calculate match percentage
-  const matchPercentage = Math.round(
-    (matchedSkills.length / requiredSkills.length) * 100
-  );
+  const matchPercentage = requiredSkills.length > 0 
+    ? Math.round((matchedSkills.length / requiredSkills.length) * 100) 
+    : 0;
 
-  // Priority roadmap
   const roadmap = [...missingSkills];
 
   return {

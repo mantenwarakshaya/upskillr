@@ -10,7 +10,7 @@ import EditProfile from './components/Profile/EditProfile';
 import AppLayout from './AppLayout';
 
 import GapAnalysis from "./components/AI/GapAnalysis";
-
+import ResumeAnalyzer from "./components/AI/ResumeAnalyzer";
 // Base inline fallback component to verify route changes without crashing
 const Placeholder = ({ name }) => (
   <div style={{ width: "100%" }}>
@@ -38,7 +38,7 @@ function App() {
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/gap-analysis" element={<GapAnalysis />} />
-          <Route path="/resume-analyzer" element={<Placeholder name="Resume Analyzer" />} />
+          <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
           <Route path="/roadmaps" element={<Placeholder name="Personalized Roadmaps" />} />
           <Route path="/mock-interview" element={<Placeholder name="Mock Interview System" />} />
           <Route path="/job-match" element={<Placeholder name="Smart Job Match" />} />

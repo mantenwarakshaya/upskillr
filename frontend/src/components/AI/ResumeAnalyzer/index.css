@@ -1,0 +1,276 @@
+.resume-analyzer-container {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 40px 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+.resume-card {
+  width: 100%;
+  max-width: 1000px;
+  background: #ffffff;
+  padding: 48px;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 25px -5px rgba(0, 0, 0, 0.02);
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 36px;
+  font-size: 2rem;
+  color: #0f172a;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.analyzer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.form-group select {
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #fff;
+  color: #334155;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group select:focus {
+  border-color: #2563eb;
+}
+
+/* Fix floating native tooltip artifact bugs */
+.file-input-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.form-group input[type="file"] {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #fff;
+  color: #475569;
+}
+
+.analyze-btn {
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2563eb;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 8px;
+}
+
+.analyze-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.analyze-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.error-box {
+  padding: 16px;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  margin-bottom: 32px;
+  font-size: 0.95rem;
+}
+
+/* ==========================================
+   RESULTS & CARD METRIC BLOCKS
+   ========================================== */
+
+.results-section h2, 
+.ai-analysis-section h2 {
+  font-size: 1.625rem;
+  color: #0f172a;
+  margin-top: 48px;
+  margin-bottom: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.match-box {
+  background: #f0f7ff;
+  border: 1px solid #e0f2fe;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.score-box {
+  background: #f0f7ff;
+  border: 1px solid #e0f2fe;
+}
+
+.match-box span {
+  display: block;
+  margin-bottom: 6px;
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.match-box h3 {
+  font-size: 2.25rem;
+  color: #2563eb;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.result-block {
+  margin-bottom: 36px;
+}
+
+.result-block h3 {
+  font-size: 1.15rem;
+  color: #0f172a;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+
+.ai-text-content {
+  color: #334155;
+  line-height: 1.7;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.no-data-text {
+  color: #64748b;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ==========================================
+   TAGS & PILLS (TOP SECTION)
+   ========================================== */
+
+.skill-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-tag {
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.extracted { background: #e0f2fe; color: #0369a1; }
+.strength { background: #dcfce7; color: #15803d; }
+.missing-tag { background: #fee2e2; color: #dc2626; }
+.roadmap { background: #f3e8ff; color: #6b21a8; }
+
+/* ==========================================
+   AI ROW BANNERS (STRENGTHS / WEAKNESSES)
+   ========================================== */
+
+.banners-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.analysis-banner {
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.strength-banner {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #dcfce7;
+}
+
+.improvement-banner {
+  background-color: #fff5f5;
+  color: #991b1b;
+  border: 1px solid #fee2e2;
+}
+
+/* ==========================================
+   LIST EXTRACTIONS (FEEDBACK / RECOMMENDS)
+   ========================================== */
+
+.feedback-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.feedback-list li {
+  position: relative;
+  padding-left: 20px;
+  color: #334155;
+  line-height: 1.65;
+  font-size: 1rem;
+}
+
+.feedback-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #475569;
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+}
+
+/* Responsive view tweaks */
+@media screen and (max-width: 768px) {
+  .resume-card {
+    padding: 28px 20px;
+  }
+  .page-title {
+    font-size: 1.75rem;
+  }
+  .match-box h3 {
+    font-size: 1.85rem;
+  }
+}
