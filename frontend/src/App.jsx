@@ -11,6 +11,9 @@ import AppLayout from './AppLayout';
 
 import GapAnalysis from "./components/AI/GapAnalysis";
 import ResumeAnalyzer from "./components/AI/ResumeAnalyzer";
+// FIX: Import the actual component from your JobAnalysis folder (Webpack/Vite automatically resolves index.jsx)
+import JobAnalyzer from "./components/AI/JobAnalysis"; 
+
 // Base inline fallback component to verify route changes without crashing
 const Placeholder = ({ name }) => (
   <div style={{ width: "100%" }}>
@@ -41,7 +44,10 @@ function App() {
           <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
           <Route path="/roadmaps" element={<Placeholder name="Personalized Roadmaps" />} />
           <Route path="/mock-interview" element={<Placeholder name="Mock Interview System" />} />
-          <Route path="/job-match" element={<Placeholder name="Smart Job Match" />} />
+          
+          {/* FIX: Replaced the placeholder element with your real JobAnalyzer component */}
+          <Route path="/job-match" element={<JobAnalyzer />} />
+          
           <Route path="/profile" element={<ShowProfile />} />
           <Route path="/profile/edit" element={<EditProfile />} />
         </Route>

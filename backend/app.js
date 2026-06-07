@@ -6,6 +6,7 @@ const connectDB = require("./config/database");
 const authRouter = require("./routes/auth");
 const analysisRoutes = require("./routes/analysis");
 const resumeRouter = require("./routes/resume");
+const jobAnalysisRouter = require("./routes/jobAnalysis");
 
 const app = express();
 
@@ -49,7 +50,7 @@ app.use(cookieParser()); // Parses cookies so req.cookies works in auth middlewa
 app.use("/api", authRouter);
 app.use("/api", analysisRoutes);
 app.use("/api", resumeRouter);
-
+app.use("/api", jobAnalysisRouter);
 // Lightweight health endpoint — does not depend on DB
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
