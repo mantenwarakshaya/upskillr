@@ -288,6 +288,36 @@ Files Involved
             ↓
     User Views Past Analyses
 
+
+Start Interview
+      ↓
+Generate Question 1
+      ↓
+Murf Voice
+      ↓
+User Voice
+      ↓
+AssemblyAI
+      ↓
+Answer Text
+      ↓
+Gemini
+      ↓
+Question 2
+      ↓
+Murf Voice
+      ↓
+...
+      ↓
+Question 5
+      ↓
+Feedback Prompt
+      ↓
+Score
+      ↓
+Save Interview
+      ↓
+Dashboard History
 ----------------------------------------------------------------------------
 
 🛠️ Tech Stack
