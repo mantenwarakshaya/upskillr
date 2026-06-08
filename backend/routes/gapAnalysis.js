@@ -1,7 +1,7 @@
 const express = require("express");
 
-const analyzeSkills = require("../utils/skillAnalyzer");
-const generateRoadmap = require("../utils/roadmapGenerator");
+const analyzeSkills = require("../utils/GapAnalysis/skillAnalyzer");
+const generateRoadmap = require("../utils/GapAnalysis/roadmapGenerator");
 
 const { userAuth } = require("../middleware/auth");
 const User = require("../models/user");
@@ -136,40 +136,4 @@ router.get("/roadmap", userAuth, async (req, res) => {
     }
 });
 
-// router.get("/roadmap", userAuth, async (req, res) => {
-//   try {
-//     const user = await User.findById(req.user._id);
-
-//     if (!user) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
-
-//     const analysis = analyzeSkills(
-//       user.targetRole,
-//       user.skills
-//     );
-
-//     const roadmapData = await generateRoadmap(
-//       user.targetRole,
-//       analysis.missingSkills,
-//       analysis.matchPercentage,
-//       analysis.strengths
-//     );
-
-//     return res.status(200).json({
-//       success: true,
-//       roadmap: roadmapData,
-//     });
-//   } catch (error) {
-//     console.error("Roadmap Generation Error:", error);
-
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to generate roadmap",
-//     });
-//   }
-// });
 module.exports = router;

@@ -10,30 +10,30 @@ const analyzeJobMarket = async (targetRole, jobs, demandData) => {
       model: "gemini-3.5-flash",
     });
 
-const prompt = `
-You are an expert career and job market analyst.
+  const prompt = `
+    You are an expert career and job market analyst.
 
-Target Role:
-${targetRole}
+    Target Role:
+    ${targetRole}
 
-Industry Research:
-${JSON.stringify(demandData)}
+    Industry Research:
+    ${JSON.stringify(demandData)}
 
-Job Listings:
-${JSON.stringify(jobs)}
+    Job Listings:
+    ${JSON.stringify(jobs)}
 
-Return ONLY valid JSON.
+    Return ONLY valid JSON.
 
-{
-  "targetRole":"",
-  "demandLevel":"",
-  "marketSummary":"",
-  "salaryInsights":"",
-  "futureOutlook":"",
-  "topRoles":[],
-  "recommendedSkills":[]
-}
-`;
+    {
+      "targetRole":"",
+      "demandLevel":"",
+      "marketSummary":"",
+      "salaryInsights":"",
+      "futureOutlook":"",
+      "topRoles":[],
+      "recommendedSkills":[]
+    }
+    `;
 
     const result = await model.generateContent(prompt);
 

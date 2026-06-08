@@ -1,255 +1,322 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import roles from "../../../data/roles";
 import "./index.css";
 
 const ResumeAnalyzer = () => {
   const [targetRole, setTargetRole] = useState("");
   const [resume, setResume] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState("form");
+  const [initialLoading, setInitialLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const availableRoles = Object.keys(roles || {});
+
+  const fetchLatestAnalysis = async () => {
+    try {
+      setInitialLoading(true);
+      setError("");
+
+      const response = await fetch(
+        "http://localhost:7777/api/resume-analysis/latest",
+        { credentials: "include" }
+      );
+
+      const data = await response.json();
+      
+      if (response.status === 404) {
+        setResult(null);
+        setViewMode("form");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to load analysis");
+      }
+
+      if (data.success && data.data) {
+        setResult(data.data);
+        setTargetRole(data.data.targetRole || "");
+        setViewMode("results");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLatestAnalysis();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!resume || !targetRole) {
-      alert("Please select a role and upload a resume");
+      setError("Please select a role and upload a resume");
       return;
     }
 
     try {
-      setLoading(true);
-      setError(null);
-      setResult(null);
+      setSubmitting(true);
+      setError("");
 
       const formData = new FormData();
       formData.append("targetRole", targetRole);
       formData.append("resume", resume);
 
-      const response = await fetch("http://localhost:7777/api/analyze", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "http://localhost:7777/api/resume-analysis",
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to analyze resume");
+        throw new Error(data.message || "Resume analysis failed");
       }
 
-      console.log(data);
-      setResult(data);
+      const analysisData = data.data || data;
+      setResult(analysisData);
+      setTargetRole(analysisData.targetRole || targetRole);
+      setViewMode("results");
     } catch (err) {
-      console.error(err);
       setError(err.message);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const analysis = result?.analysis;
-  const aiAnalysis = result?.aiAnalysis;
+  const handleNewAnalysis = () => {
+    setViewMode("form");
+    setResult(null);
+    setResume(null);
+    setError("");
+  };
+
+  const analysis = result?.analysis ?? {};
+  const aiAnalysis = result?.aiAnalysis ?? null;
+
+  if (initialLoading) {
+    return (
+      <div className="resume-analyzer-container">
+        <div className="resume-card loading-card">
+          <div className="loading-spinner"></div>
+          <p>Loading saved analysis...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="resume-analyzer-container">
       <div className="resume-card">
-        <h1 className="page-title">Resume Analyzer</h1>
+        <header className="analyzer-header">
+          <h1 className="page-title">Resume Analyzer</h1>
+          {viewMode === "form" && (
+            <button onClick={fetchLatestAnalysis} className="secondary-btn">
+              📂 Load Saved Analysis
+            </button>
+          )}
+        </header>
 
-        <form onSubmit={handleSubmit} className="analyzer-form">
-          <div className="form-group">
-            <label>Target Role</label>
-            <select
-              value={targetRole}
-              onChange={(e) => setTargetRole(e.target.value)}
-            >
-              <option value="">Select Role</option>
-              {availableRoles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
-          </div>
+        {error && <div className="error-box">{error}</div>}
 
-          <div className="form-group">
-            <label>Upload Resume</label>
-            <div className="file-input-wrapper">
+        {viewMode === "form" ? (
+          <form onSubmit={handleSubmit} className="analyzer-form">
+            <div className="form-group">
+              <label htmlFor="target-role-select">Target Role</label>
+              <select
+                id="target-role-select"
+                value={targetRole}
+                onChange={(e) => setTargetRole(e.target.value)}
+              >
+                <option value="">Select Role</option>
+                {availableRoles.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="resume-file-input">Upload Resume</label>
               <input
+                id="resume-file-input"
                 type="file"
                 accept=".pdf,.doc,.docx"
-                onChange={(e) => setResume(e.target.files[0])}
+                onChange={(e) => setResume(e.target.files[0] || null)}
               />
             </div>
-          </div>
 
-          <button type="submit" className="analyze-btn" disabled={loading}>
-            {loading ? "Analyzing..." : "Analyze Resume"}
-          </button>
-        </form>
-
-        {error && (
-          <div className="error-box">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-
-        {result?.success && analysis && (
-          <div className="results-section">
-            <h2>Analysis Result</h2>
-
-            <div className="match-box">
-              <span>Match Percentage</span>
-              <h3>{analysis.matchPercentage}%</h3>
+            <button type="submit" disabled={submitting} className="primary-btn submit-btn">
+              {submitting ? "Analyzing..." : "Analyze Resume"}
+            </button>
+          </form>
+        ) : (
+          <div className="results-wrapper">
+            <div className="results-actions">
+              <h2>
+                Analysis For: <span className="highlight-text">{targetRole}</span>
+              </h2>
+              <button onClick={handleNewAnalysis} className="primary-btn">
+                🔄 New Analysis
+              </button>
             </div>
 
-            <div className="result-block">
-              <h3>📄 Extracted Skills</h3>
-              {result.extractedSkills?.length > 0 ? (
-                <div className="skill-container">
-                  {result.extractedSkills.map((skill) => (
-                    <span key={skill} className="skill-tag extracted">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="no-data-text">No skills detected.</p>
+            {/* Dashboard Hero Metrics Row */}
+            <div className="metrics-summary-row">
+              <div className="metric-card score-match">
+                <span>Match Percentage</span>
+                <h3>{analysis.matchPercentage ?? 0}%</h3>
+              </div>
+              {aiAnalysis && (
+                <>
+                  <div className="metric-card score-ai">
+                    <span>AI Overall Score</span>
+                    <h3>{aiAnalysis.overallScore}/100</h3>
+                  </div>
+                  <div className="metric-card level-ai">
+                    <span>Candidate Level</span>
+                    <h3>{aiAnalysis.candidateLevel}</h3>
+                  </div>
+                </>
               )}
             </div>
 
-            <div className="result-block">
-              <h3>✅ Strengths</h3>
-              {analysis.strengths?.length > 0 ? (
-                <div className="skill-container">
-                  {analysis.strengths.map((skill) => (
-                    <span key={skill} className="skill-tag strength">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="no-data-text">No matching skills found.</p>
-              )}
-            </div>
-
-            <div className="result-block">
-              <h3>⚠️ Missing Skills</h3>
-              {analysis.missingSkills?.length > 0 ? (
-                <div className="skill-container">
-                  {analysis.missingSkills.map((skill) => (
-                    <span key={skill} className="skill-tag missing-tag">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="no-data-text">No missing skills.</p>
-              )}
-            </div>
-
-            <div className="result-block">
-              <h3>🗺️ Learning Roadmap</h3>
-              {analysis.roadmap?.length > 0 ? (
-                <div className="skill-container">
-                  {analysis.roadmap.map((skill) => (
-                    <span key={skill} className="skill-tag roadmap">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="no-data-text">No roadmap generated.</p>
-              )}
-            </div>
-
-            {aiAnalysis && (
-              <div className="ai-analysis-section">
-                <h2>🤖 AI Resume Analysis</h2>
-
-                <div className="match-box score-box">
-                  <span>Overall AI Score</span>
-                  <h3>{aiAnalysis.overallScore}/100</h3>
+            {/* Main Balanced Content Split Grid */}
+            <div className="results-grid">
+              
+              {/* Left Column: Candidate Base Profile */}
+              <div className="grid-column">
+                <div className="result-block">
+                  <h3>📝 Executive Summary</h3>
+                  <p className="block-text">{aiAnalysis?.summary || result.resumeData?.summary}</p>
                 </div>
 
                 <div className="result-block">
-                  <h3>🎯 Candidate Level</h3>
-                  <p className="ai-text-content">{aiAnalysis.candidateLevel}</p>
+                  <h3>📄 Extracted Skills</h3>
+                  <div className="tags-container">
+                    {result?.extractedSkills?.length > 0 ? (
+                      result.extractedSkills.map((skill) => (
+                        <span key={skill} className="skill-tag">{skill}</span>
+                      ))
+                    ) : (
+                      <p className="empty-text">No skills detected</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="result-block">
-                  <h3>📝 AI Summary</h3>
-                  <p className="ai-text-content">{aiAnalysis.summary}</p>
+                  <h3>⚠️ Identified Gaps & Missing Skills</h3>
+                  <div className="tags-container">
+                    {(aiAnalysis?.missingSkills || analysis?.missingSkills)?.length > 0 ? (
+                      (aiAnalysis?.missingSkills || analysis?.missingSkills).map((item) => (
+                        <span key={item} className="skill-tag missing">{item}</span>
+                      ))
+                    ) : (
+                      <p className="empty-text">No skill gaps discovered</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="result-block">
-                  <h3>💪 AI Strengths</h3>
-                  {aiAnalysis.strengths?.length > 0 ? (
-                    <div className="banners-container">
-                      {aiAnalysis.strengths.map((strength, index) => (
-                        <div key={index} className="analysis-banner strength-banner">
-                          {strength}
-                        </div>
-                      ))}
+                  <h3>🎓 Education</h3>
+                  {result.resumeData?.education?.map((edu, index) => (
+                    <div key={index} className="detail-item">
+                      <strong>{edu.degree}</strong>
+                      <p>{edu.institution} • {edu.graduation_year}</p>
                     </div>
-                  ) : (
-                    <p className="no-data-text">No strengths identified.</p>
-                  )}
+                  ))}
                 </div>
 
                 <div className="result-block">
-                  <h3>⚠️ Areas for Improvement</h3>
-                  {aiAnalysis.weaknesses?.length > 0 ? (
-                    <div className="banners-container">
-                      {aiAnalysis.weaknesses.map((weakness, index) => (
-                        <div key={index} className="analysis-banner improvement-banner">
-                          {weakness}
-                        </div>
-                      ))}
+                  <h3>🚀 Project Inventory</h3>
+                  {result.resumeData?.projects?.map((project, index) => (
+                    <div key={index} className="project-card">
+                      <h4>{project.name}</h4>
+                      <div className="tags-container mini-tags">
+                        {project.technologies?.map((tech) => (
+                          <span key={tech} className="skill-tag">{tech}</span>
+                        ))}
+                      </div>
+                      <ul className="project-bullets">
+                        {project.description?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
                     </div>
-                  ) : (
-                    <p className="no-data-text">No weaknesses identified.</p>
-                  )}
-                </div>
-
-                <div className="result-block">
-                  <h3>🚀 Project Evaluation</h3>
-                  <p className="ai-text-content">{aiAnalysis.projectEvaluation}</p>
-                </div>
-
-                <div className="result-block">
-                  <h3>📄 Resume Feedback</h3>
-                  {aiAnalysis.resumeFeedback?.length > 0 ? (
-                    <ul className="feedback-list">
-                      {aiAnalysis.resumeFeedback.map((feedback, index) => (
-                        <li key={index}>{feedback}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="no-data-text">No feedback available.</p>
-                  )}
-                </div>
-
-                <div className="result-block">
-                  <h3>🎓 Career Recommendations</h3>
-                  {aiAnalysis.careerRecommendations?.length > 0 ? (
-                    <ul className="feedback-list">
-                      {aiAnalysis.careerRecommendations.map((recommendation, index) => (
-                        <li key={index}>{recommendation}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="no-data-text">No recommendations available.</p>
-                  )}
-                </div>
-
-                <div className="result-block">
-                  <h3>🎤 Interview Readiness</h3>
-                  <p className="ai-text-content">{aiAnalysis.interviewReadiness}</p>
+                  ))}
                 </div>
               </div>
-            )}
+
+              {/* Right Column: AI Strategic Feedback & Growth Path */}
+              <div className="grid-column">
+                {aiAnalysis && (
+                  <div className="ai-analysis-section">
+                    <div className="result-block insight-block">
+                      <h3>💪 Core Strengths Evaluation</h3>
+                      {aiAnalysis.strengths?.map((item, index) => (
+                        <div key={index} className="feedback-item success-item">✅ {item}</div>
+                      ))}
+                    </div>
+
+                    <div className="result-block insight-block">
+                      <h3>❌ Development Areas & Weaknesses</h3>
+                      {aiAnalysis.weaknesses?.map((item, index) => (
+                        <div key={index} className="feedback-item error-item">❌ {item}</div>
+                      ))}
+                    </div>
+
+                    <div className="result-block">
+                      <h3>📂 Project Portfolio Audit</h3>
+                      <p className="block-text">{aiAnalysis.projectEvaluation}</p>
+                    </div>
+
+                    <div className="result-block">
+                      <h3>✍️ Direct Resume Refinements</h3>
+                      <ul className="feedback-bullets">
+                        {aiAnalysis.resumeFeedback?.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="result-block">
+                      <h3>🎯 Strategic Career Recommendations</h3>
+                      {aiAnalysis.careerRecommendations?.map((item, index) => (
+                        <div key={index} className="feedback-item recommendation-item">🚀 {item}</div>
+                      ))}
+                    </div>
+
+                    <div className="result-block">
+                      <h3>🎤 Interview Readiness Appraisal</h3>
+                      <p className="block-text">{aiAnalysis.interviewReadiness}</p>
+                    </div>
+
+                    <div className="result-block">
+                      <h3>🗺️ Targeted Learning Roadmap</h3>
+                      <div className="roadmap-container">
+                        {aiAnalysis.roadmap?.map((phase, index) => (
+                          <div key={index} className="roadmap-step">
+                            <strong>Phase {index + 1}</strong>
+                            <p>{phase}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
           </div>
         )}
       </div>

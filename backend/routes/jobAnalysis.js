@@ -25,7 +25,7 @@ router.post(
 );
 
 router.post(
-  "/job-analysis/refresh",
+  "/job-analysis/latest",
   userAuth,
   async (req, res) => {
     try {

@@ -3,15 +3,15 @@ const JobAnalysis = require(
 );
 
 const searchJobs = require(
-  "../utils/jobSearch"
+  "../utils/JobSearch/jobSearch"
 );
 
 const searchRoleDemand = require(
-  "../utils/tavilySearch"
+  "../utils/JobSearch/tavilySearch"
 );
 
 const analyzeJobMarket = require(
-  "../utils/jobAnalyzer"
+  "../utils/JobSearch/jobAnalyzer"
 );
 
 const ONE_DAY =

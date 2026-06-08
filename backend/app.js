@@ -4,8 +4,8 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/database");
 const authRouter = require("./routes/auth");
-const analysisRoutes = require("./routes/analysis");
-const resumeRouter = require("./routes/resume");
+const analysisRoutes = require("./routes/gapAnalysis");
+const resumeRouter = require("./routes/resumeAnalysis");
 const jobAnalysisRouter = require("./routes/jobAnalysis");
 
 const app = express();

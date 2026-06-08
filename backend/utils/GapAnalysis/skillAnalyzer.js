@@ -1,4 +1,4 @@
-const roles = require("../data/roles");
+const roles = require("../../data/roles");
 
 const analyzeSkills = (targetRole, userSkills) => {
   // 1. Get required skills for target role safely

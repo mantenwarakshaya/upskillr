@@ -8,24 +8,24 @@ const extractResumeData = async (resumeText) => {
   });
 
   const prompt = `
-You are an expert resume parser.
+    You are an expert resume parser.
 
-Extract information from the resume.
+    Extract information from the resume.
 
-Resume:
-${resumeText}
+    Resume:
+    ${resumeText}
 
-Return ONLY valid JSON.
+    Return ONLY valid JSON.
 
-{
-  "skills": [],
-  "projects": [],
-  "experience": [],
-  "education": [],
-  "certifications": [],
-  "summary": ""
-}
-`;
+    {
+      "skills": [],
+      "projects": [],
+      "experience": [],
+      "education": [],
+      "certifications": [],
+      "summary": ""
+    }
+    `;
 
   const result = await model.generateContent(prompt);
 
