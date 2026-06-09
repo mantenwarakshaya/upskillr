@@ -1,6 +1,6 @@
 const fs = require("fs");
 const parseResume = require("../utils/ResumeAnalysis/resumeParser");
-const analyzeSkills = require("../utils/GapAnalysis/skillAnalyzer");
+// const analyzeSkills = require("../utils/GapAnalysis/skillAnalyzer");
 const analyzeResumeWithLLM = require("../utils/ResumeAnalysis/resumeLLMAnalyzer");
 const extractResumeData = require("../utils/ResumeAnalysis/extractResumeData");
 const ResumeAnalysis = require("../models/ResumeAnalysis");
@@ -39,20 +39,20 @@ const analyzeResumeController = async (req, res) => {
     const extractedSkills = resumeData.skills || [];
 
     // Rule-based Analysis
-    const analysis = analyzeSkills(targetRole, extractedSkills);
+    // const analysis = analyzeSkills(targetRole, extractedSkills);
 
-    if (analysis.error) {
-      return res.status(422).json({ success: false, message: analysis.error });
-    }
+    // if (analysis.error) {
+    //   return res.status(422).json({ success: false, message: analysis.error });
+    // }
 
     // AI Analysis
     const aiAnalysis = await analyzeResumeWithLLM({
       targetRole,
       resumeText,
       extractedSkills,
-      matchPercentage: analysis.matchPercentage,
-      strengths: analysis.strengths,
-      missingSkills: analysis.missingSkills,
+      // matchPercentage: analysis.matchPercentage,
+      // strengths: analysis.strengths,
+      // missingSkills: analysis.missingSkills,
     });
 
     // --- FIX: Define finalResult before using it ---
@@ -60,7 +60,7 @@ const analyzeResumeController = async (req, res) => {
       targetRole,
       resumeData,
       extractedSkills,
-      analysis,
+      // analysis,
       aiAnalysis,
     };
 
@@ -72,7 +72,7 @@ const analyzeResumeController = async (req, res) => {
         targetRole,
         resumeData,
         extractedSkills,
-        analysis,
+        // analysis,
         aiAnalysis,
         createdAt: new Date()
       },

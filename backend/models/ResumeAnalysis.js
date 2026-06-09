@@ -6,7 +6,6 @@ const ResumeAnalysisSchema = new mongoose.Schema(
     targetRole: { type: String, required: true },
     resumeData: Object,
     extractedSkills: [String],
-    analysis: Object,
     aiAnalysis: Object,
   },
   { timestamps: true }

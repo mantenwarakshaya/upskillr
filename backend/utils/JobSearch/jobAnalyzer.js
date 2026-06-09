@@ -4,7 +4,7 @@ const genAI = new GoogleGenerativeAI(
   process.env.GEMINI_API_KEY
 );
 
-const analyzeJobMarket = async (targetRole, jobs, demandData) => {
+const analyzeJobMarket = async (targetRole, userSkills, jobs, demandData) => {
   try {
     const model = genAI.getGenerativeModel({
       model: "gemini-3.5-flash",
@@ -15,6 +15,9 @@ const analyzeJobMarket = async (targetRole, jobs, demandData) => {
 
     Target Role:
     ${targetRole}
+
+    User Skills:
+    ${JSON.stringify(userSkills)}
 
     Industry Research:
     ${JSON.stringify(demandData)}
@@ -31,7 +34,9 @@ const analyzeJobMarket = async (targetRole, jobs, demandData) => {
       "salaryInsights":"",
       "futureOutlook":"",
       "topRoles":[],
-      "recommendedSkills":[]
+      "recommendedSkills":[],
+      "skillGapForMarket":[],
+      "jobReadinessScore":0
     }
     `;
 

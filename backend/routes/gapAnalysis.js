@@ -1,5 +1,7 @@
 const express = require("express");
 
+const ResumeAnalysis = require("../models/ResumeAnalysis");
+
 const analyzeSkills = require("../utils/GapAnalysis/skillAnalyzer");
 const generateRoadmap = require("../utils/GapAnalysis/roadmapGenerator");
 
@@ -20,9 +22,24 @@ router.get("/analyze-skills", userAuth, async (req, res) => {
       });
     }
 
+    const latestResume = await ResumeAnalysis
+      .findOne({
+        userId: req.user._id,
+        targetRole: user.targetRole,
+      })
+      .sort({ createdAt: -1 });
+
+    if (!latestResume) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Please complete Resume Analysis first",
+      });
+    }
+
     const result = analyzeSkills(
       user.targetRole,
-      user.skills
+      latestResume.extractedSkills
     );
 
     user.analysisHistory.push({
@@ -80,8 +97,24 @@ router.get("/roadmap", userAuth, async (req, res) => {
     }
 
     // 1. Calculate their current profile state
-    const currentAnalysis = analyzeSkills(user.targetRole, user.skills);
+    const latestResume = await ResumeAnalysis
+      .findOne({
+        userId: req.user._id,
+        targetRole: user.targetRole,
+      })
+      .sort({ createdAt: -1 });
 
+    if (!latestResume) {
+      return res.status(404).json({
+        success: false,
+        message: "Please complete Resume Analysis first",
+      });
+    }
+
+    const currentAnalysis = analyzeSkills(
+      user.targetRole,
+      latestResume.extractedSkills
+    );
     // 2. SMART CACHE CHECK: If a saved roadmap exists and matches their target role, check closer
     if (user.currentSavedRoadmap && user.currentSavedRoadmap.targetRole === user.targetRole) {
       

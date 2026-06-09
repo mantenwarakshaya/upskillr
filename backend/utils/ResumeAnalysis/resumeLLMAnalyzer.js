@@ -6,13 +6,10 @@ const analyzeResumeWithLLM = async ({
   targetRole,
   resumeText,
   extractedSkills,
-  matchPercentage,
-  strengths,
-  missingSkills,
 }) => {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
     });
 
     const prompt = `
@@ -27,15 +24,6 @@ ${resumeText}
 Extracted Skills:
 ${JSON.stringify(extractedSkills)}
 
-Role Match Analysis:
-${matchPercentage}%
-
-Strengths:
-${strengths.join(", ")}
-
-Missing Skills:
-${missingSkills.join(", ")}
-
 Return ONLY valid JSON.
 
 {
@@ -44,18 +32,9 @@ Return ONLY valid JSON.
   "summary": "",
   "strengths": [],
   "weaknesses": [],
-  "missingSkills": [],
   "projectEvaluation": "",
   "resumeFeedback": [],
-  "careerRecommendations": [],
   "interviewReadiness": "",
-  "roadmap": [
-    {
-      "phase": "",
-      "duration": "",
-      "topics": []
-    }
-  ]
 }
 `;
 
@@ -74,17 +53,14 @@ Return ONLY valid JSON.
     console.error("Gemini Analysis Error:", err);
 
     return {
-      overallScore: matchPercentage,
+      overallScore: 0,
       candidateLevel: "Unknown",
       summary: "AI analysis unavailable",
-      strengths,
-      weaknesses: missingSkills,
-      missingSkills,
+      strengths: [],
+      weaknesses: [],
       projectEvaluation: "",
       resumeFeedback: [],
-      careerRecommendations: [],
       interviewReadiness: "Unknown",
-      roadmap: [],
     };
   }
 };

@@ -14,6 +14,8 @@ const analyzeJobMarket = require(
   "../utils/JobSearch/jobAnalyzer"
 );
 
+const ResumeAnalysis = require("../models/ResumeAnalysis");
+
 const ONE_DAY =
   24 * 60 * 60 * 1000;
 
@@ -44,6 +46,18 @@ const jobAnalysisService = async (
     }
   }
 
+  const latestResume =
+    await ResumeAnalysis.findOne({
+      userId,
+      targetRole,
+    }).sort({ createdAt: -1 });
+
+  if (!latestResume) {
+    throw new Error(
+      "Please complete Resume Analysis first"
+    );
+  }
+
   const [jobs, demandData] =
     await Promise.all([
       searchJobs(targetRole),
@@ -53,6 +67,7 @@ const jobAnalysisService = async (
   const analysis =
     await analyzeJobMarket(
       targetRole,
+      latestResume.extractedSkills,
       jobs,
       demandData
     );
