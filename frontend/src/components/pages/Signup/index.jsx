@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // 1. Added useNavigate
+import { useAuth } from "../../AuthProvider"; // 2. Added useAuth
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdEmail, MdLock, MdPerson, MdWork } from "react-icons/md";
 import logo from "../../../assets/nav_logo.png";
 import axios from "axios";
 import "./index.css";
 
-const API_BASE_URL = "http://localhost:7777";
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || "http://localhost:7777";
 
 export default function Signup() {
+  const navigate = useNavigate(); // 3. Initialize navigate
+  const { setUser } = useAuth();  // 4. Extract setUser to log them in instantly
+
   const [formData, setFormData] = useState({
     firstName: "",
     emailId: "",
@@ -18,33 +22,36 @@ export default function Signup() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  // const [isEmailSent, setIsEmailSent] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
-
     if (errorMsg) setErrorMsg("");
-    if (successMsg) setSuccessMsg("");
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
-
     setIsLoading(true);
     setErrorMsg("");
-    setSuccessMsg("");
 
     try {
-      await axios.post(`${API_BASE_URL}/api/signup`, formData, {
+      // 5. Send signup request with Credentials so cookies can be set if backend allows it
+      const response = await axios.post(`${API_BASE_URL}/api/signup`, formData, {
         withCredentials: true,
       });
-      setSuccessMsg("Account created successfully!");
-      // setIsEmailSent(true);
+      
+      // 6. If your backend returns the user object and a JWT token in cookies on signup:
+      if (response.data?.user) {
+        setUser(response.data.user); // Update context state
+        navigate("/dashboard", { replace: true }); // Instant redirect
+      } else {
+        // Fallback if your backend doesn't automatically sign them up
+        setErrorMsg("Account created, but please sign in manually.");
+        navigate("/login");
+      }
     } catch (err) {
       setErrorMsg(
         err.response?.data?.message || "Signup failed. Please try again."
@@ -53,31 +60,6 @@ export default function Signup() {
       setIsLoading(false);
     }
   };
-
-  // const handleResendEmail = async () => {
-  //   if (!formData.emailId) {
-  //     setErrorMsg("Email address is missing.");
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-  //   setErrorMsg("");
-  //   setSuccessMsg("");
-
-  //   try {
-  //     await axios.post(`${API_BASE_URL}/api/resend-verification`, {
-  //       emailId: formData.emailId,
-  //     });
-
-  //     setSuccessMsg("Verification email sent again successfully!");
-  //   } catch (err) {
-  //     setErrorMsg(
-  //       err.response?.data?.message || "Could not resend email. Try again later."
-  //     );
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   return (
     <div className="signup-viewport">

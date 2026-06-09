@@ -62,7 +62,7 @@ const JobAnalysis = () => {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost:7777/api/job-analysis/refresh",
+        "http://localhost:7777/api/job-analysis/latest",
         {
           method: "POST",
           credentials: "include", // IMPORTANT

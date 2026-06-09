@@ -1,4 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../AuthProvider'; 
+
 import {
   FaTachometerAlt,
   FaSearch,
@@ -10,23 +12,27 @@ import {
 } from 'react-icons/fa';
 import './index.css';
 
-// Grouped items to make the dual presence of Gap Analysis & Roadmaps logical
 const coreMenu = [
-  { path: '/dashboard', icon: <FaTachometerAlt />, label: 'Dashboard' },
-  { path: '/gap-analysis', icon: <FaUserGraduate />, label: 'AI Skill Gap Analysis' },
   { path: '/resume-analyzer', icon: <FaFileAlt />, label: 'Resume Analyzer' },
+  { path: '/gap-analysis', icon: <FaUserGraduate />, label: 'Skill Gap Analysis' },
 ];
 
 const studioMenu = [
-  { path: '/mock-interview', icon: <FaRobot />, label: 'Mock Interview System' },
+  { path: '/mock-interview', icon: <FaRobot />, label: 'Mock Interview' },
   { path: '/job-match', icon: <FaSearch />, label: 'Smart Job Match' },
 ];
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { logout } = useAuth(); // <-- Destructure logout helper out of global Auth context
 
-  const handleLogout = () => {
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logout(); // 1. Deletes jwt_token via backend and clears user state
+      navigate('/', { replace: true }); // 2. Forces user back to landing page channel
+    } catch (err) {
+      console.error("Logout execution failed: ", err);
+    }
   };
 
   return (
@@ -42,6 +48,14 @@ export default function Sidebar() {
 
       {/* CORE INTERACTIVE MENU */}
       <nav className="sidebar-nav">
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+        >
+          <div className="nav-icon"><FaTachometerAlt /></div>
+          <span>Dashboard</span>
+        </NavLink>
+        
         <p className="nav-label">ANALYZE</p>
         {coreMenu.map((item) => (
           <NavLink
@@ -82,7 +96,6 @@ export default function Sidebar() {
           </p>
         </div>
 
-        {/* Changed to nav-item utility styling to ensure perfect visual alignment */}
         <NavLink
           to="/profile"
           className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
@@ -91,6 +104,7 @@ export default function Sidebar() {
           <span>Profile</span>
         </NavLink>
         
+        {/* Executes async session removal cleanly */}
         <button type="button" className="sidebar-logout-btn" onClick={handleLogout}>
           <div className="nav-icon"><FaSignOutAlt /></div>
           <span>Logout</span>

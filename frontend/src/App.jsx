@@ -1,4 +1,7 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './components/AuthProvider'; // Make sure path is correct
+import { ProtectedRoute } from './ProtectedRoute'; // Make sure path is correct
+
 import Landing from './components/pages/Landing';
 import Signup from './components/pages/Signup';
 import Signin from './components/pages/Login';
@@ -11,35 +14,30 @@ import AppLayout from './AppLayout';
 
 import GapAnalysis from "./components/AI/GapAnalysis";
 import ResumeAnalyzer from "./components/AI/ResumeAnalyzer";
-// FIX: Import the actual component from your JobAnalysis folder (Webpack/Vite automatically resolves index.jsx)
 import JobAnalyzer from "./components/AI/JobAnalysis"; 
 import InterviewAnalysis from "./components/AI/InterviewAnalysis";
 
-// Base inline fallback component to verify route changes without crashing
-const Placeholder = ({ name }) => (
-  <div style={{ width: "100%" }}>
-    <h1 style={{ fontSize: "2rem", fontWeight: 800, marginBottom: "0.5rem" }}>
-      {name}
-    </h1>
-    <p style={{ color: "#64748b", fontSize: "1rem" }}>
-      This workspace view will dynamically swap when you click the sidebar menu links!
-    </p>
-  </div>
-);
+// Optional: Prevent logged-in users from visiting Login/Signup/Landing
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (user) return <Navigate to="/dashboard" replace />;
+  return children;
+};
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC ACCESS CHANNELS */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Signin />} />
+        {/* PUBLIC ACCESS CHANNELS (Redirects to /dashboard if already logged in) */}
+        <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
+        <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><Signin /></PublicRoute>} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         
         {/* SECURE LAYOUT SUB-SYSTEM */}
-        {/* The Sidebar remains static here while the internal routes swap cleanly */}
-        <Route element={<AppLayout />}>
+        {/* Wrapping the entire layout route secures everything inside it */}
+        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/gap-analysis" element={<GapAnalysis />} />
           <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
@@ -49,6 +47,9 @@ function App() {
           <Route path="/profile" element={<ShowProfile />} />
           <Route path="/profile/edit" element={<EditProfile />} />
         </Route>
+
+        {/* Fallback for unmatched routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

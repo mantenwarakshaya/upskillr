@@ -176,16 +176,24 @@ const ResumeAnalyzer = () => {
               <div className="metric-card score-match">
                 <span>Match Percentage</span>
                 <h3>{analysis.matchPercentage ?? 0}%</h3>
+
+                <div className="progress-bar">
+                  <div
+                    className="progress-fill"
+                    style={{ width: `${analysis.matchPercentage ?? 0}%` }}
+                  />
+                </div>
               </div>
               {aiAnalysis && (
                 <>
-                  <div className="metric-card score-ai">
-                    <span>AI Overall Score</span>
-                    <h3>{aiAnalysis.overallScore}/100</h3>
-                  </div>
                   <div className="metric-card level-ai">
                     <span>Candidate Level</span>
                     <h3>{aiAnalysis.candidateLevel}</h3>
+                  </div>
+
+                  <div className="metric-card interview-ai">
+                    <span>Interview Readiness</span>
+                    <h3>{aiAnalysis?.interviewReadiness || "Pending"}</h3>
                   </div>
                 </>
               )}
@@ -198,7 +206,7 @@ const ResumeAnalyzer = () => {
               <div className="grid-column">
                 <div className="result-block">
                   <h3>📝 Executive Summary</h3>
-                  <p className="block-text">{aiAnalysis?.summary || result.resumeData?.summary}</p>
+                  <p className="block-text">{aiAnalysis?.summary || result.resumeData?.summary || "No summary available"}</p>
                 </div>
 
                 <div className="result-block">
@@ -215,7 +223,7 @@ const ResumeAnalyzer = () => {
                 </div>
 
                 <div className="result-block">
-                  <h3>⚠️ Identified Gaps & Missing Skills</h3>
+                  <h3>⚠️ Missing Skills</h3>
                   <div className="tags-container">
                     {(aiAnalysis?.missingSkills || analysis?.missingSkills)?.length > 0 ? (
                       (aiAnalysis?.missingSkills || analysis?.missingSkills).map((item) => (
@@ -229,31 +237,47 @@ const ResumeAnalyzer = () => {
 
                 <div className="result-block">
                   <h3>🎓 Education</h3>
-                  {result.resumeData?.education?.map((edu, index) => (
-                    <div key={index} className="detail-item">
-                      <strong>{edu.degree}</strong>
-                      <p>{edu.institution} • {edu.graduation_year}</p>
-                    </div>
-                  ))}
+
+                  {result?.resumeData?.education?.length > 0 ? (
+                    result.resumeData.education.map((edu, index) => (
+                      <div key={index} className="detail-item">
+                        <strong>{edu.degree}</strong>
+                        <p>
+                          {edu.institution} • {edu.graduation_year}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="empty-text">No education information found</p>
+                  )}
                 </div>
 
                 <div className="result-block">
                   <h3>🚀 Project Inventory</h3>
-                  {result.resumeData?.projects?.map((project, index) => (
-                    <div key={index} className="project-card">
-                      <h4>{project.name}</h4>
-                      <div className="tags-container mini-tags">
-                        {project.technologies?.map((tech) => (
-                          <span key={tech} className="skill-tag">{tech}</span>
-                        ))}
+
+                  {result?.resumeData?.projects?.length > 0 ? (
+                    result.resumeData.projects.map((project, index) => (
+                      <div key={index} className="project-card">
+                        <h4>{project.name}</h4>
+
+                        <div className="tags-container mini-tags">
+                          {project.technologies?.map((tech) => (
+                            <span key={tech} className="skill-tag">
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+
+                        <ul className="project-bullets">
+                          {project.description?.map((item, idx) => (
+                            <li key={idx}>{item}</li>
+                          ))}
+                        </ul>
                       </div>
-                      <ul className="project-bullets">
-                        {project.description?.map((item, idx) => (
-                          <li key={idx}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="empty-text">No projects detected</p>
+                  )}
                 </div>
               </div>
 
@@ -263,37 +287,56 @@ const ResumeAnalyzer = () => {
                   <div className="ai-analysis-section">
                     <div className="result-block insight-block">
                       <h3>💪 Core Strengths Evaluation</h3>
-                      {aiAnalysis.strengths?.map((item, index) => (
-                        <div key={index} className="feedback-item success-item">✅ {item}</div>
-                      ))}
+                          {aiAnalysis.strengths?.length > 0 ? (
+                            aiAnalysis.strengths.map((item, index) => (
+                              <div key={index} className="feedback-item success-item">
+                                ✅ {item}
+                              </div>
+                            ))
+                          ) : (
+                            <p className="empty-text">No strengths identified</p>
+                          )}
                     </div>
 
                     <div className="result-block insight-block">
                       <h3>❌ Development Areas & Weaknesses</h3>
-                      {aiAnalysis.weaknesses?.map((item, index) => (
-                        <div key={index} className="feedback-item error-item">❌ {item}</div>
-                      ))}
-                    </div>
 
-                    <div className="result-block">
-                      <h3>📂 Project Portfolio Audit</h3>
-                      <p className="block-text">{aiAnalysis.projectEvaluation}</p>
+                      {aiAnalysis.weaknesses?.length > 0 ? (
+                        aiAnalysis.weaknesses.map((item, index) => (
+                          <div key={index} className="feedback-item error-item">
+                            ❌ {item}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="empty-text">No weaknesses identified</p>
+                      )}
                     </div>
 
                     <div className="result-block">
                       <h3>✍️ Direct Resume Refinements</h3>
-                      <ul className="feedback-bullets">
-                        {aiAnalysis.resumeFeedback?.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        ))}
-                      </ul>
+
+                      {aiAnalysis.resumeFeedback?.length > 0 ? (
+                        <ul className="feedback-bullets">
+                          {aiAnalysis.resumeFeedback.map((item, index) => (
+                            <li key={index}>{item}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="empty-text">No resume suggestions available</p>
+                      )}
                     </div>
 
                     <div className="result-block">
                       <h3>🎯 Strategic Career Recommendations</h3>
-                      {aiAnalysis.careerRecommendations?.map((item, index) => (
-                        <div key={index} className="feedback-item recommendation-item">🚀 {item}</div>
-                      ))}
+                      {aiAnalysis.careerRecommendations?.length > 0 ? (
+                        aiAnalysis.careerRecommendations.map((item, index) => (
+                          <div key={index} className="feedback-item recommendation-item">
+                            🚀 {item}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="empty-text">No recommendations available</p>
+                      )}
                     </div>
 
                     <div className="result-block">
@@ -301,17 +344,6 @@ const ResumeAnalyzer = () => {
                       <p className="block-text">{aiAnalysis.interviewReadiness}</p>
                     </div>
 
-                    <div className="result-block">
-                      <h3>🗺️ Targeted Learning Roadmap</h3>
-                      <div className="roadmap-container">
-                        {aiAnalysis.roadmap?.map((phase, index) => (
-                          <div key={index} className="roadmap-step">
-                            <strong>Phase {index + 1}</strong>
-                            <p>{phase}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>
