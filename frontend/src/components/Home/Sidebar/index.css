@@ -50,7 +50,7 @@
   align-items: center;
   gap: 14px;
   padding: 0 8px;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .s-job-logo-mark {
@@ -82,6 +82,10 @@
   line-height: 1.3;
 }
 
+/* ==========================================================================
+   NAVIGATION MODULES
+   ========================================================================== */
+
 .s-job-nav {
   flex: 1;
   display: flex;
@@ -101,7 +105,7 @@
 }
 
 .s-job-section {
-  margin-top: 28px;
+  margin-top: 24px;
 }
 
 .s-job-section-title {
@@ -177,13 +181,68 @@
   color: var(--s-job-accent);
 }
 
+/* ==========================================================================
+   FOOTER AREA & POLISHED BOTTOM AI CREDITS
+   ========================================================================== */
+
 .s-job-footer {
   margin-top: auto;
-  padding-top: 20px;
+  padding-top: 16px;
   border-top: 1px solid var(--s-job-border);
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.s-job-credits-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px 0; /* Creates an even margin between the tracking card and profile settings */
+  padding: 12px 14px;
+  box-sizing: border-box;
+  background-color: var(--s-job-accent-soft); 
+  border: 1px solid #bfdbfe; 
+  border-radius: 10px;
+}
+
+.s-job-credits-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.s-job-credits-label {
+  color: var(--s-job-text-soft); 
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.s-job-credits-value {
+  color: var(--s-job-accent); 
+  font-size: 14px;
+  font-weight: 750; 
+  letter-spacing: -0.01em;
+}
+
+.s-job-credits-progress {
+  width: 100%;
+  height: 5px;
+  background-color: #dbeafe;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.s-job-credits-progress-fill {
+  height: 100%;
+  background-color: var(--s-job-accent);
+  border-radius: 10px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .s-job-logout-btn {
@@ -196,7 +255,9 @@
   outline-offset: 2px;
 }
 
-/* Toast */
+/* ==========================================================================
+   TOAST NOTIFICATION MODALS
+   ========================================================================== */
 
 .s-job-toast {
   position: absolute;
@@ -232,14 +293,15 @@
     opacity: 0;
     transform: translateY(-6px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Responsive */
+/* ==========================================================================
+   RESPONSIVE MEDIA BREAKPOINTS
+   ========================================================================== */
 
 @media (max-width: 768px) {
   .s-job-sidebar {

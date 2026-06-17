@@ -79,7 +79,7 @@ authRouter.post("/login", async (req, res) => {
         emailId: user.emailId, 
         targetRole: user.targetRole, 
         github: user.github || "",
-        skills: user.skills || []
+        aiUsage: user.aiUsage
       } 
     });
   } catch (err) {
@@ -90,7 +90,18 @@ authRouter.post("/login", async (req, res) => {
 // 3. GET CURRENT USER
 authRouter.get("/me", userAuth, async (req, res) => {
   try { 
-    res.json({ success: true, user: req.user }); 
+    res.json({ 
+      success: true,
+      user: {
+        _id: req.user._id,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+        emailId: req.user.emailId,
+        targetRole: req.user.targetRole,
+        github: req.user.github,
+        aiUsage: req.user.aiUsage,
+      }
+    }); 
   } catch (err) { 
     res.status(400).json({ success: false, message: err.message }); 
   }

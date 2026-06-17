@@ -19,6 +19,16 @@ const userSchema = new mongoose.Schema({
     message: "Invalid GitHub URL"
   }},
   resumeUrl: { type: String }, 
+  aiUsage: {
+  creditsRemaining: {
+    type: Number,
+    default: 20,
+  },
+  lastResetDate: {
+    type: Date,
+    default: Date.now,
+  },
+},
   
   isDeleted: { type: Boolean, default: false, Republication: true },
   deletedAt: { type: Date, default: null }

@@ -1,6 +1,8 @@
 // backend/controllers/jobAnalysisController.js
 const jobAnalysisService = require("../services/jobAnalysisService");
 
+const { deductCredits } = require("../utils/credits/creditManager");
+
 const jobAnalysisController = async (req, res) => {
   try {
     const { targetRole } = req.body;
@@ -10,6 +12,9 @@ const jobAnalysisController = async (req, res) => {
     }
 
     const result = await jobAnalysisService(req.user._id, targetRole);
+
+    await deductCredits(req.user._id, 4);
+    
     return res.status(200).json({ success: true, ...result });
   } catch (err) {
     console.error("❌ Job Analysis Controller Exception:", err.message);

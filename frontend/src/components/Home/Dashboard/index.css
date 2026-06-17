@@ -121,73 +121,168 @@
   100% { transform: scale(3); opacity: 0; }
 }
 
-/* --- METRIC PLATES (STATS GRID) --- */
-.stats-grid {
+/* ==========================================================================
+   SPECIALIZED HUB MAIN CONTENT GRID
+   ========================================================================== */
+
+.dashboard-main-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1.6fr 1fr;
   gap: 1.5rem;
   margin-bottom: 2.5rem;
 }
 
-.stat-card {
+.dashboard-card {
   background-color: #ffffff;
   border: 1px solid var(--slate-200);
   border-radius: var(--radius-xl);
   padding: 1.75rem;
   box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 1.5rem;
 }
 
-.stat-card h3 {
-  font-size: 0.815rem;
-  font-weight: 600;
-  color: var(--slate-500);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.dashboard-card h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  letter-spacing: -0.01em;
 }
 
-.stat-card .stat-header {
+.card-header-inline {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1.25rem;
 }
 
-.stat-card .stat-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
+.completion-badge {
   background-color: var(--slate-100);
   color: var(--slate-600);
-  padding: 0.25rem 0.625rem;
-  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--slate-200);
 }
 
-.stat-card .stat-value {
-  font-size: 2.5rem;
-  font-weight: 700;
+/* --- INTERACTIVE PREPARATION ROADMAP CHECKLIST --- */
+.checklist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.125rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--slate-100);
+  background-color: var(--slate-50);
+  text-decoration: none;
+  transition: transform 0.2s var(--easing-smooth), 
+              border-color 0.2s var(--easing-smooth), 
+              background-color 0.2s var(--easing-smooth);
+}
+
+.checklist-item:hover {
+  border-color: #bfdbfe;
+  background-color: #f0f7ff;
+  transform: translateX(4px);
+}
+
+.icon-todo {
+  color: var(--slate-400);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.icon-done {
+  color: #10b981;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.checklist-text {
+  flex: 1;
+}
+
+.checklist-text h4 {
+  font-size: 0.925rem;
+  font-weight: 600;
   color: var(--slate-900);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  margin-bottom: 0.25rem;
 }
 
-.stat-card .stat-desc {
-  margin-top: 0.5rem;
+.checklist-text p {
+  font-size: 0.825rem;
   color: var(--slate-500);
-  font-size: 0.875rem;
+  line-height: 1.4;
 }
 
-/* Variant Premium Slate Gradient Card */
-.stat-card-gradient {
-  background: linear-gradient(135deg, var(--slate-900) 0%, #1e293b 100%);
-  border-color: var(--slate-900);
+.checklist-arrow {
+  color: var(--slate-400);
+  align-self: center;
+  transition: transform 0.2s var(--easing-smooth), color 0.15s ease;
 }
 
-.stat-card-gradient h3 { color: var(--slate-400); }
-.stat-card-gradient .stat-badge { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
-.stat-card-gradient .stat-value { color: #ffffff; }
-.stat-card-gradient .stat-desc { color: var(--slate-400); }
+.checklist-item:hover .checklist-arrow {
+  color: var(--brand-blue);
+  transform: translateX(2px);
+}
+
+/* --- LIVE ACTIVITY & PLATFORM FEED --- */
+.activity-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-card h2 {
+  margin-bottom: 1.25rem;
+}
+
+.activity-feed {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--slate-200);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.feed-item.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.empty-feed-icon {
+  color: var(--slate-400);
+  margin-bottom: 0.75rem;
+}
+
+.feed-item.empty p {
+  font-size: 0.85rem;
+  color: var(--slate-500);
+  margin-bottom: 1rem;
+}
+
+.feed-action-btn {
+  font-size: 0.815rem;
+  font-weight: 600;
+  color: var(--brand-blue-hover);
+  background-color: var(--brand-blue-light);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.feed-action-btn:hover {
+  background-color: #dbeafe;
+}
 
 /* --- HUB PIPELINE SECTIONS & CARDS --- */
 .career-section .section-header h2 {
@@ -197,17 +292,11 @@
   letter-spacing: -0.02em;
 }
 
-.career-section .section-header p {
-  margin-top: 0.35rem;
-  color: var(--slate-500);
-  font-size: 0.9rem;
-}
-
 .action-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
 }
 
 .action-card {
@@ -307,7 +396,8 @@
   color: var(--brand-blue);
 }
 
-.action-card:focus-visible {
+.action-card:focus-visible,
+.checklist-item:focus-visible {
   outline: 2px solid var(--brand-blue);
   outline-offset: 4px;
 }
@@ -322,6 +412,11 @@
 @media (max-width: 1024px) {
   .dashboard-page {
     padding: 1.5rem;
+  }
+  
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 }
 
@@ -342,7 +437,6 @@
     justify-content: center;
   }
 
-  .stats-grid,
   .action-grid {
     grid-template-columns: 1fr;
     gap: 1rem;

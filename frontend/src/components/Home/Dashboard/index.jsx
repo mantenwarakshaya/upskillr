@@ -1,3 +1,4 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import {
   FileText,
@@ -5,6 +6,9 @@ import {
   MessageSquareCode,
   SearchCode,
   ArrowRight,
+  CheckCircle2,
+  Circle,
+  Clock,
 } from "lucide-react";
 import "./index.css";
 
@@ -40,11 +44,16 @@ const quickActions = [
 ];
 
 export default function Dashboard({ user }) {
+  // Simulating state checks for user progress
+  const isResumeUploaded = user?.progress?.resumeUploaded || false;
+  const isGapAnalyzed = user?.progress?.gapAnalyzed || false;
+  const isInterviewDone = user?.progress?.interviewDone || false;
+
   return (
     <div className="dashboard-page">
       <div className="dashboard-container">
         
-        {/* HERO ACCELERATOR HEADER */}
+        {/* HERO HEADER */}
         <header className="dashboard-header" aria-label="Dashboard Overview">
           <div className="header-meta">
             <h1>Welcome back, {user?.firstName || "Developer"}</h1>
@@ -59,52 +68,77 @@ export default function Dashboard({ user }) {
           </div>
         </header>
 
-        {/* METRICS GRID */}
-        <section className="stats-grid" aria-label="Performance Metrics Dashboard">
-          <StatCard
-            title="Career Readiness Index"
-            value="N/A"
-            text="Awaiting initial resume ingestion parse"
-            badge="Action Required"
-            variant="gradient"
-          />
+        {/* SPECIAL DASHBOARD CORE HUB */}
+        <div className="dashboard-main-grid">
+          
+          {/* LEFT: INTERACTIVE ONBOARDING */}
+          <section className="dashboard-card onboarding-card">
+            <div className="card-header-inline">
+              <h2>Preparation Roadmap</h2>
+              <span className="completion-badge">0/3 Complete</span>
+            </div>
+            
+            <div className="checklist-container">
+              <Link to="/resume-analyzer" className={`checklist-item ${isResumeUploaded ? 'done' : ''}`}>
+                {isResumeUploaded ? <CheckCircle2 size={18} className="icon-done" /> : <Circle size={18} className="icon-todo" />}
+                <div className="checklist-text">
+                  <h4>Upload your master technical resume</h4>
+                  <p>Unlocks your Career Readiness Index score and structural profile insights.</p>
+                </div>
+                <ArrowRight size={14} className="checklist-arrow" />
+              </Link>
 
-          <StatCard
-            title="Target Role Alignment"
-            value="--"
-            text="Locks instantly following your first tech assessment"
-            badge="Locked"
-            variant="default"
-          />
-        </section>
+              <Link to="/gap-analysis" className={`checklist-item ${isGapAnalyzed ? 'done' : ''}`}>
+                {isGapAnalyzed ? <CheckCircle2 size={18} className="icon-done" /> : <Circle size={18} className="icon-todo" />}
+                <div className="checklist-text">
+                  <h4>Run a role alignment skill assessment</h4>
+                  <p>Identify missing backend/frontend layers against market demand.</p>
+                </div>
+                <ArrowRight size={14} className="checklist-arrow" />
+              </Link>
 
-        {/* CORE JOURNEY SECTIONS */}
-        <section className="career-section" aria-label="Accelerator Career Hub">
+              <Link to="/mock-interview" className={`checklist-item ${isInterviewDone ? 'done' : ''}`}>
+                {isInterviewDone ? <CheckCircle2 size={18} className="icon-done" /> : <Circle size={18} className="icon-todo" />}
+                <div className="checklist-text">
+                  <h4>Complete an AI mock interview stream</h4>
+                  <p>Practice live system architecture and coding interview scenarios.</p>
+                </div>
+                <ArrowRight size={14} className="checklist-arrow" />
+              </Link>
+            </div>
+          </section>
+
+          {/* RIGHT: LIVE ACTIVITY / PLATFORM SYSTEM FEED */}
+          <section className="dashboard-card activity-card">
+            <h2>Recent Activity Logs</h2>
+            <div className="activity-feed">
+              <div className="feed-item empty">
+                <Clock size={20} className="empty-feed-icon" />
+                <p>No optimization scans executed yet.</p>
+                <Link to="/resume-analyzer" className="feed-action-btn">Initialize Profile Scan</Link>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        {/* WORKSPACE MODULES */}
+        <section className="career-section">
           <div className="section-header">
-            <h2>Your Growth Framework</h2>
-            <p>Progress sequentially through these modules to maximize profile placement efficiency.</p>
+            <h2>Quick Workspaces</h2>
           </div>
 
           <div className="action-grid">
             {quickActions.map((item) => (
-              <Link
-                to={item.path}
-                key={item.path}
-                className="action-card"
-                aria-label={`Maps to ${item.title}`}
-              >
+              <Link to={item.path} key={item.path} className="action-card">
                 <div className="action-card-header">
                   <span className="action-step">Step {item.step}</span>
-                  <div className="action-icon" aria-hidden="true">
-                    {item.icon}
-                  </div>
+                  <div className="action-icon">{item.icon}</div>
                 </div>
-                
                 <div className="action-card-body">
                   <h3>{item.title}</h3>
                   <p>{item.desc}</p>
                 </div>
-
                 <div className="action-card-footer">
                   <span className="action-cta">Launch Workspace</span>
                   <ArrowRight size={14} className="arrow-icon" />
@@ -114,21 +148,6 @@ export default function Dashboard({ user }) {
           </div>
         </section>
 
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ title, value, text, badge, variant = "default" }) {
-  return (
-    <div className={`stat-card stat-card-${variant}`}>
-      <div className="stat-header">
-        <h3>{title}</h3>
-        {badge && <span className="stat-badge">{badge}</span>}
-      </div>
-      <div className="stat-content">
-        <div className="stat-value">{value}</div>
-        <p className="stat-desc">{text}</p>
       </div>
     </div>
   );

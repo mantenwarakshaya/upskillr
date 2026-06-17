@@ -7,7 +7,7 @@ import {
   Briefcase,
   UserCircle,
   LogOut,
-  Bell
+  Bell,
 } from "lucide-react";
 import "./index.css";
 
@@ -17,7 +17,7 @@ export const APP_PATHS = {
   gapAnalysis: "/gap-analysis",
   jobMatch: "/job-match",
   profile: "/profile",
-  landing: "/"
+  landing: "/",
 };
 
 const menuItems = [
@@ -27,14 +27,14 @@ const menuItems = [
       {
         path: APP_PATHS.resumeAnalyzer,
         icon: <FileSearch size={18} strokeWidth={2.2} />,
-        label: "Resume Analyzer"
+        label: "Resume Analyzer",
       },
       {
         path: APP_PATHS.gapAnalysis,
         icon: <GraduationCap size={18} strokeWidth={2.2} />,
-        label: "Skill Gap Analysis"
-      }
-    ]
+        label: "Skill Gap Analysis",
+      },
+    ],
   },
   {
     title: "Grow & Land",
@@ -42,13 +42,13 @@ const menuItems = [
       {
         path: APP_PATHS.jobMatch,
         icon: <Briefcase size={18} strokeWidth={2.2} />,
-        label: "Smart Job Match"
-      }
-    ]
-  }
+        label: "Smart Job Match",
+      },
+    ],
+  },
 ];
 
-export default function Sidebar({ onLogout }) {
+export default function Sidebar({ onLogout, user }) {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -70,6 +70,10 @@ export default function Sidebar({ onLogout }) {
     }
   };
 
+  const creditsRemaining = user?.aiUsage?.creditsRemaining ?? 0;
+  const maxCredits = 20;
+  const creditPercentage = (creditsRemaining / maxCredits) * 100;
+
   return (
     <aside className="s-job-sidebar" aria-label="Main navigation">
       {toastMessage && (
@@ -79,6 +83,7 @@ export default function Sidebar({ onLogout }) {
         </div>
       )}
 
+      {/* BRAND */}
       <div className="s-job-brand">
         <div className="s-job-logo-mark" aria-hidden="true">
           <span>U</span>
@@ -90,6 +95,7 @@ export default function Sidebar({ onLogout }) {
         </div>
       </div>
 
+      {/* NAVIGATION */}
       <nav className="s-job-nav">
         <SidebarLink
           to={APP_PATHS.dashboard}
@@ -116,7 +122,26 @@ export default function Sidebar({ onLogout }) {
         ))}
       </nav>
 
+      {/* FOOTER AREA */}
       <div className="s-job-footer">
+        
+        {/* FIXED: AI Credits repositioned cleanly directly above the horizontal partition line */}
+        <div className="s-job-credits-card">
+          <div className="s-job-credits-header">
+            <span className="s-job-credits-label">⚡ AI Credits</span>
+            <strong className="s-job-credits-value">
+              {creditsRemaining}/{maxCredits}
+            </strong>
+          </div>
+
+          <div className="s-job-credits-progress">
+            <div
+              className="s-job-credits-progress-fill"
+              style={{ width: `${creditPercentage}%` }}
+            />
+          </div>
+        </div>
+
         <SidebarLink
           to={APP_PATHS.profile}
           icon={<UserCircle size={18} strokeWidth={2.2} />}
@@ -151,6 +176,7 @@ function SidebarLink({ to, icon, label, end = false }) {
       <span className="s-job-icon-wrapper" aria-hidden="true">
         {icon}
       </span>
+
       <span className="s-job-link-text">{label}</span>
     </NavLink>
   );

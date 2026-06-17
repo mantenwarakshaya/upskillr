@@ -5,6 +5,8 @@ const extractResumeData = require("../utils/ResumeAnalysis/extractResumeData");
 const analyzeResumeWithLLM = require("../utils/ResumeAnalysis/resumeLLMAnalyzer");
 const ResumeAnalysis = require("../models/ResumeAnalysis");
 
+const { deductCredits } = require("../utils/credits/creditManager");
+
 const analyzeResumeController = async (req, res) => {
   // Pull fields from userAuth middleware injection
   const userId = req.user?._id; 
@@ -47,6 +49,8 @@ const analyzeResumeController = async (req, res) => {
       resumeText,
       extractedSkills
     });
+
+    await deductCredits(req.user._id, 4);
 
     // STAGE 3: Unify structures 
     const finalResult = {

@@ -4,6 +4,8 @@ const generateRoadmap = require("../utils/GapAnalysis/roadmapGenerator");
 const Roadmap = require("../models/Roadmap");
 const User = require("../models/user");
 
+const { deductCredits } = require("../utils/credits/creditManager");
+
 /**
  * Generates or retrieves a cached comprehensive career development roadmap track.
  */
@@ -44,6 +46,8 @@ const getRoadmap = async (req, res) => {
     // Executes the consolidated AI evaluation call
     const completeData = await generateRoadmap(activeRole, latestResume.extractedSkills);
 
+    await deductCredits(req.user._id, 2);
+    
     // Persist ALL fields seamlessly into your unified document structure
     const savedRoadmapDoc = await Roadmap.create({
       userId: user._id,
