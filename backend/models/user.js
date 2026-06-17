@@ -3,107 +3,53 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-// 1. Define the sub-document schema for Analysis History
-const analysisSchema = new mongoose.Schema({
-  role: { 
-    type: String, 
-    required: true 
-  },
-  matchPercentage: { 
-    type: Number, 
-    required: true,
-    min: 0,
-    max: 100
-  },
-  missingSkills: { 
-    type: [String], 
-    default: [] 
-  },
-  strengths: { 
-    type: [String], 
-    default: [] 
-  },
-  roadmap: { 
-    type: [String], 
-    default: [] 
-  },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
-  }
-});
-
-// 2. Define the Main User Schem
-
 const userSchema = new mongoose.Schema({
-  firstName: { 
-    type: String, 
-    required: true 
-  },
-  lastName: { 
-    type: String 
-  },
-
-  emailId: { 
-    type: String, 
-    required: true, 
-    unique: true, 
-    lowercase: true, 
-    trim: true 
-  },
-  password: { 
-    type: String, 
-    required: true 
-  },
+  firstName: { type: String, required: true },
+  lastName: { type: String, default: "" },
+  emailId: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  password: { type: String, required: true },
   
-  // AI Career Inputs
-  targetRole: { 
-    type: String, 
-    required: true 
-  }, // e.g., "MERN Developer"
-  skills: {
-    type: [String],
-    default: []
-  },
-
-  github: { 
-    type: String, 
-    validate: [validator.isURL, "Invalid GitHub URL"] 
-  },
-  resumeUrl: { 
-    type: String 
-  }, // Path to stored PDF
+  targetRole: { type: String, required: true }, 
+  skills: { type: [String], default: [] },
+  github: { type: String, default: "", validate: {
+    validator: function(v) {
+      if (!v) return true; // Allow empty string bypasses
+      return validator.isURL(v);
+    },
+    message: "Invalid GitHub URL"
+  }},
+  resumeUrl: { type: String }, 
   
-  analysisHistory: [analysisSchema], // Array of past analyses
-
-  currentSavedRoadmap: {
-    type: mongoose.Schema.Types.Mixed, // Allows storing full JSON structure from Gemini
-    default: null
-  },
-  
-  // isVerified: { 
-  //   type: Boolean, 
-  //   default: false 
-  // },
-  isDeleted: { 
-    type: Boolean, 
-    default: false 
-  }
+  isDeleted: { type: Boolean, default: false, Republication: true },
+  deletedAt: { type: Date, default: null }
 }, { timestamps: true });
 
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+// Global Query Middleware to exclude soft-deleted profiles dynamically
+userSchema.pre(/^find/, function (next) {
+  // If explicitly requested via options, skip filtering out soft-deleted users
+  if (this.getOptions().includeDeleted) {
+    return next();
+  }
+  this.where({ isDeleted: false });
+  next();
+});
 
+// Secure Password Hashing
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    next();
   } catch (err) {
-    throw new Error(err); 
+    next(err); 
   }
 });
 
+// Single point of truth for JWT creation
 userSchema.methods.getJWT = function () {
-  return jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  const secret = process.env.JWT_SECRET || "your_fallback_jwt_secret_key";
+  return jwt.sign({ _id: this._id }, secret, { expiresIn: "7d" });
 };
 
 userSchema.methods.validatePassword = async function (passwordInput) {

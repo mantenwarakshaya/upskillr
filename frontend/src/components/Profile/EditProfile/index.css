@@ -1,378 +1,371 @@
-/* =======================================================
-   1. CORE WRAPPER DEFINITIONS
-======================================================= */
-.ep-profile-app-container {
+/* --- JobMatch Design System Tokens --- */
+:root {
+  --color-canvas-bg: #f8fafc;
+  --color-surface-card: #ffffff;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+  --color-accent-blue: #2563eb;
+  --color-accent-blue-hover: #1d4ed8;
+  --color-danger-red: #ef4444;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fee2e2;
+  --color-success-green: #22c55e;
+  --color-success-bg: #f0fdf4;
+  
+  --border-tint: rgba(15, 23, 42, 0.06);
+  --input-focus-ring: rgba(37, 99, 233, 0.08);
+  
+  --radius-inner: 6px;
+  --radius-card: 10px;
+  --radius-shell: 16px;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.02);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.03), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  --shadow-toast: 0 12px 24px -4px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+}
+
+/* --- Core Layout Boilerplate --- */
+.ep-intel-workspace {
   min-height: 100vh;
-  width: 100%;
+  background-color: var(--color-canvas-bg);
+  color: var(--color-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 3rem 2rem;
+  box-sizing: border-box;
 }
 
-.ep-profile-dashboard-layout {
-  max-width: 1140px;
+.ep-intel-workspace * {
+  box-sizing: border-box;
+}
+
+.ep-grid-shell {
+  max-width: 900px;
   margin: 0 auto;
-  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-/* =======================================================
-   2. INTERACTIVE HEADER CARD
-======================================================= */
-.ep-profile-identity-header {
-  background: var(--bg-card, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: var(--radius-md, 20px) var(--radius-md, 20px) 0 0;
-  padding: 2.5rem 2.5rem 0 2.5rem;
-  box-shadow: var(--shadow-sm);
+/* --- View State Adjustments --- */
+.ep-state-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.ep-identity-flex-container {
+.ep-workspace-spinner-text,
+.ep-workspace-error-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.ep-workspace-error-text {
+  color: var(--color-danger-red);
+}
+
+/* --- Typography Anchor Header --- */
+.ep-job-header-anchor {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-bottom: 2rem;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
-.profile-back-trigger {
-  border: none;
-  background: transparent;
-  color: var(--text-muted, #64748b);
+.ep-back-action {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--fs-sm, 0.9rem);
-  font-weight: var(--fw-semibold, 600);
-  cursor: pointer;
-  padding: 0.4rem 0.8rem;
-  border-radius: var(--radius-xs, 8px);
-  transition: all var(--transition-fast, 0.2s) ease;
-}
-
-.profile-back-trigger:hover {
-  color: var(--brand-primary, #0967d2);
-  background-color: var(--bg-main, #f1f5f9);
-}
-
-.ep-identity-meta-box h1 {
-  font-size: var(--fs-h1, 1.75rem);
-  font-weight: var(--fw-bold, 800);
-  color: var(--brand-secondary, #0f172a);
-  margin: 0 0 0.35rem 0;
-  letter-spacing: -0.5px;
-}
-
-.ep-identity-meta-box p {
-  font-size: var(--fs-sm, 0.95rem);
-  color: var(--text-muted, #64748b);
-  margin: 0;
-}
-
-/* Tab Navigation System */
-.ep-profile-navigation-tabs {
-  display: flex;
-  gap: 2rem;
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
-}
-
-.ep-tab-link {
-  background: none;
+  background: transparent;
   border: none;
-  padding: 1rem 0.25rem;
-  font-size: var(--fs-sm, 0.9rem);
-  font-weight: var(--fw-semibold, 600);
-  color: var(--text-muted, #64748b);
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.ep-back-action:hover {
+  color: var(--color-text-primary);
+}
+
+.ep-main-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.ep-sub-title {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+}
+
+/* --- Clean Workspace Segment Controls --- */
+.ep-tab-navigation {
+  display: flex;
+  border-bottom: 1px solid var(--border-tint);
+  gap: 1.75rem;
+}
+
+.ep-tab-trigger {
+  background: transparent;
+  border: none;
+  padding: 0.75rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
   cursor: pointer;
   position: relative;
-  transition: color var(--transition-fast, 0.2s) ease;
+  transition: color 0.15s ease;
 }
 
-.ep-tab-link:hover {
-  color: var(--brand-secondary, #0f172a);
+.ep-tab-trigger:hover {
+  color: var(--color-text-primary);
 }
 
-.ep-tab-link.ep-active {
-  color: var(--brand-primary, #0967d2);
+.ep-tab-trigger.active {
+  color: var(--color-accent-blue);
 }
 
-.ep-tab-link.ep-active::after {
+.ep-tab-trigger.active::after {
   content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
   right: 0;
   height: 2px;
-  background-color: var(--brand-primary, #0967d2);
-  border-radius: 2px 2px 0 0;
+  background-color: var(--color-accent-blue);
 }
 
-/* =======================================================
-   3. INTERNAL INTERACTIVE SURFACE
-======================================================= */
-.ep-profile-form-surface {
-  background: var(--bg-card, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-top: none;
-  border-radius: 0 0 var(--radius-md, 20px) var(--radius-md, 20px);
-  padding: 3rem 2.5rem;
-  box-shadow: var(--shadow-sm);
+/* --- Main Master Layout Cards --- */
+.ep-workspace-block-card {
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--border-tint);
+  border-radius: var(--radius-shell);
+  box-shadow: var(--shadow-md);
+  padding: 2.25rem;
 }
 
-.ep-form-section-header {
-  margin-bottom: 2rem;
+/* --- Clean Bento Modular Boxes --- */
+.ep-bento-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
 }
 
-.ep-form-section-header h3 {
-  font-size: var(--fs-h2, 1.25rem);
-  font-weight: var(--fw-bold, 700);
-  color: var(--brand-secondary, #0f172a);
-  margin: 0 0 0.25rem 0;
-}
-
-.ep-form-section-header p {
-  font-size: var(--fs-sm, 0.9rem);
-  color: var(--text-muted, #64748b);
+.ep-panel-title {
   margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--color-text-primary);
 }
 
-.ep-form-grid-layout {
+/* --- Smart Architectural Input Matrices --- */
+.ep-workspace-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.ep-bento-quad-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
 }
 
-.ep-single-stack-layout {
+.ep-bento-vertical-stack {
   display: flex;
   flex-direction: column;
-  max-width: 500px;
+  gap: 1.5rem;
+  max-width: 550px;
+}
+
+@media (max-width: 680px) {
+  .ep-bento-quad-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Form Fields & High Contrast Input Cards --- */
+.ep-field {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
 }
 
-.ep-field-container {
+.ep-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+
+.ep-search-dock-card {
   display: flex;
-  flex-direction: column;
-  margin-bottom: 1.25rem;
+  align-items: center;
+  border: 1px solid var(--border-tint);
+  border-radius: var(--radius-card);
+  background-color: var(--color-canvas-bg);
+  padding: 0 1rem;
+  height: 46px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-.ep-field-container label {
-  font-size: var(--fs-xs, 0.85rem);
-  font-weight: var(--fw-semibold, 600);
-  color: var(--text-main, #334155);
-  margin-bottom: 0.5rem;
+.ep-search-dock-card:focus-within {
+  border-color: var(--color-accent-blue);
+  background-color: var(--color-surface-card);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
 }
 
-.profile-input-field-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.field-adornment-icon {
-  position: absolute;
-  top: 50%;
-  left: 1.15rem;
-  transform: translateY(-50%);
-  color: var(--text-muted, #64748b);
+.ep-search-dock-card .ep-icon-muted {
+  color: var(--color-text-muted);
   font-size: 0.95rem;
-  pointer-events: none;
+  flex-shrink: 0;
+  margin-right: 0.85rem;
 }
 
-.ep-field-container input,
-.ep-field-container select {
-  width: 100%;
-  height: 48px;
-  border: 1px solid var(--border-color, #cbd5e1);
-  border-radius: var(--radius-sm, 12px);
-  padding: 0 1.25rem 0 3.25rem;
-  font-size: var(--fs-sm, 0.95rem);
-  font-weight: var(--fw-medium, 500);
-  color: var(--brand-secondary, #0f172a);
-  outline: none;
-  background: var(--bg-card, #ffffff);
-  box-sizing: border-box;
-  transition: all var(--transition-fast, 0.2s) ease;
-}
-
-.ep-field-container select {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 1.25rem center;
-  background-size: 1.1rem;
-}
-
-.ep-field-container input:focus,
-.ep-field-container select:focus {
-  border-color: var(--brand-primary, #0967d2);
-  box-shadow: 0 0 0 4px rgba(9, 103, 210, 0.08);
-}
-
-/* Action Control Buttons */
-.ep-sync-profile-btn {
-  height: 48px;
-  padding: 0 2rem;
+.ep-search-dock-card input {
   border: none;
-  border-radius: var(--radius-sm, 12px);
-  background: var(--brand-primary, #0967d2);
-  color: var(--text-on-brand, #ffffff);
-  font-size: var(--fs-sm, 0.95rem);
-  font-weight: var(--fw-semibold, 600);
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: all var(--transition-fast, 0.2s) ease;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  font-size: 0.925rem;
+  color: var(--color-text-primary);
+  outline: none;
 }
 
-.ep-sync-profile-btn:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(9, 103, 210, 0.2);
+.ep-search-dock-card input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.8;
 }
 
-.ep-sync-profile-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* =======================================================
-   4. DANGER ACCOUNT PURGE BLOCK
-======================================================= */
-.ep-danger-zone-container {
-  border: 1px solid #fca5a5;
-  background-color: #fff5f5;
-  border-radius: var(--radius-sm, 16px);
-  padding: 2.5rem;
-}
-
-.danger-header h3 {
-  color: #b91c1c !important;
-}
-
-.danger-notice-infobox {
-  margin: 1.5rem 0 2rem 0;
-}
-
-.danger-notice-infobox h5 {
-  font-size: var(--fs-sm, 0.95rem);
-  font-weight: var(--fw-bold, 700);
-  color: #991b1b;
-  margin: 0 0 0.5rem 0;
-}
-
-.danger-notice-infobox ul {
-  margin: 0;
-  padding-left: 1.25rem;
-  color: #7f1d1d;
-  font-size: var(--fs-sm, 0.9rem);
-  font-weight: var(--fw-medium, 500);
+/* --- Action Controls --- */
+.ep-form-action-footer {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-tint);
+  padding-top: 1.75rem;
+  margin-top: 0.5rem;
 }
 
-.ep-destroy-account-btn {
+.ep-form-action-footer.ep-containment-left {
+  justify-content: flex-start;
+}
+
+.ep-primary-action {
+  background-color: var(--color-text-primary);
+  color: var(--color-surface-card);
+  border: none;
+  border-radius: var(--radius-inner);
+  padding: 0.65rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.ep-primary-action:hover:not(:disabled) {
+  background-color: #1e293b;
+}
+
+.ep-primary-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Danger Area Parameters --- */
+.ep-danger-notice-box {
+  background-color: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-card);
+  padding: 1rem 1.25rem;
+}
+
+.ep-danger-notice-desc {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-danger-red);
+}
+
+.ep-btn-danger {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
-  height: 48px;
-  padding: 0 2rem;
+  gap: 0.5rem;
+  background-color: var(--color-danger-red);
+  color: var(--color-surface-card);
   border: none;
-  border-radius: var(--radius-sm, 12px);
-  background: #dc2626;
-  color: #ffffff;
-  font-size: var(--fs-sm, 0.95rem);
-  font-weight: var(--fw-semibold, 600);
+  border-radius: var(--radius-inner);
+  padding: 0.65rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast, 0.2s) ease;
+  transition: opacity 0.15s ease;
 }
 
-.ep-destroy-account-btn:hover {
-  background: #b91c1c;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+.ep-btn-danger:hover:not(:disabled) {
+  opacity: 0.95;
 }
 
-/* =======================================================
-   5. REAL-TIME TOAST ALERT PIPELINE
-======================================================= */
+.ep-btn-danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Toast Temporary Alert Layouts --- */
 .ep-toast-notification {
   position: fixed;
-  bottom: 2rem;
+  top: 2rem;
   right: 2rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border-radius: var(--radius-sm, 12px);
-  color: #ffffff;
-  font-weight: var(--fw-semibold, 600);
-  font-size: var(--fs-sm, 0.95rem);
-  background-color: #10b981; /* Default Safe Emerald */
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
-  z-index: 2000;
-  animation: ep-slide-in 0.30s cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--border-tint);
+  border-radius: var(--radius-card);
+  padding: 0.9rem 1.5rem;
+  box-shadow: var(--shadow-toast);
+  z-index: 1000;
+  animation: ep-toast-slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ep-toast-notification.success {
+  border-left: 3px solid var(--color-success-green);
+}
+
+.ep-toast-notification.success .ep-toast-icon {
+  color: var(--color-success-green);
 }
 
 .ep-toast-notification.error {
-  background-color: #ef4444; /* Alert Crimson */
+  border-left: 3px solid var(--color-danger-red);
 }
 
-/* System Base Animations */
-.ep-animate-fade-in {
-  animation: ep-fade-in 0.2s ease-out;
+.ep-toast-notification.error .ep-toast-icon {
+  color: var(--color-danger-red);
 }
 
-@keyframes ep-slide-in {
-  from { transform: translateY(1rem); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+.ep-toast-message-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
 }
 
-@keyframes ep-fade-in {
-  from { opacity: 0; transform: translateY(2px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* =======================================================
-   6. RESPONSIVE LAYER ADAPTATIONS
-======================================================= */
-@media (max-width: 768px) {
-  .ep-form-grid-layout { grid-template-columns: 1fr; gap: 0; }
-  .ep-profile-form-surface { padding: 2rem 1.5rem; }
-  .ep-profile-identity-header { padding: 2rem 1.5rem 0 1.5rem; }
-  .ep-profile-navigation-tabs { gap: 1rem; }
-}
-
-.ep-skills-badges-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 15px;
-}
-
-.ep-skill-badge-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background-color: #1e1e24; /* Dark mode style container backdrop */
-  border: 1px solid #333;
-  color: #b3b3b3;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.25s ease-in-out;
-}
-
-.ep-skill-badge-btn:hover {
-  border-color: #4f46e5;
-  color: #fff;
-  background-color: #252530;
-}
-
-.ep-skill-badge-btn.selected {
-  background-color: #4f46e5; /* Primary Highlight Blue/Indigo accent */
-  border-color: #6366f1;
-  color: #ffffff;
-  box-shadow: 0 0 10px rgba(79, 70, 229, 0.4);
-}
-
-.badge-icon {
-  font-size: 12px;
-  opacity: 0.8;
+@keyframes ep-toast-slide-in {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

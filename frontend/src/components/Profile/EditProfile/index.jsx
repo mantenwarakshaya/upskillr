@@ -1,116 +1,86 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import {
-  FaUser,
-  FaGithub,
-  FaBriefcase,
-  FaArrowLeft,
-  FaLock,
-  FaShieldAlt,
-  FaTrashAlt,
-  FaCheckCircle,
-  FaCode
-} from 'react-icons/fa';
-import { LoaderView, ErrorView } from '../../Common';
-import roles from '../../../data/roles';
-import './index.css';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { 
+  FaArrowLeft, 
+  FaCheckCircle, 
+  FaShieldAlt, 
+  FaUser, 
+  FaBriefcase, 
+  FaGithub, 
+  FaLock, 
+  FaTrashAlt 
+} from "react-icons/fa";
+import "./index.css";
+
+const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:7777";
 
 export default function EditProfile() {
   const navigate = useNavigate();
-  const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:7777';
-
-  // Navigation Tab Controller State
-  const [activeTab, setActiveTab] = useState('general');
-
-  // Form Payload Structures
+  const [activeTab, setActiveTab] = useState("general");
+  
   const [profileData, setProfileData] = useState({
-    firstName: '',
-    lastName: '',
-    targetRole: '',
-    github: '',
-    skills: [] // Holds the user's selected skills
+    firstName: "",
+    lastName: "",
+    targetRole: "",
+    github: "",
   });
-
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
-
-  // Operation Management Flags
+  
   const [initialLoading, setInitialLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(null);
-  const [toast, setToast] = useState({ message: '', type: '' });
+  const [errorMsg, setErrorMsg] = useState("");
+  const [toast, setToast] = useState({ message: "", type: "" });
 
-  const showToast = (message, type = 'success') => {
+  const showToast = (message, type = "success") => {
     setToast({ message, type });
-    setTimeout(() => setToast({ message: '', type: '' }), 4000);
+    setTimeout(() => setToast({ message: "", type: "" }), 3000); 
   };
 
   const getProfile = async () => {
     try {
       setInitialLoading(true);
-      setErrorMsg(null);
-      const response = await axios.get(`${BACKEND_URL}/api/me`, { withCredentials: true });
-      const user = response.data.user;
+      setErrorMsg("");
+      const response = await axios.get(`${API_BASE_URL}/api/me`, { withCredentials: true });
+      const user = response.data?.user;
       setProfileData({
-        firstName: user?.firstName || '',
-        lastName: user?.lastName || '',
-        targetRole: user?.targetRole || '',
-        github: user?.github || '',
-        skills: user?.skills || [], // Hydrate skills from database
+        firstName: user?.firstName || "",
+        lastName: user?.lastName || "",
+        targetRole: user?.targetRole || "",
+        github: user?.github || "",
       });
     } catch (err) {
-      console.error("Profile mounting lookup failed:", err);
-      setErrorMsg(err.response?.data?.message || "Could not retrieve your profile parameters.");
+      setErrorMsg(err.response?.data?.message || "Could not retrieve your profile.");
     } finally {
       setInitialLoading(false);
     }
   };
 
-  useEffect(() => { getProfile(); }, []);
+  useEffect(() => {
+    getProfile();
+  }, []);
 
-  // Input Sync Handlers
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
-    
-    // Clear skill selections if they switch roles entirely to keep data clean
-    if (name === 'targetRole') {
-      setProfileData({
-        ...profileData,
-        targetRole: value,
-        skills: [] 
-      });
-    } else {
-      setProfileData({ ...profileData, [name]: value });
-    }
+    setProfileData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Skill Selection Toggle Handler
-  const handleSkillToggle = (skill) => {
-    let updatedSkills = [...profileData.skills];
-    if (updatedSkills.includes(skill)) {
-      updatedSkills = updatedSkills.filter(s => s !== skill); // Remove if already exists
-    } else {
-      updatedSkills.push(skill); // Add if not selected
-    }
-    setProfileData({ ...profileData, skills: updatedSkills });
+  const handlePasswordChange = (e) => {
+    setPasswordData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handlePasswordChange = (e) => setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
-
-  // Submit Event Actions
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     try {
       setActionLoading(true);
-      // Sends both targetRole and selected skills array directly to backend
-      await axios.patch(`${BACKEND_URL}/api/profile/edit`, profileData, { withCredentials: true });
-      showToast("Professional identity and skills updated successfully.");
-    } catch (err) {
-      showToast(err.response?.data?.message || "Profile updates rejected.", "error");
+      await axios.patch(`${API_BASE_URL}/api/profile/edit`, profileData, { withCredentials: true });
+      showToast("Profile updated successfully!", "success");
+    } catch (error) {
+      showToast(error.response?.data?.message || "Failed to update profile.", "error");
     } finally {
       setActionLoading(false);
     }
@@ -118,217 +88,187 @@ export default function EditProfile() {
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
-    const { currentPassword, newPassword, confirmPassword } = passwordData;
-
-    if (newPassword !== confirmPassword) {
-      showToast('New password and confirm password are not the same', 'error');
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showToast("New passwords do not match.", "error");
       return;
     }
-
-    const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-    if (!strengthRegex.test(newPassword)) {
-      showToast('New password is too weak. Must be 8+ chars and include uppercase, lowercase, number, and symbol.', 'error');
-      return;
-    }
-
     try {
       setActionLoading(true);
-      const response = await axios.patch(
-        `${BACKEND_URL}/api/profile/password`, 
-        { currentPassword, newPassword, confirmPassword }, 
-        { withCredentials: true }
-      );
-      showToast(response.data.message || "Password updated successfully!");
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err) {
-      let errorMsg = err.response?.data?.message || `${err.message || 'Network error'}`;
-      showToast(errorMsg, "error");
+      await axios.patch(`${API_BASE_URL}/api/profile/password`, passwordData, { withCredentials: true });
+      showToast("Password updated successfully!", "success");
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      showToast(error.response?.data?.message || "Failed to update password.", "error");
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    const confirmation = window.confirm("WARNING: Are you sure you want to deactivate your account? Your workspace metrics will be hidden but can be fully restored within the next 7 days.");
-    if (!confirmation) return;
-
+    if (!window.confirm("Are you sure you want to deactivate your account?")) return;
     try {
       setActionLoading(true);
-      await axios.delete(`${BACKEND_URL}/api/profile/delete`, { withCredentials: true });
-      navigate('/login');
-    } catch (err) {
-      showToast(err.response?.data?.message || "Account deactivation command failed.", "error");
+      await axios.delete(`${API_BASE_URL}/api/profile/delete`, { withCredentials: true });
+      navigate("/", { replace: true });
+    } catch (error) {
+      showToast("Failed to deactivate account.", "error");
       setActionLoading(false);
     }
   };
 
-  if (initialLoading) return <LoaderView />;
-  if (errorMsg) return <ErrorView message={errorMsg} onRetry={getProfile} />;
+  if (initialLoading) {
+    return (
+      <div className="ep-intel-workspace ep-state-centered">
+        <div className="ep-workspace-spinner-text">Loading parameters...</div>
+      </div>
+    );
+  }
+  
+  if (errorMsg) {
+    return (
+      <div className="ep-intel-workspace ep-state-centered">
+        <div className="ep-workspace-error-text">{errorMsg}</div>
+      </div>
+    );
+  }
+
+  const renderActiveStream = () => {
+    switch (activeTab) {
+      case "general":
+        return (
+          <div className="ep-bento-panel">
+            <h2 className="ep-panel-title">Personal Information</h2>
+            <form className="ep-workspace-form" onSubmit={handleSaveProfile}>
+              <div className="ep-bento-quad-grid">
+                <div className="ep-field">
+                  <label htmlFor="firstName">First Name</label>
+                  <div className="ep-search-dock-card">
+                    <FaUser className="ep-icon-muted" />
+                    <input id="firstName" name="firstName" value={profileData.firstName} onChange={handleProfileChange} required placeholder="Enter first name" />
+                  </div>
+                </div>
+                <div className="ep-field">
+                  <label htmlFor="lastName">Last Name</label>
+                  <div className="ep-search-dock-card">
+                    <FaUser className="ep-icon-muted" />
+                    <input id="lastName" name="lastName" value={profileData.lastName} onChange={handleProfileChange} placeholder="Enter last name" />
+                  </div>
+                </div>
+                <div className="ep-field">
+                  <label htmlFor="targetRole">Target Role</label>
+                  <div className="ep-search-dock-card">
+                    <FaBriefcase className="ep-icon-muted" />
+                    <input id="targetRole" name="targetRole" value={profileData.targetRole} onChange={handleProfileChange} required placeholder="e.g., Mern Developer" />
+                  </div>
+                </div>
+                <div className="ep-field">
+                  <label htmlFor="github">GitHub Link</label>
+                  <div className="ep-search-dock-card">
+                    <FaGithub className="ep-icon-muted" />
+                    <input id="github" name="github" type="url" value={profileData.github} onChange={handleProfileChange} placeholder="https://github.com/username" />
+                  </div>
+                </div>
+              </div>
+              <div className="ep-form-action-footer">
+                <button type="submit" className="ep-primary-action" disabled={actionLoading}>
+                  {actionLoading ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        );
+      case "security":
+        return (
+          <div className="ep-bento-panel">
+            <h2 className="ep-panel-title">Security Settings</h2>
+            <form className="ep-workspace-form" onSubmit={handleUpdatePassword}>
+              <div className="ep-bento-vertical-stack">
+                <div className="ep-field">
+                  <label htmlFor="currentPassword">Current Password</label>
+                  <div className="ep-search-dock-card">
+                    <FaLock className="ep-icon-muted" />
+                    <input id="currentPassword" type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} required placeholder="••••••••" />
+                  </div>
+                </div>
+                <div className="ep-field">
+                  <label htmlFor="newPassword">New Password</label>
+                  <div className="ep-search-dock-card">
+                    <FaLock className="ep-icon-muted" />
+                    <input id="newPassword" type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} required placeholder="••••••••" />
+                  </div>
+                </div>
+                <div className="ep-field">
+                  <label htmlFor="confirmPassword">Confirm New Password</label>
+                  <div className="ep-search-dock-card">
+                    <FaLock className="ep-icon-muted" />
+                    <input id="confirmPassword" type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} required placeholder="••••••••" />
+                  </div>
+                </div>
+              </div>
+              <div className="ep-form-action-footer">
+                <button type="submit" className="ep-primary-action" disabled={actionLoading}>
+                  {actionLoading ? "Updating..." : "Update Password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        );
+      case "danger":
+        return (
+          <div className="ep-bento-panel">
+            <h2 className="ep-panel-title ep-text-danger">Account Status Management</h2>
+            <div className="ep-danger-notice-box">
+              <p className="ep-danger-notice-desc">
+                Deactivating your profile hides your workspace immediately. You retain a 7-day recovery phase window before permanent erasure.
+              </p>
+            </div>
+            <div className="ep-form-action-footer ep-containment-left">
+              <button type="button" onClick={handleDeleteAccount} className="ep-btn-danger" disabled={actionLoading}>
+                <FaTrashAlt /> {actionLoading ? "Deactivating..." : "Deactivate Workspace"}
+              </button>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="ep-profile-app-container">
+    <div className="ep-intel-workspace">
       {toast.message && (
         <div className={`ep-toast-notification ${toast.type}`}>
-          {toast.type === 'error' ? <FaShieldAlt /> : <FaCheckCircle />}
-          <span>{toast.message}</span>
+          {toast.type === "error" ? <FaShieldAlt className="ep-toast-icon" /> : <FaCheckCircle className="ep-toast-icon" />}
+          <span className="ep-toast-message-text">{toast.message}</span>
         </div>
       )}
 
-      <div className="ep-profile-dashboard-layout">
-        <section className="ep-profile-identity-header">
-          <div className="ep-identity-flex-container">
-            <button className="profile-back-trigger" onClick={() => navigate('/profile')}>
-              <FaArrowLeft />
-              <span>Back to Profile</span>
+      <main className="ep-grid-shell">
+        <header className="ep-job-header-anchor">
+          <button type="button" className="ep-back-action" onClick={() => navigate("/profile")}>
+            <FaArrowLeft /> Back to Profile
+          </button>
+          <h1 className="ep-main-title">Workspace Settings</h1>
+          <p className="ep-sub-title">Configure profile details, security, and account status.</p>
+        </header>
+
+        <nav className="ep-tab-navigation">
+          {["general", "security", "danger"].map((tab) => (
+            <button 
+              key={tab}
+              type="button"
+              className={`ep-tab-trigger ${activeTab === tab ? "active" : ""}`} 
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
-            <div className="ep-identity-meta-box">
-              <h1>Workspace Settings</h1>
-              <p>Configure personal, system access keys, and workspace operational behaviors.</p>
-            </div>
-          </div>
+          ))}
+        </nav>
 
-          <nav className="ep-profile-navigation-tabs">
-            <button className={`ep-tab-link ${activeTab === 'general' ? 'ep-active' : ''}`} onClick={() => setActiveTab('general')}>General Setup</button>
-            <button className={`ep-tab-link ${activeTab === 'security' ? 'ep-active' : ''}`} onClick={() => setActiveTab('security')}>Security Keys</button>
-            <button className={`ep-tab-link ${activeTab === 'danger' ? 'ep-active' : ''}`} onClick={() => setActiveTab('danger')}>Danger Zone</button>
-          </nav>
+        <section className="ep-workspace-block-card">
+          {renderActiveStream()}
         </section>
-
-        <section className="ep-profile-form-surface">
-          {activeTab === 'general' && (
-            <form onSubmit={handleSaveProfile} className="ep-animate-fade-in">
-              <div className="ep-form-section-header">
-                <h3>Personal Information</h3>
-                <p>Basic details to help power target role tracking optimizations.</p>
-              </div>
-              <div className="ep-form-grid-layout">
-                <div className="ep-field-container">
-                  <label htmlFor="firstName">First Name</label>
-                  <div className="profile-input-field-wrapper">
-                    <FaUser className="field-adornment-icon" />
-                    <input id="firstName" type="text" name="firstName" value={profileData.firstName} onChange={handleProfileChange} required />
-                  </div>
-                </div>
-                <div className="ep-field-container">
-                  <label htmlFor="lastName">Last Name</label>
-                  <div className="profile-input-field-wrapper">
-                    <FaUser className="field-adornment-icon" />
-                    <input id="lastName" type="text" name="lastName" value={profileData.lastName} onChange={handleProfileChange} />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="ep-form-grid-layout">
-                <div className="ep-field-container">
-                  <label htmlFor="targetRole">Target Role Context</label>
-                  <div className="profile-input-field-wrapper">
-                    <FaBriefcase className="field-adornment-icon" />
-                    <select id="targetRole" name="targetRole" value={profileData.targetRole} onChange={handleProfileChange} required>
-                      <option value="">Select Target Role</option>
-                      {Object.keys(roles).map((roleKey) => (
-                        <option key={roleKey} value={roleKey}>{roleKey}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="ep-field-container">
-                  <label htmlFor="github">GitHub Integration</label>
-                  <div className="profile-input-field-wrapper">
-                    <FaGithub className="field-adornment-icon" />
-                    <input id="github" type="url" name="github" value={profileData.github} onChange={handleProfileChange} placeholder="https://github.com/username" />
-                  </div>
-                </div>
-              </div>
-
-              {/* DYNAMIC SKILLS SECTION */}
-              {profileData.targetRole && roles[profileData.targetRole] && (
-                <div className="ep-skills-selection-section ep-animate-fade-in">
-                  <div className="ep-form-section-header" style={{ marginTop: '2rem' }}>
-                    <h3>Select Core Stack Competencies</h3>
-                    <p>Click on the technologies you are proficient in for the role of <strong>{profileData.targetRole}</strong>.</p>
-                  </div>
-                  <div className="ep-skills-badges-grid">
-                    {roles[profileData.targetRole].map((skill) => {
-                      const isSelected = profileData.skills.includes(skill);
-                      return (
-                        <button
-                          type="button"
-                          key={skill}
-                          className={`ep-skill-badge-btn ${isSelected ? 'selected' : ''}`}
-                          onClick={() => handleSkillToggle(skill)}
-                        >
-                          <FaCode className="badge-icon" />
-                          <span>{skill}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <button type="submit" className="ep-sync-profile-btn" disabled={actionLoading} style={{ marginTop: '2rem' }}>
-                {actionLoading ? 'Updating System State...' : 'Save Workspace Changes'}
-              </button>
-            </form>
-          )}
-
-          {activeTab === 'security' && (
-            <form onSubmit={handleUpdatePassword} className="ep-animate-fade-in">
-              <div className="ep-form-section-header">
-                <h3>Update Security Password</h3>
-                <p>Ensure your account workspace maintains robust authorization access points.</p>
-              </div>
-              <div className="ep-single-stack-layout">
-                <div className="ep-field-container">
-                  <label htmlFor="currentPassword">Current Password</label>
-                  <div className="profile-input-field-wrapper">
-                    <FaLock className="field-adornment-icon" />
-                    <input id="currentPassword" type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} placeholder="••••••••" required />
-                  </div>
-                </div>
-                <div className="ep-field-container">
-                  <label htmlFor="newPassword">New Password</label>
-                  <div className="profile-input-field-wrapper">
-                    <FaLock className="field-adornment-icon" />
-                    <input id="newPassword" type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} placeholder="••••••••" required />
-                  </div>
-                </div>
-                <div className="ep-field-container">
-                  <label htmlFor="confirmPassword">Confirm New Password</label>
-                  <div className="profile-input-field-wrapper">
-                    <FaLock className="field-adornment-icon" />
-                    <input id="confirmPassword" type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} placeholder="••••••••" required />
-                  </div>
-                </div>
-              </div>
-              <button type="submit" className="ep-sync-profile-btn security" disabled={actionLoading}>
-                {actionLoading ? 'Refreshing Authorization Vault...' : 'Commit New Password'}
-              </button>
-            </form>
-          )}
-
-          {activeTab === 'danger' && (
-            <div className="ep-animate-fade-in ep-danger-zone-container">
-              <div className="ep-form-section-header danger-header">
-                <h3>Temporary Workspace Deactivation</h3>
-                <p>Deauthenticating your workspace suspends your active sessions safely.</p>
-              </div>
-              <div className="danger-notice-infobox">
-                <h5>Account Deactivation Manifest:</h5>
-                <ul>
-                  <li>Your user profile record will be marked hidden/inactive immediately.</li>
-                  <li>Your configurations are saved securely and trackable for a 7-day recovery period.</li>
-                  <li>Logging back in or using recovery credentials within 7 days restores all data metrics.</li>
-                </ul>
-              </div>
-              <button type="button" className="ep-destroy-account-btn" onClick={handleDeleteAccount} disabled={actionLoading}>
-                <FaTrashAlt />
-                <span>{actionLoading ? 'Deactivating Profile Structure...' : 'Deactivate Workspace'}</span>
-              </button>
-            </div>
-          )}
-        </section>
-      </div>
+      </main>
     </div>
   );
 }

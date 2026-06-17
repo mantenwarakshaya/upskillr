@@ -1,183 +1,181 @@
-/* =======================================================
-   NAVBAR CORE CONTAINER
-======================================================= */
+/* --- APP DESIGN TOKENS --- */
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --border-color: #e2e8f0;
+  
+  /* Sizing & Animation Tokens */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- NAVBAR STRUCTURAL CONTAINER --- */
 .navbar {
-  position: sticky;
+  position: fixed; /* Locks the navbar dynamically to the screen viewport */
   top: 0;
-  z-index: 1000;
-  height: 72px; /* Slightly lowered from 80px for a more modern, compact aesthetic */
+  left: 0;
+  right: 0;
+  z-index: 999;
+  min-height: 72px;
+  padding: 0 70px;
+  background: rgba(255, 255, 255, 0.85); /* Slightly lower opacity for premium glassmorphism blur */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px); /* Safari support */
+  border-bottom: 1px solid #e2e8f0;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4rem;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border-color);
-  transition: background-color var(--transition-fast);
 }
-
-/* =======================================================
-   LEFT SECTION (BRANDING)
-======================================================= */
-.nav-left {
-  display: flex;
-  align-items: center;
-}
-
-.nav-brand {
+/* --- LOGO ENGINE BRANDING --- */
+.navbar-logo {
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  outline: none;
+  border-radius: var(--radius-sm);
 }
 
-.nav-logo-img {
-  width: 160px; /* Refined to fit elegantly into a 72px navbar */
-  height: auto;
-  max-height: 44px;
-  object-fit: contain;
-  display: block;
+.navbar-logo:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary);
 }
 
-.nav-brand span {
-  font-size: var(--fs-h3);
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.5px;
-  color: var(--brand-secondary);
-}
+.navbar-logo-icon {
+  width: 38px; /* Snapped sizing matrix */
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--text-main);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
 
-/* =======================================================
-   CENTER LINKS (NAVIGATION)
-======================================================= */
-.nav-center {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
 }
 
-.nav-center a {
-  position: relative;
+.navbar-logo-text {
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+/* --- DIRECT LINKS MENU --- */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem; /* Even 40px gap scaling */
+}
+
+.navbar-links .nav-link {
   text-decoration: none;
   color: var(--text-muted);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-  padding: 0.5rem 0;
-  transition: color var(--transition-fast);
+  font-size: 14.5px;
+  font-weight: 600;
+  position: relative;
+  padding: 4px 0;
+  transition: var(--transition-smooth);
 }
 
-.nav-center a:hover {
-  color: var(--brand-primary);
+.navbar-links .nav-link:hover {
+  color: var(--text-main);
 }
 
-/* Precise Hover Underline Animation */
-.nav-center a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 0%;
-  height: 2px;
-  background-color: var(--brand-primary);
+/* Accessible focus outline indicator */
+.navbar-links .nav-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
   border-radius: 4px;
-  transition: width var(--transition-fast);
 }
 
-.nav-center a:hover::after {
-  width: 100%;
-}
-
-/* =======================================================
-   RIGHT SECTION (USER ACTIONS)
-======================================================= */
-.nav-actions {
+/* --- CALL TO ACTION ELEMENT BUTTONS --- */
+.navbar-actions {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
-/* Login link text */
-.nav-login {
+.navbar-login {
   text-decoration: none;
-  color: var(--text-main);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  transition: color var(--transition-fast);
-}
-
-.nav-login:hover {
-  color: var(--brand-primary);
-}
-
-/* Premium Signup Button */
-.nav-signup {
-  text-decoration: none;
-  background-color: var(--brand-primary);
-  color: var(--text-on-brand);
-  padding: 0.65rem 1.25rem;
-  border-radius: var(--radius-sm); /* Standardized to clean app corners */
-  font-weight: var(--fw-semibold);
-  font-size: var(--fs-sm);
-  box-shadow: var(--shadow-sm);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
-}
-
-.nav-signup:hover {
-  background-color: var(--brand-primary-hover);
-  transform: translateY(-1px);
-}
-
-/* Logout Button alternative style */
-.logout-btn {
-  border: 1px solid var(--border-color);
-  outline: none;
-  background: transparent;
-  color: var(--text-main);
-  padding: 0.65rem 1.25rem;
+  color: var(--text-muted);
+  font-size: 14.5px;
+  font-weight: 600;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
-  font-weight: var(--fw-medium);
-  font-size: var(--fs-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: var(--transition-smooth);
 }
 
-.logout-btn:hover {
-  background: var(--bg-main);
-  border-color: var(--text-muted);
+.navbar-login:hover {
+  color: var(--text-main);
+  background-color: rgba(15, 23, 42, 0.04);
 }
 
-/* =======================================================
-   MOBILE RESPONSIVE ADAPTATIONS
-======================================================= */
+.navbar-login:focus-visible {
+  outline: 2px solid var(--primary);
+}
+
+.navbar-button {
+  text-decoration: none;
+  background: var(--primary);
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  transition: var(--transition-smooth);
+}
+
+.navbar-button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+}
+
+.navbar-button:active {
+  transform: translateY(0);
+}
+
+.navbar-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* --- TABLET BREAKPOINT RESPONSIVENESS --- */
 @media (max-width: 900px) {
   .navbar {
-    padding: 0 1.5rem;
+    padding: 0 2rem;
   }
 
-  .nav-center {
-    display: none; /* Hides desktop navigation on tablet/mobile screens */
-  }
-
-  .nav-logo-img {
-    max-height: 38px;
+  .navbar-links {
+    display: none; /* Architectural separation for clean layout control */
   }
 }
 
-@media (max-width: 600px) {
+/* --- MOBILE BREAKPOINT RESPONSIVENESS --- */
+@media (max-width: 640px) {
   .navbar {
-    height: 64px;
+    padding: 0 1.25rem;
+    height: 64px; /* Lower container depth to optimize screen layout */
   }
 
-  .nav-actions {
-    gap: 1rem;
+  .navbar-login {
+    display: none;
   }
 
-  .nav-login {
-    font-size: var(--fs-xs);
+  .navbar-logo-text {
+    font-size: 1rem;
   }
 
-  .nav-signup {
-    padding: 0.5rem 0.85rem;
-    font-size: var(--fs-xs);
+  .navbar-button {
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: var(--radius-sm);
   }
 }

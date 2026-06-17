@@ -1,113 +1,74 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+// backend/utils/GapAnalysis/roadmapGenerator.js
+const { getModel, callWithRetry } = require("../../config/gemini");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-const generateRoadmap = async (
-  targetRole,
-  missingSkills,
-  matchPercentage,
-  strengths = []
-) => {
+const generateRoadmap = async (targetRole, userSkills) => {
   try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: {
-        responseMimeType: "application/json",
-      },
-    });
+    const model = getModel("gemini-2.5-flash");
 
     const prompt = `
-      You are an elite Engineering Learning Architect and Senior Career Mentor. 
-      Generate a high-density, actionable technical training roadmap to bridge specific profile gaps.
+      You are an elite Engineering Learning Architect and Career Transition Analyst. 
+      Evaluate the user's current skills against the benchmark expectations for a proficient ${targetRole}.
+      
+      USER'S CURRENT SKILLS:
+      ${JSON.stringify(userSkills)}
 
-      TARGET ROLE: ${targetRole}
-      MATCH SCORE: ${matchPercentage}%
-      USER STRENGTHS: ${strengths.length ? strengths.join(", ") : "None provided"}
-      MISSING SKILLS (CRITICAL FOCUS): ${missingSkills.join(", ")}
-
-      CRITICAL FORMATTING RULES:
-      1. Maximize Data Density: Avoid generic phrasing ("learn the basics", "delve deeper"). Provide specific sub-modules, framework names, architectural configurations, and syntax patterns.
-      2. Target the Deficits: Weight topics, tasks, and capstone features heavily toward remediation of the MISSING SKILLS list. 
-      3. Length Constraints: Keep project descriptions and phase objectives to a maximum of 2 clean, punchy sentences. Keep list array items under 8 words.
-
-      JSON SCHEMA REQUIREMENT:
-      Return ONLY valid raw JSON matching this structure exactly:
+      Perform a thorough gap analysis and generate a complete career development track.
+      Return ONLY a valid JSON object matching this structure exactly. Do not include conversational markdown block wrappers, ticks, or text:
       {
-        "targetRole": "${targetRole}",
-        "totalEstimatedDuration": "e.g., 12-16 Weeks",
+        "matchPercentage": 75,
+        "strengths": ["Skill A"],
+        "missingSkills": ["Skill B"],
+        "totalEstimatedDuration": "12 Weeks",
         "roadmap": [
           {
-            "phase": "Phase 1: Clear Structural Title",
-            "objective": "Targeted execution objective sentence.",
-            "duration": "e.g., 3-4 weeks",
-            "skills": ["Specific Tool/Library"],
-            "topics": ["Advanced Architectural Pattern or Mechanism"],
+            "phase": "Phase 1: Foundation Recovery",
+            "objective": "Target missing skill integrations.",
+            "duration": "4 Weeks",
+            "skills": ["Tool Name"],
+            "topics": ["Architectural Concept"],
             "projects": [
               {
-                "title": "Application Core Feature Focus",
-                "difficulty": "Beginner | Intermediate | Advanced",
-                "description": "Build an app featuring [system mechanics] to manage [concrete problem solution]."
+                "title": "System Integration Challenge",
+                "difficulty": "Intermediate",
+                "description": "Construct an ecosystem to demonstrate proficient tracking parameters."
               }
             ],
             "resources": {
-              "courses": ["Course Title or Provider name"],
-              "documentation": ["Official Documentation Link Name"]
+              "courses": ["Official Training Block"],
+              "documentation": ["Reference Guide Docs"]
             }
           }
         ],
         "capstoneProject": {
-          "title": "Enterprise Level Project Name",
-          "description": "Production-grade system scenario testing integration and end-to-end deployment of core missing modules.",
-          "skillsCovered": ["Skill Name"]
+          "title": "Enterprise Scale Blueprint Platform",
+          "description": "Full production environment exercising matching logic parameters.",
+          "skillsCovered": ["Target Core Skill"]
         },
         "jobPreparation": {
-          "resumeChecklist": ["Actionable checklist dynamic update metric"],
-          "interviewTopics": ["Deep core concept architectural interview question area"]
+          "resumeChecklist": ["Incorporate operational system scale indicators"],
+          "interviewTopics": ["Advanced algorithmic core runtime complexities"]
         }
       }
-      `;
+    `;
 
-    const result = await model.generateContent(prompt);
-    let responseText = result.response.text();
+    const responseText = await callWithRetry(async () => {
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    });
 
-    // 1. Sanitize Markdown Wrappers from AI string safely
-    responseText = responseText
-      .replace(/```json/gi, "")
-      .replace(/```/g, "")
-      .trim();
-
-    // 2. Safe Parse Execution
-    try {
-      return JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("JSON Parsing failed. Raw text output was:", responseText);
-      throw new SyntaxError("Failed to parse Gemini JSON payload cleanly.");
+    let cleanJSONString = responseText.replace(/^```json|```$/gi, "").trim();
+    
+    // Extraneous markdown syntax fallback cleanup
+    if (cleanJSONString.startsWith("```")) {
+      cleanJSONString = cleanJSONString.split(/```(?:json)?/)[1] || cleanJSONString;
+      cleanJSONString = cleanJSONString.split("```")[0].trim();
     }
 
-  } catch (error) {
-    console.error(
-      "Roadmap Generation Error:",
-      error.status,
-      error.message
-    );
+    return JSON.parse(cleanJSONString);
 
-    const message = error.message?.toLowerCase() || "";
-
-    if (
-      error.status === 503 ||
-      message.includes("503")
-    ) {
-      throw new Error("Server is busy. Please try again later.");
-    }
-
-    if (
-      error.status === 429 ||
-      message.includes("quota")
-    ) {
-      throw new Error("AI quota exceeded. Please try again later.");
-    }
-
-    throw new Error("Failed to generate roadmap.");
+  } catch (err) {
+    console.error("❌ Gemini Single-Pass Engine module crash:", err.message);
+    throw new Error(`Failed to process profile alignment and career map maps: ${err.message}`);
   }
 };
 

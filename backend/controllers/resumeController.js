@@ -1,19 +1,23 @@
+// backend/controllers/resumeController.js
 const fs = require("fs");
 const parseResume = require("../utils/ResumeAnalysis/resumeParser");
-// const analyzeSkills = require("../utils/GapAnalysis/skillAnalyzer");
-const analyzeResumeWithLLM = require("../utils/ResumeAnalysis/resumeLLMAnalyzer");
 const extractResumeData = require("../utils/ResumeAnalysis/extractResumeData");
+const analyzeResumeWithLLM = require("../utils/ResumeAnalysis/resumeLLMAnalyzer");
 const ResumeAnalysis = require("../models/ResumeAnalysis");
 
 const analyzeResumeController = async (req, res) => {
-  // Use _id to match your userAuth middleware
-  const userId = req.user._id; 
+  // Pull fields from userAuth middleware injection
+  const userId = req.user?._id; 
   const filePath = req.file?.path;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized account context verification." });
+  }
 
   try {
     const { targetRole, refresh } = req.body;
 
-    // STAGE 1: Check for Cached Data
+    // STAGE 1: Check cache parameters
     if (!refresh) {
       const existingAnalysis = await ResumeAnalysis.findOne({ userId, targetRole });
       if (existingAnalysis) {
@@ -26,82 +30,69 @@ const analyzeResumeController = async (req, res) => {
     }
 
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "Resume file not received" });
+      return res.status(400).json({ success: false, message: "Resume attachment payload file not received." });
     }
 
     if (!targetRole) {
-      return res.status(400).json({ success: false, message: "Target role parameter is required" });
+      return res.status(400).json({ success: false, message: "Target role parameter is required." });
     }
 
-    // Process resume
+    // STAGE 2: Pipeline Parsing & Gemini Transformations
     const resumeText = await parseResume(filePath);
     const resumeData = await extractResumeData(resumeText);
     const extractedSkills = resumeData.skills || [];
 
-    // Rule-based Analysis
-    // const analysis = analyzeSkills(targetRole, extractedSkills);
-
-    // if (analysis.error) {
-    //   return res.status(422).json({ success: false, message: analysis.error });
-    // }
-
-    // AI Analysis
     const aiAnalysis = await analyzeResumeWithLLM({
       targetRole,
       resumeText,
-      extractedSkills,
-      // matchPercentage: analysis.matchPercentage,
-      // strengths: analysis.strengths,
-      // missingSkills: analysis.missingSkills,
+      extractedSkills
     });
 
-    // --- FIX: Define finalResult before using it ---
+    // STAGE 3: Unify structures 
     const finalResult = {
       targetRole,
       resumeData,
       extractedSkills,
-      // analysis,
-      aiAnalysis,
+      aiAnalysis
     };
 
-    // Save to MongoDB using findOneAndUpdate with upsert
-    await ResumeAnalysis.findOneAndUpdate(
+    // Save or update entries safely using MongoDB Upsert models
+    const savedDocument = await ResumeAnalysis.findOneAndUpdate(
       { userId, targetRole },
       {
         userId,
         targetRole,
         resumeData,
         extractedSkills,
-        // analysis,
-        aiAnalysis,
-        createdAt: new Date()
+        aiAnalysis
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     return res.status(200).json({
       success: true,
-      data: finalResult,
+      data: savedDocument || finalResult
     });
 
   } catch (err) {
-    console.error("Resume Analysis Error:", err);
+    console.error("🔥 Critical Core Resume Controller Error:", err);
     return res.status(500).json({
       success: false,
-      message: err.message || "Internal processing error occurred.",
+      message: err.message || "Internal application parsing error occurred."
     });
   } finally {
+    // Always clean up uploaded scratch files locally to preserve server space
     if (filePath && fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
-        console.log(`Successfully removed temporary file: ${filePath}`);
+        console.log(`🧹 Successfully removed temporary system file: ${filePath}`);
       } catch (unlinkErr) {
-        console.error("Failed to delete temp file:", unlinkErr);
+        console.error("⚠️ Local file unlink warning:", unlinkErr.message);
       }
     }
   }
 };
 
 module.exports = {
-  analyzeResumeController,
+  analyzeResumeController
 };

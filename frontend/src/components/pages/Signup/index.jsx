@@ -1,17 +1,38 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // 1. Added useNavigate
-import { useAuth } from "../../AuthProvider"; // 2. Added useAuth
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { MdEmail, MdLock, MdPerson, MdWork } from "react-icons/md";
-import logo from "../../../assets/nav_logo.png";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  User,
+  Workflow,
+} from "lucide-react";
+import { useAuth } from "../../../AuthProvider";
 import "./index.css";
 
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || "http://localhost:7777";
+const API_BASE_URL =
+  import.meta.env?.VITE_API_BASE_URL || "http://localhost:7777";
+
+const roles = [
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "MERN Developer",
+  "Mobile Application Developer",
+  "AI Engineer",
+  "Machine Learning Engineer",
+  "Data Engineer",
+  "DevOps / Cloud Engineer",
+  "Cybersecurity Engineer",
+  "QA Automation Engineer",
+  "UI/UX Engineer",
+];
 
 export default function Signup() {
-  const navigate = useNavigate(); // 3. Initialize navigate
-  const { setUser } = useAuth();  // 4. Extract setUser to log them in instantly
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -29,29 +50,41 @@ export default function Signup() {
       ...prev,
       [e.target.name]: e.target.value,
     }));
-    if (errorMsg) setErrorMsg("");
+
+    setErrorMsg("");
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
+
     setIsLoading(true);
     setErrorMsg("");
 
     try {
-      // 5. Send signup request with Credentials so cookies can be set if backend allows it
-      const response = await axios.post(`${API_BASE_URL}/api/signup`, formData, {
-        withCredentials: true,
-      });
-      
-      // 6. If your backend returns the user object and a JWT token in cookies on signup:
+      const response = await axios.post(
+        `${API_BASE_URL}/api/signup`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+
       if (response.data?.user) {
-        setUser(response.data.user); // Update context state
-        navigate("/dashboard", { replace: true }); // Instant redirect
-      } else {
-        // Fallback if your backend doesn't automatically sign them up
-        setErrorMsg("Account created, but please sign in manually.");
-        navigate("/login");
+        setUser(response.data.user);
+
+        navigate("/dashboard", {
+          replace: true,
+        });
+
+        return;
       }
+
+      navigate("/login", {
+        replace: true,
+        state: {
+          message: "Account created successfully. Please sign in.",
+        },
+      });
     } catch (err) {
       setErrorMsg(
         err.response?.data?.message || "Signup failed. Please try again."
@@ -62,258 +95,149 @@ export default function Signup() {
   };
 
   return (
-    <div className="signup-viewport">
-      <div className="signup-aside-brand">
-        <div className="radial-overlay"></div>
-
-        <div className="aside-content">
-          <img src={logo} alt="Upskillr" className="brand-logo-img" />
-
-          <div className="hero-status-badge">AI Career Growth Platform</div>
-
-          <h1 className="aside-heading">
-            Start Building Your
-            <span> Dream Career</span>
-          </h1>
-
-          <p className="aside-desc">
-            Join Upskillr and unlock personalized AI-powered career analysis,
-            skill gap insights, resume optimization, and smart learning
-            roadmaps.
+    <div className="signup-page">
+      {/* LEFT SIDEBAR PANEL */}
+      <aside className="signup-left">
+        <div className="signup-left-content">
+          <span className="signup-tag">Upskillr Workspace</span>
+          <h1>Build a career profile that actually guides you.</h1>
+          <p>
+            Resume analysis, role readiness, mock interviews, and smart job
+            matches in one focused developer workspace.
           </p>
-
-          <div className="signup-features-pills">
-            <div className="feature-glass-pill">AI Skill Gap Analysis</div>
-            <div className="feature-glass-pill">Resume Analyzer</div>
-            <div className="feature-glass-pill">Personalized Roadmaps</div>
-            <div className="feature-glass-pill">Mock Interview System</div>
-            <div className="feature-glass-pill">Smart Job Matches</div>
-          </div>
         </div>
-      </div>
+        <div className="signup-left-bg-glow" />
+      </aside>
 
-      <div className="signup-main-auth">
-        {/* {isEmailSent ? ( 
-          <div className="auth-surface-card" style={{ textAlign: "center" }}>
-            <div className="auth-card-header">
-              <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}>
-                📩
+      {/* RIGHT AUTH CARD FORM PANEL */}
+      <main className="signup-right">
+        <div className="signup-card-container">
+          <form onSubmit={handleSignup} className="signup-card">
+            <div className="signup-header">
+              <div className="logo-circle">U</div>
+
+              <div className="signup-header-content">
+                <h2>Create Account</h2>
+                <p>
+                  Start with your target role. You can add skills, GitHub,
+                  and resume later.
+                </p>
               </div>
-
-              <h2>Verify your email</h2>
-
-              <p>We've sent an activation link to your inbox:</p>
-
-              <strong
-                style={{
-                  display: "block",
-                  margin: "0.75rem 0",
-                  color: "var(--primary-color, #3b82f6)",
-                  fontSize: "1.1rem",
-                  wordBreak: "break-word",
-                }}
-              >
-                {formData.emailId}
-              </strong>
-
-              <p style={{ fontSize: "0.9rem", opacity: 0.8 }}>
-                Please check your inbox and click the link to activate your
-                account.
-              </p>
             </div>
 
-            <button
-              type="button"
-              className="action-submit-btn"
-              style={{ marginTop: "1.5rem" }}
-              onClick={handleResendEmail}
-              disabled={isLoading}
-            >
-              {isLoading ? "Sending Link..." : "Resend Email"}
+            {/* ERROR NOTIFICATION SYSTEM */}
+            {errorMsg && <div className="auth-alert error-box">{errorMsg}</div>}
+
+            {/* INPUT FIELDS CONTAINER */}
+            <div className="form-fields">
+              <Field
+                id="firstName"
+                icon={<User size={18} className="input-icon" />}
+                label="First Name"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                placeholder="Akshaya"
+                disabled={isLoading}
+                autoComplete="given-name"
+                required
+              />
+
+              <Field
+                id="emailId"
+                icon={<Mail size={18} className="input-icon" />}
+                label="Email Address"
+                name="emailId"
+                type="email"
+                value={formData.emailId}
+                onChange={handleChange}
+                placeholder="name@company.com"
+                disabled={isLoading}
+                autoComplete="email"
+                required
+              />
+
+              {/* PASSWORD */}
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <div className="input-box">
+                  <Lock size={18} className="input-icon" />
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Minimum 8 characters"
+                    disabled={isLoading}
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="eye-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* TARGET ROLE SELECT */}
+              <div className="form-group">
+                <label htmlFor="targetRole">Target Role</label>
+                <div className="input-box custom-select-box">
+                  <Workflow size={18} className="input-icon" />
+                  <select
+                    id="targetRole"
+                    name="targetRole"
+                    value={formData.targetRole}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                    required
+                  >
+                    <option value="" disabled hidden>
+                      Select your role
+                    </option>
+                    {roles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* SIGNUP SUBMIT BUTTON */}
+            <button type="submit" className="signup-btn" disabled={isLoading}>
+              {isLoading ? (
+                <span className="btn-spinner-content">
+                  <span className="spinner-dot" /> Creating Workspace...
+                </span>
+              ) : (
+                "Create Account"
+              )}
             </button>
 
-            {successMsg && (
-              <div
-                className="status-success-box"
-                role="status"
-                style={{ marginTop: "1rem" }}
-              >
-                {successMsg}
-              </div>
-            )}
-
-            {errorMsg && (
-              <div
-                className="status-error-box"
-                role="alert"
-                style={{ marginTop: "1rem" }}
-              >
-                {errorMsg}
-              </div>
-            )}
-
-            <p style={{ marginTop: "1rem", fontSize: "0.9rem", opacity: 0.8 }}>
-              Didn't receive the email? Check your spam folder.
+            <p className="signin-text">
+              Already have an account? <Link to="/login">Sign In</Link>
             </p>
-
-            <div className="switch-auth-context" style={{ marginTop: "2rem" }}>
-              Already activated?{" "}
-              <Link to="/login" className="context-action-link">
-                Sign In
-              </Link>
-            </div>
-          </div>
-        ) : ( */}
-          <form className="auth-surface-card" onSubmit={handleSignup}>
-            <div className="auth-card-header">
-              <h2>Create Account</h2>
-              <p>Begin your AI-powered upskilling journey</p>
-            </div>
-
-            <div className="auth-input-group">
-              <label htmlFor="firstName">Full Name</label>
-
-              <div className="interactive-input-wrapper">
-                <MdPerson className="input-field-icon" />
-
-                <input
-                  id="firstName"
-                  type="text"
-                  name="firstName"
-                  placeholder="John Doe"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="auth-input-group">
-              <label htmlFor="emailId">Email Address</label>
-
-              <div className="interactive-input-wrapper">
-                <MdEmail className="input-field-icon" />
-
-                <input
-                  id="emailId"
-                  type="email"
-                  name="emailId"
-                  placeholder="name@gmail.com"
-                  value={formData.emailId}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="auth-input-group">
-              <label htmlFor="password">Password</label>
-
-              <div className="interactive-input-wrapper">
-                <MdLock className="input-field-icon" />
-
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  required
-                />
-
-                <button
-                  type="button"
-                  className="password-toggle-trigger"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  disabled={isLoading}
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-            </div>
-
-            <div className="auth-input-group">
-              <label htmlFor="targetRole">Target Role</label>
-
-              <div className="interactive-input-wrapper">
-                <MdWork className="input-field-icon" />
-
-                <select
-                  id="targetRole"
-                  name="targetRole"
-                  value={formData.targetRole}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  required
-                >
-                  <option value="">Select Target Role</option>
-
-                  <optgroup label="Software Engineering">
-                    <option value="Frontend Developer">
-                      Frontend Developer
-                    </option>
-                    <option value="Backend Developer">Backend Developer</option>
-                    <option value="Full Stack Developer">
-                      Full Stack Developer
-                    </option>
-                    <option value="MERN Developer">MERN Developer</option>
-                    <option value="Mobile Application Developer">
-                      Mobile Application Developer
-                    </option>
-                  </optgroup>
-
-                  <optgroup label="Data & Infrastructure">
-                    <option value="AI Engineer">AI Engineer</option>
-                    <option value="Machine Learning Engineer">
-                      Machine Learning Engineer
-                    </option>
-                    <option value="Data Engineer">Data Engineer</option>
-                    <option value="DevOps / Cloud Engineer">
-                      DevOps / Cloud Engineer
-                    </option>
-                  </optgroup>
-
-                  <optgroup label="Security & Quality">
-                    <option value="Cybersecurity Engineer">
-                      Cybersecurity Engineer
-                    </option>
-                    <option value="QA Automation Engineer">
-                      QA Automation Engineer
-                    </option>
-                    <option value="UI/UX Engineer">UI/UX Engineer</option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-
-            {errorMsg && (
-              <div className="status-error-box" role="alert">
-                {errorMsg}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="action-submit-btn"
-              disabled={isLoading}
-            >
-              {/* {isLoading ? "Sending Verification..." : "Create Account"} */}
-              {isLoading ? "Creating Account..." : "Create Account"}
-            </button>
-
-            <div className="switch-auth-context">
-              Already have an account?{" "}
-              <Link to="/login" className="context-action-link">
-                Sign In
-              </Link>
-            </div>
           </form>
-        {/* )} */}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function Field({ icon, label, id, name, ...props }) {
+  return (
+    <div className="form-group">
+      <label htmlFor={id}>{label}</label>
+      <div className="input-box">
+        {icon}
+        <input id={id} name={name} {...props} />
       </div>
     </div>
   );

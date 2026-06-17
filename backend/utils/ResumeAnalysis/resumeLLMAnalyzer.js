@@ -1,66 +1,51 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+// backend/utils/ResumeAnalysis/resumeLLMAnalyzer.js
+const { getModel, callWithRetry } = require("../../config/gemini");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-const analyzeResumeWithLLM = async ({
-  targetRole,
-  resumeText,
-  extractedSkills,
-}) => {
+const analyzeResumeWithLLM = async ({ targetRole, resumeText, extractedSkills }) => {
   try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-    });
+    const model = getModel("gemini-2.5-flash");
 
     const prompt = `
-You are a senior engineering hiring manager.
+      You are a senior engineering hiring manager. Review this candidate for the target job role.
+      Target Role: ${targetRole}
+      Extracted Skills: ${JSON.stringify(extractedSkills)}
+      
+      Raw Resume Data:
+      ${resumeText}
 
-Target Role:
-${targetRole}
+      Return a valid JSON object matching this schema exactly. No trailing commas, no markdown wrap:
+      {
+        "overallScore": 85,
+        "candidateLevel": "Mid-Level",
+        "summary": "Detailed summary assessment.",
+        "strengths": ["strength1", "strength2"],
+        "weaknesses": ["weakness1"],
+        "projectEvaluation": "Feedback regarding highlighted portfolio items",
+        "resumeFeedback": ["formatting suggestion", "metric improvement"],
+        "interviewReadiness": "Ready / Needs Practice"
+      }
+    `;
 
-Resume:
-${resumeText}
+    const responseText = await callWithRetry(async () => {
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    });
 
-Extracted Skills:
-${JSON.stringify(extractedSkills)}
+    const cleanJSONString = responseText.replace(/^```json|```$/gi, "").trim();
+    return JSON.parse(cleanJSONString);
 
-Return ONLY valid JSON.
-
-{
-  "overallScore": 0,
-  "candidateLevel": "",
-  "summary": "",
-  "strengths": [],
-  "weaknesses": [],
-  "projectEvaluation": "",
-  "resumeFeedback": [],
-  "interviewReadiness": "",
-}
-`;
-
-    const result = await model.generateContent(prompt);
-
-    const response =
-      result.response.candidates[0].content.parts[0].text;
-
-    const cleaned = response
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-
-    return JSON.parse(cleaned);
   } catch (err) {
-    console.error("Gemini Analysis Error:", err);
-
+    console.error("❌ Gemini Resume Evaluation Logic Exception:", err.message);
+    // Safe seamless fallback so your backend route never crashes completely
     return {
       overallScore: 0,
       candidateLevel: "Unknown",
-      summary: "AI analysis unavailable",
+      summary: "AI evaluation sub-service was temporarily interrupted.",
       strengths: [],
       weaknesses: [],
-      projectEvaluation: "",
-      resumeFeedback: [],
-      interviewReadiness: "Unknown",
+      projectEvaluation: "Unavailable",
+      resumeFeedback: ["Please re-trigger analysis shortly."],
+      interviewReadiness: "Pending adjustment"
     };
   }
 };

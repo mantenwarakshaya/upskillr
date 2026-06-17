@@ -1,28 +1,28 @@
 import { Link } from "react-router-dom";
-import logo from "../../../assets/nav_logo.png";
-import './index.css';
+import "./index.css";
 
 export default function Navbar() {
   return (
-    <nav className="navbar">
-      <div className="nav-left">
-        <Link to="/" className="nav-brand">
-          <img src={logo} alt="UpSkillr Logo" className="nav-logo-img" />
-        </Link>
+    <nav className="navbar" aria-label="Main Navigation">
+      {/* BRAND LOGO */}
+      <Link to="/" className="navbar-logo" aria-label="Upskillr Home">
+        <div className="navbar-logo-icon">U</div>
+        <span className="navbar-logo-text">Upskillr</span>
+      </Link>
+
+      {/* DESKTOP NAVIGATION LINKS */}
+      <div className="navbar-links">
+        <a href="#home" className="nav-link">Home</a>
+        <a href="#features" className="nav-link">Features</a>
+        <a href="#how-it-works" className="nav-link">How it works</a>
       </div>
 
-      <div className="nav-center">
-        <Link to="/">Home</Link>
-        {/* Changed to anchor tags so they smoothly scroll to sections on the landing page */}
-        <a href="#features">Features</a>
-        <a href="#how-it-works">About</a>
-      </div>
-
-      <div className="nav-actions">
-        <Link to="/login" className="nav-login">
+      {/* ACTION INTERFACES */}
+      <div className="navbar-actions">
+        <Link to="/login" className="navbar-login">
           Login
         </Link>
-        <Link to="/signup" className="nav-signup">
+        <Link to="/signup" className="navbar-button">
           Get Started
         </Link>
       </div>

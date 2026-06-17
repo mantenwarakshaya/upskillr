@@ -1,38 +1,36 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
 import {
+  FaCalendarAlt,
+  FaEdit,
+  FaEnvelope,
   FaGithub,
   FaUserGraduate,
-  FaEnvelope,
-  FaEdit,
-  FaCheckCircle,
-  FaCalendarAlt,
-  FaFilePdf,
-  FaExclamationCircle,
-  FaCode // Added icon for skills section
-} from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-import { LoaderView, ErrorView } from '../../Common'; 
-import './index.css';
+  FaFileAlt
+} from "react-icons/fa";
+import { LoaderView, ErrorView, EmptyView } from "../../../components/Common";
+import "./index.css";
 
-export default function ShowProfile() {
+const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:7777";
+
+export default function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState(null);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const getProfile = async () => {
     try {
       setLoading(true);
-      setErrorMsg(null);
-      
-      const response = await axios.get('http://localhost:7777/api/me', {
-        withCredentials: true,
+      setErrorMsg("");
+
+      const response = await axios.get(`${API_BASE_URL}/api/me`, {
+        withCredentials: true
       });
-      setUser(response.data.user);
+
+      setUser(response.data?.user || null);
     } catch (err) {
-      console.error("Profile payload processing failed:", err);
-      const backendMessage = err.response?.data?.message || "Could not retrieve your profile tracking metrics.";
-      setErrorMsg(backendMessage);
+      setErrorMsg(err.response?.data?.message || "Could not retrieve your profile.");
     } finally {
       setLoading(false);
     }
@@ -42,136 +40,139 @@ export default function ShowProfile() {
     getProfile();
   }, []);
 
-  if (loading) return <LoaderView />;
+  if (loading) return <LoaderView message="Loading profile..." />;
   if (errorMsg) return <ErrorView message={errorMsg} onRetry={getProfile} />;
+  if (!user) {
+    return (
+      <EmptyView
+        title="No profile found"
+        message="Your profile data is not available right now."
+      />
+    );
+  }
+
+  const joinedDate = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      })
+    : "Not available";
 
   return (
-    <div className="profile-page-wrapper">
-      <div className="profile-surface-card">
-        
-        {/* TOP SECTION */}
-        <div className="profile-hero-header">
-          <div className="profile-identity-group">
-            <div className="profile-avatar-sphere">
-              {user?.firstName?.charAt(0).toUpperCase()}
-            </div>
-
-            <div className="profile-meta-details">
-              <h1>
-                {user?.firstName} {user?.lastName || ''}
-              </h1>
-              <p className="profile-email-row">
-                <FaEnvelope className="row-icon" />
-                <span>{user?.emailId}</span>
-              </p>
-              <div className="role-pill-badge">
-                <FaUserGraduate className="row-icon" />
-                <span>{user?.targetRole}</span>
+    <main className="p-profile-workspace">
+      <div className="p-profile-shell">
+        <section className="p-profile-card">
+          <header className="p-profile-header">
+            <div className="p-identity-group">
+              <div className="p-avatar-initial">
+                {user?.firstName?.charAt(0)?.toUpperCase() || "U"}
               </div>
-            </div>
-          </div>
 
-          <Link to="/profile/edit" className="edit-profile-trigger">
-            <FaEdit />
-            <span>Edit Profile</span>
-          </Link>
-        </div>
+              <div className="p-identity-copy">
+                <h1>
+                  {user?.firstName} {user?.lastName || ""}
+                </h1>
 
-        {/* OVERVIEW METRICS */}
-        <div className="profile-content-section">
-          <h2 className="section-title">Profile Overview</h2>
-          <div className="overview-stats-grid">
-            
-            <div className="overview-metric-box">
-              <span className="metric-label">Account Status</span>
-              <div className="metric-value">
-                {user?.isVerified ? (
-                  <span className="status-badge verified">
-                    <FaCheckCircle /> Verified Account
-                  </span>
-                ) : (
-                  <span className="status-badge unverified">
-                    <FaExclamationCircle /> Unverified Account
-                  </span>
-                )}
-              </div>
-            </div>
+                <p className="p-email-line">
+                  <FaEnvelope />
+                  <span>{user?.emailId}</span>
+                </p>
 
-            <div className="overview-metric-box">
-              <span className="metric-label">Target Role</span>
-              <div className="metric-value text-highlight">
-                {user?.targetRole}
-              </div>
-            </div>
-
-            <div className="overview-metric-box">
-              <span className="metric-label">Joined On</span>
-              <div className="metric-value date-readout">
-                <FaCalendarAlt className="inline-icon" />
-                <span>
-                  {user?.createdAt 
-                    ? new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) 
-                    : 'N/A'}
+                <span className="p-role-badge">
+                  <FaUserGraduate />
+                  {user?.targetRole || "Target role not set"}
                 </span>
               </div>
             </div>
 
-          </div>
-        </div>
+            <Link to="/profile/edit" className="p-primary-btn">
+              <FaEdit />
+              <span>Edit Profile</span>
+            </Link>
+          </header>
 
-        {/* DYNAMIC SKILLS SHOWCASE SECTION */}
-        <div className="profile-content-section">
-          <h2 className="section-title">Core Stack Competencies</h2>
-          {user?.skills && user.skills.length > 0 ? (
-            <div className="profile-skills-pills-container">
-              {user.skills.map((skill, index) => (
-                <div key={index} className="profile-skill-static-pill">
-                  <FaCode className="skill-pill-icon" />
-                  <span>{skill}</span>
-                </div>
-              ))}
+          <section className="p-overview-section" aria-label="Profile overview">
+            <div className="p-section-header">
+              <h2>Profile Overview</h2>
             </div>
-          ) : (
-            <div className="empty-skills-notice">
-              No skills selected yet. Click on "Edit Profile" to configure your technical stack competencies.
+
+            <div className="p-metric-grid">
+              <MetricCard label="Target Role" value={user?.targetRole || "Not configured"} />
+              <MetricCard
+                label="Joined On"
+                value={
+                  <span className="p-inline-value">
+                    <FaCalendarAlt />
+                    {joinedDate}
+                  </span>
+                }
+              />
             </div>
-          )}
-        </div>
+          </section>
 
-        {/* EXTERNAL INTEGRATIONS */}
-        <div className="profile-split-assets-grid">
-          
-          <div className="profile-content-section asset-box">
-            <h2 className="section-title">GitHub Portfolio</h2>
-            {user?.github ? (
-              <a href={user.github} target="_blank" rel="noreferrer" className="asset-action-anchor github">
-                <FaGithub />
-                <span>Open GitHub Workspace</span>
-              </a>
-            ) : (
-              <div className="empty-inline-notice">
-                GitHub integration link has not been added yet.
-              </div>
-            )}
-          </div>
+          <section className="p-assets-grid" aria-label="Connected profile links">
+            <AssetBox
+              title="GitHub Portfolio"
+              description="Keep your GitHub connected so your profile reflects your project work."
+              href={user?.github}
+              icon={<FaGithub />}
+              action="Open GitHub"
+              empty="GitHub link has not been added yet."
+            />
 
-          <div className="profile-content-section asset-box">
-            <h2 className="section-title">Resume Repository</h2>
-            {user?.resumeUrl ? (
-              <a href={user.resumeUrl} target="_blank" rel="noreferrer" className="asset-action-anchor resume">
-                <FaFilePdf />
-                <span>View Stored Resume PDF</span>
-              </a>
-            ) : (
-              <div className="empty-inline-notice">
-                No indexed resume files detected.
-              </div>
-            )}
-          </div>
-
-        </div>
-
+            <AssetBox
+              title="Resume Analysis"
+              description="Upload or review your latest resume analysis from the resume workspace."
+              href="/resume-analyzer"
+              icon={<FaFileAlt />}
+              action="Open Resume Analyzer"
+              internal
+            />
+          </section>
+        </section>
       </div>
-    </div>
+    </main>
+  );
+}
+
+function MetricCard({ label, value }) {
+  return (
+    <article className="p-metric-card">
+      <span className="p-metric-label">{label}</span>
+      <div className="p-metric-value">{value}</div>
+    </article>
+  );
+}
+
+function AssetBox({ title, description, href, icon, action, empty, internal = false }) {
+  const content = (
+    <>
+      {icon}
+      <span>{action}</span>
+    </>
+  );
+
+  return (
+    <article className="p-asset-card">
+      <div>
+        <h3>{title}</h3>
+        <p>{description}</p>
+      </div>
+
+      {href ? (
+        internal ? (
+          <Link to={href} className="p-secondary-btn">
+            {content}
+          </Link>
+        ) : (
+          <a href={href} target="_blank" rel="noreferrer" className="p-secondary-btn">
+            {content}
+          </a>
+        )
+      ) : (
+        <div className="p-empty-state">{empty}</div>
+      )}
+    </article>
   );
 }

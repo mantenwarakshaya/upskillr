@@ -1,354 +1,432 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
+import {
+  FaCheckCircle,
+  FaCode,
+  FaExclamationTriangle,
+  FaFlagCheckered,
+  FaGraduationCap,
+  FaRedo,
+  FaRocket,
+  FaArrowLeft,
+  FaSpinner
+} from "react-icons/fa";
+import { LoaderView, ErrorView, EmptyView } from "../../Common";
 import "./index.css";
 
+const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:7777";
+
 export default function GapAnalysis() {
-  const [result, setResult] = useState(null);
-  const [roadmapData, setRoadmapData] = useState(null); // Local state to append structural data
-  const [hasCachedRoadmap, setHasCachedRoadmap] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [loadingRoadmap, setLoadingRoadmap] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [roadmapError, setRoadmapError] = useState("");
+  const [roadmap, setRoadmap] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [errorContext, setErrorContext] = useState(null);
+  const [notification, setNotification] = useState("");
+  const [isWorkspaceActive, setIsWorkspaceActive] = useState(false);
 
-  // Sync workspace state on initial load or fresh window refreshes
-  useEffect(() => {
-    const fetchExistingWorkspace = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:7777/api/latest-analysis",
-          { withCredentials: true }
-        );
-        
-        if (response.data.data) {
-          setResult(response.data.data);
-          
-          if (response.data.hasRoadmap) {
-            setHasCachedRoadmap(true);
-          }
-        }
-      } catch (error) {
-        console.error("Could not fetch persistent workspace data:", error);
-      } finally {
-        setIsInitialLoading(false);
-      }
-    };
-
-    fetchExistingWorkspace();
-  }, []);
-
-const handleAnalyze = async () => {
-  try {
-    setLoading(true);
-    setRoadmapError(""); 
-
-    const response = await axios.get(
-      "http://localhost:7777/api/analyze-skills",
-      { withCredentials: true }
-    );
-
-    setResult(response.data.data);
-
-    // Invalidate current roadmap because profile changed
-    setRoadmapData(null);
-    setHasCachedRoadmap(false);
-
-  } catch (error) {
-    console.error("Analysis failed:", error);
-
-    const errorMessage =
-      error.response?.data?.message ||
-      "Failed to analyze skills profile.";
-
-    alert(errorMessage);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const handleGenerateOrViewRoadmap = async () => {
+  const synchronizeWorkspaceMetrics = async () => {
     try {
-      setLoadingRoadmap(true);
-      setRoadmapError("");
+      setIsSyncing(true);
+      setNotification("");
 
-      const response = await axios.get(
-        "http://localhost:7777/api/roadmap",
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${API_BASE_URL}/api/gap-analysis`, {
+        withCredentials: true
+      });
 
-      setRoadmapData(response.data.data);
-      setHasCachedRoadmap(true);
-
-    } catch (error) {
-      setRoadmapError(
-        error.response?.data?.message ||
-        "Roadmap generation failed."
+      const payload = response.data?.data || response.data?.roadmap || response.data;
+      setRoadmap(payload);
+      setIsWorkspaceActive(true);
+    } catch (err) {
+      setNotification(
+        err.response?.data?.message || "Unable to sync your skill gap analysis."
       );
     } finally {
-      setLoadingRoadmap(false);
+      setIsSyncing(false);
     }
   };
 
-  if (isInitialLoading) {
+  const initializeWorkspaceTelemetry = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setErrorContext(null);
+
+      const response = await axios.get(`${API_BASE_URL}/api/gap-analysis/latest`, {
+        withCredentials: true
+      });
+
+      if (response.data) {
+        await synchronizeWorkspaceMetrics();
+      }
+    } catch (err) {
+      if (err.response?.status !== 404) {
+        setErrorContext({
+          message:
+            err.response?.data?.message ||
+            "Unable to initialize skill gap analysis.",
+          status: err.response?.status
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    initializeWorkspaceTelemetry();
+  }, [initializeWorkspaceTelemetry]);
+
+  useEffect(() => {
+    if (!notification) return;
+
+    const timer = setTimeout(() => setNotification(""), 4000);
+    return () => clearTimeout(timer);
+  }, [notification]);
+
+  if (isLoading) {
+    return <LoaderView message="Loading skill gap analysis..." />;
+  }
+
+  if (errorContext) {
     return (
-      <div className="gap-analysis-container placeholder-loading">
-        <div className="analysis-card" style={{ textAlign: "center", padding: "60px" }}>
-          <span className="spinner" style={{ borderTopColor: "var(--primary)" }}></span>
-          <p style={{ marginTop: "15px", color: "var(--text-muted)", fontWeight: 500 }}>Syncing workspace state...</p>
-        </div>
-      </div>
+      <ErrorView
+        message={errorContext.message}
+        statusCode={errorContext.status}
+        onRetry={initializeWorkspaceTelemetry}
+      />
     );
   }
 
   return (
-    <div className="gap-analysis-container">
-      <div className="analysis-card">
-        
-        {/* --- UPPER DASHBOARD CONFIG: Gaps & Profile Status --- */}
-        <header className="analysis-header">
-          <h1>AI Skill Gap Analysis</h1>
-          <p>Instantly evaluate your technical capabilities against current industry requirements.</p>
-          <button className="primary-btn" onClick={handleAnalyze} disabled={loading}>
-            {loading ? (
-              <>
-                <span className="spinner"></span> Analyzing Profile...
-              </>
-            ) : result ? (
-              "🔄 Re-analyze Profile"
-            ) : (
-              "Analyze My Profile"
-            )}
-          </button>
-        </header>
-
-        {result && (
-          <div className="analysis-results-wrapper">
-            <div className="metrics-grid">
-              <div className="metric-card score-card">
-                <h3>Match Percentage</h3>
-                <div className="progress-circle-fallback">
-                  <span className="match-number">{result.matchPercentage}%</span>
-                </div>
-              </div>
-
-              <div className="metric-card strengths-card">
-                <h3>Core Strengths</h3>
-                <div className="badge-wall">
-                  {result.strengths && result.strengths.length > 0 ? (
-                    result.strengths.map((skill) => (
-                      <span key={skill} className="badge badge-success">{skill}</span>
-                    ))
-                  ) : (
-                    <span className="no-data-text">No data processed yet</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="metric-card gaps-card">
-                <h3>Identified Gaps</h3>
-                <div className="badge-wall">
-                  {result.missingSkills && result.missingSkills.length > 0 ? (
-                    result.missingSkills.map((skill) => (
-                      <span key={skill} className="badge badge-danger">{skill}</span>
-                    ))
-                  ) : (
-                    <span className="no-data-text">No gaps identified! Excellent work.</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="roadmap-action-section">
-              <div className="divider"></div>
-              <h3>Ready to bridge your skill deficits?</h3>
-              <p>
-                {hasCachedRoadmap 
-                  ? "Your tailored roadmap blueprint is cached and ready to view instantly below." 
-                  : "Generate a customized, sequence-driven roadmap compiled specifically for your gaps."}
-              </p>
-              <button 
-                className={hasCachedRoadmap ? "success-action-btn" : "secondary-btn"} 
-                onClick={handleGenerateOrViewRoadmap} 
-                disabled={loadingRoadmap}
-              >
-                {loadingRoadmap ? (
-                  <>
-                    <span className="spinner"></span> Assembling Core Framework...
-                  </>
-                ) : hasCachedRoadmap && roadmapData ? (
-                  "✨ Roadmap Active Below"
-                ) : hasCachedRoadmap ? (
-                  "📂 Load Saved Roadmap (Instant)"
-                ) : (
-                  "Generate Detailed Roadmap"
-                )}
-              </button>
-              {roadmapError && (
-                <div className="error-banner">
-                  {roadmapError}
-                </div>
-              )}
-            </div>
+    <main className="ga-viewport-workspace">
+      <div className="ga-grid-shell">
+        {notification && (
+          <div className="ga-toast-notification" role="alert" aria-live="assertive">
+            <span>{notification}</span>
           </div>
         )}
 
-        {/* --- LOWER SEGMENT: Embedded Roadmap View Layout --- */}
-        {roadmapData && (
-          <div className="detailed-roadmap-wrapper" style={{ borderTop: "1px dashed var(--border-color)", paddingTop: "3rem" }}>
-            
-            {/* Strategy Notice Banner */}
-            <div className="roadmap-insight-banner">
-              <div className="insight-icon">🔄</div>
-              <div className="insight-body">
-                <h4>Keep Your Strategy Calibrated</h4>
+        {!isWorkspaceActive && (
+          <section className="ga-hero-onboarding-panel">
+            <div className="ga-onboarding-text-lockup">
+              <span className="ga-badge-accent">Skill analysis</span>
+              <h1>Skill Gap Analysis</h1>
+              <p>
+                Review your current strengths, missing skills, learning milestones,
+                project recommendations, and interview preparation plan.
+              </p>
+            </div>
+
+            <div className="ga-onboarding-actions-lockup">
+              <button
+                type="button"
+                className="ga-btn ga-btn-primary"
+                onClick={synchronizeWorkspaceMetrics}
+                disabled={isSyncing}
+              >
+                {isSyncing ? <FaSpinner className="ga-spin-engine" /> : <FaRedo />}
+                <span>{isSyncing ? "Syncing..." : "Open Analysis"}</span>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {isWorkspaceActive && !roadmap && (
+          <EmptyView
+            title="No analysis available"
+            message="Run a resume analysis first to generate your skill gap roadmap."
+          />
+        )}
+
+        {isWorkspaceActive && roadmap && (
+          <>
+            <header className="ga-control-bar">
+              <div className="ga-bar-interactive-left">
+                <button
+                  type="button"
+                  className="ga-action-icon-btn"
+                  onClick={() => setIsWorkspaceActive(false)}
+                  aria-label="Go back"
+                >
+                  <FaArrowLeft />
+                </button>
+
+                <div className="ga-bar-title-hierarchy">
+                  <h2>Skill Gap Analysis</h2>
+                  {roadmap.lastAnalyzed && (
+                    <span className="ga-timestamp-echo">
+                      Last analyzed: {roadmap.lastAnalyzed}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </header>
+
+            <section className="ga-analytics-strip-hero">
+              <div className="ga-radial-score-container">
+                <div className="ga-score-inner-core">
+                  <span className="ga-score-integer">
+                    {roadmap.matchPercentage ?? "--"}
+                  </span>
+                  <span className="ga-score-percentage-symbol">%</span>
+                </div>
+              </div>
+
+              <div className="ga-hero-identity-block">
+                <h3>{roadmap.targetRole || "Target role not specified"}</h3>
                 <p>
-                  Your career roadmap shouldn't be static. As you master new skills, complete milestone projects, or as market expectations shift, your training track must adjust. 
-                  <strong> Re-analyzing your profile regularly</strong> prevents redundant learning, integrates your real-time breakthroughs, and optimizes your velocity toward landing a high-impact role.
+                  Your current profile alignment based on skills, experience,
+                  learning needs, and target-role expectations.
                 </p>
-              </div>
-            </div>
 
-            {/* Target Role Banner Header */}
-            <div className="roadmap-header-banner">
-              <div className="banner-left">
-                <span className="banner-subtitle">Target Career Objective</span>
-                <h2>{roadmapData.targetRole || "MERN Stack Developer"}</h2>
-              </div>
-              <div className="duration-tag">
-                <span className="icon">⏱️</span>
-                <div>
-                  <span className="tag-label">Estimated Track</span>
-                  <strong>{roadmapData.totalEstimatedDuration || "Variable PACE"}</strong>
-                </div>
-              </div>
-            </div>
-
-            {/* Sequential Phase Timeline Wrapper */}
-            <div className="timeline-container">
-              {roadmapData.roadmap?.map((phase, pIdx) => (
-                <div key={pIdx} className="timeline-phase-card">
-                  <div className="phase-marker">
-                    <span>{pIdx + 1}</span>
+                <div className="ga-system-metadata-pillbox">
+                  <div className="ga-meta-pill">
+                    Duration: {roadmap.totalEstimatedDuration || "Variable"}
                   </div>
-                  
-                  <div className="phase-content">
-                    <div className="phase-header">
-                      <h3>{phase.phase}</h3>
-                      <span className="phase-duration">{phase.duration || "Flexible Pace"}</span>
-                    </div>
-                    
-                    <div className="objective-block">
-                      <span className="section-label">Phase Objective</span>
-                      <p>{phase.objective}</p>
-                    </div>
-                    
-                    <div className="phase-grid">
-                      {/* Left Column: Tech Stack & Topics */}
-                      <div className="grid-col tech-column">
-                        <h4>Target Technologies & Focus</h4>
-                        <div className="badge-wall">
-                          {phase.skills?.map((s, idx) => (
-                            <span key={idx} className="badge badge-neutral">{s}</span>
-                          ))}
-                        </div>
-                        <ul className="topics-list">
-                          {phase.topics?.map((t, idx) => (
-                            <li key={idx}>
-                              <span className="bullet-dot">•</span>
-                              <span className="topic-text">{t}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Right Column: Build Milestones */}
-                      <div className="grid-col project-column">
-                        <h4>Practical Applications & Projects</h4>
-                        <div className="projects-list-wrapper">
-                          {phase.projects?.map((proj, idx) => (
-                            <div key={idx} className="project-subcard">
-                              <div className="proj-sub-header">
-                                <h5>{proj.title}</h5>
-                                <span className={`difficulty-tag ${proj.difficulty?.toLowerCase()}`}>
-                                  {proj.difficulty}
-                                </span>
-                              </div>
-                              <p>{proj.description}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Base Recommended Resources Bar */}
-                    {(phase.resources?.courses?.length > 0 || phase.resources?.documentation?.length > 0) && (
-                      <div className="resources-section">
-                        <h4>Curated Learning Assets</h4>
-                        <div className="resources-links">
-                          {phase.resources?.courses?.length > 0 && (
-                            <div className="resource-item">
-                              <span className="res-icon">📚</span>
-                              <p><strong>Courses:</strong> {phase.resources.courses.join(", ")}</p>
-                            </div>
-                          )}
-                          {phase.resources?.documentation?.length > 0 && (
-                            <div className="resource-item">
-                              <span className="res-icon">📄</span>
-                              <p><strong>Docs & Reference:</strong> {phase.resources.documentation.join(", ")}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Production Capstone Module */}
-            {roadmapData.capstoneProject && (
-              <div className="capstone-card">
-                <div className="capstone-badge">PRODUCTION ENTERPRISE PROJECT</div>
-                <div className="capstone-header">
-                  <span className="trophy">🏆</span>
-                  <h3>Capstone Architecture: {roadmapData.capstoneProject.title}</h3>
-                </div>
-                <p>{roadmapData.capstoneProject.description}</p>
-                <div className="capstone-tech">
-                  <strong>Integration Tech Stack:</strong>
-                  <div className="mini-tag-group">
-                    {roadmapData.capstoneProject.skillsCovered?.map((s, i) => (
-                      <span key={i} className="mini-tag">{s}</span>
-                    ))}
+                  <div className="ga-meta-pill">
+                    {roadmap.milestones?.length || 0} milestones
                   </div>
                 </div>
               </div>
-            )}
+            </section>
 
-            {/* Career Checkpoints Blocks */}
-            {roadmapData.jobPreparation && (
-              <div className="job-prep-grid">
-                <div className="prep-card">
-                  <h4>📄 Resume Engineering Checklist</h4>
-                  <ul className="prep-list checkmark-style">
-                    {roadmapData.jobPreparation.resumeChecklist?.map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="prep-card">
-                  <h4>💡 Technical Interview Drill Points</h4>
-                  <ul className="prep-list flash-style">
-                    {roadmapData.jobPreparation.interviewTopics?.map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
+            <div className="ga-bento-split-row">
+              <VectorTagsPanel
+                title="Validated Strengths"
+                subtext="Skills already visible in your profile"
+                icon={<FaCheckCircle />}
+                items={roadmap.strengths}
+              />
+
+              <VectorTagsPanel
+                title="Priority Skill Gaps"
+                subtext="Areas to improve for your target role"
+                icon={<FaExclamationTriangle />}
+                items={roadmap.missingSkills}
+              />
+            </div>
+
+            <section className="ga-workspace-block-card">
+              <BlockSectionHeader icon={<FaRocket />} title="Learning Roadmap" />
+
+              <div className="ga-timeline-wrapper">
+                {Array.isArray(roadmap.milestones) &&
+                  roadmap.milestones.map((milestone, index) => (
+                    <ChronologyMilestoneCard
+                      key={milestone._id || `phase-node-${index}`}
+                      milestone={milestone}
+                      index={index}
+                    />
+                  ))}
               </div>
-            )}
-          </div>
+            </section>
+
+            <section className="ga-workspace-block-card ga-capstone-accent-layer">
+              <BlockSectionHeader
+                icon={<FaFlagCheckered />}
+                title="Capstone Project"
+              />
+
+              <div className="ga-capstone-specification-layout">
+                <h4>
+                  {roadmap.capstoneProject?.title ||
+                    "Capstone project not available"}
+                </h4>
+                <p>
+                  {roadmap.capstoneProject?.description ||
+                    "Complete your analysis to receive a practical validation project."}
+                </p>
+
+                {Array.isArray(roadmap.capstoneProject?.skillsCovered) && (
+                  <div className="ga-inline-capsule-group">
+                    {roadmap.capstoneProject.skillsCovered.map((skill, index) => (
+                      <span key={`cap-skill-${index}`} className="ga-capsule-badge">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <div className="ga-bento-split-row">
+              <TextCheckedListPanel
+                title="Resume Improvements"
+                icon={<FaGraduationCap />}
+                items={roadmap.jobPreparation?.resumeChecklist}
+              />
+
+              <TextCheckedListPanel
+                title="Interview Focus Areas"
+                icon={<FaCode />}
+                items={roadmap.jobPreparation?.interviewTopics}
+              />
+            </div>
+          </>
         )}
       </div>
+    </main>
+  );
+}
+
+function BlockSectionHeader({ icon, title }) {
+  return (
+    <div className="ga-block-component-header">
+      <div className="ga-header-icon-shell">{icon}</div>
+      <h3>{title}</h3>
     </div>
+  );
+}
+
+function VectorTagsPanel({ title, subtext, icon, items = [] }) {
+  const collection = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+
+  return (
+    <section className="ga-bento-panel">
+      <div className="ga-bento-panel-header">
+        <div className="ga-header-left-meta">
+          <div className="ga-bento-icon-frame">{icon}</div>
+
+          <div className="ga-bento-title-block">
+            <h4>{title}</h4>
+            <span className="ga-bento-subtext">{subtext}</span>
+          </div>
+        </div>
+
+        <div className="ga-bento-count-badge">{collection.length}</div>
+      </div>
+
+      <div className="ga-bento-panel-content">
+        {collection.length > 0 ? (
+          <div className="ga-bento-tag-matrix">
+            {collection.map((item, index) => (
+              <span key={`${item}-${index}`} className="ga-matrix-node-pill">
+                {item}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="ga-empty-state-muted-text">
+            No items available for this section.
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ChronologyMilestoneCard({ milestone, index }) {
+  return (
+    <article className="ga-timeline-node-card">
+      <div className="ga-node-card-structural-spine" />
+
+      <div className="ga-node-card-header-row">
+        <div className="ga-header-identity-group">
+          <span className="ga-node-index-tag">Phase {index + 1}</span>
+          <h4>{milestone.phase || "Untitled milestone"}</h4>
+        </div>
+
+        <span className="ga-node-duration-ticker">
+          {milestone.duration || "Flexible"}
+        </span>
+      </div>
+
+      <p className="ga-node-objective-statement">
+        {milestone.objective || "No objective provided for this milestone."}
+      </p>
+
+      <div className="ga-node-sub-bento-grid">
+        <TimelineSubSection title="Core Skills" items={milestone.skills} />
+        <TimelineSubSection title="Key Topics" items={milestone.topics} />
+      </div>
+
+      {Array.isArray(milestone.projects) && milestone.projects.length > 0 && (
+        <div className="ga-node-internal-projects-vault">
+          <h5>Practice Projects</h5>
+
+          <div className="ga-internal-projects-stack">
+            {milestone.projects.map((project, projectIndex) => (
+              <div
+                key={project._id || `project-${projectIndex}`}
+                className="ga-sandbox-project-card"
+              >
+                <div className="ga-sandbox-card-header">
+                  <h6>{project.title}</h6>
+                  <span className="ga-complexity-metric-badge">
+                    {project.difficulty || "Standard"}
+                  </span>
+                </div>
+
+                <p>{project.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="ga-node-sub-bento-grid ga-utility-divider-top">
+        <TimelineSubSection
+          title="Recommended Courses"
+          items={milestone.resources?.courses}
+        />
+        <TimelineSubSection
+          title="Documentation"
+          items={milestone.resources?.documentation}
+        />
+      </div>
+    </article>
+  );
+}
+
+function TimelineSubSection({ title, items = [] }) {
+  const dataset = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+
+  return (
+    <div className="ga-timeline-sub-section-block">
+      <h5>{title}</h5>
+
+      {dataset.length > 0 ? (
+        <div className="ga-sub-section-pill-cloud">
+          {dataset.map((item, index) => (
+            <span key={`${title}-${index}`} className="ga-cloud-pill-item">
+              {item}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <span className="ga-empty-sub-text">None listed</span>
+      )}
+    </div>
+  );
+}
+
+function TextCheckedListPanel({ title, icon, items = [] }) {
+  const collection = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+
+  return (
+    <section className="ga-bento-panel">
+      <div className="ga-bento-panel-header ga-margin-bottom-sm">
+        <div className="ga-header-left-meta">
+          <div className="ga-bento-icon-frame">{icon}</div>
+          <h4>{title}</h4>
+        </div>
+      </div>
+
+      <div className="ga-bento-panel-content">
+        {collection.length > 0 ? (
+          <ul className="ga-data-checklist">
+            {collection.map((item, index) => (
+              <li key={`${title}-${index}`}>
+                <span className="ga-checklist-indicator-dot" />
+                <p>{item}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="ga-empty-state-muted-text">
+            No recommendations available.
+          </p>
+        )}
+      </div>
+    </section>
   );
 }

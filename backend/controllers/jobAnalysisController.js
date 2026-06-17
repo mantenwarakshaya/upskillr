@@ -1,33 +1,21 @@
-const jobAnalysisService = require(
-  "../services/jobAnalysisService"
-);
+// backend/controllers/jobAnalysisController.js
+const jobAnalysisService = require("../services/jobAnalysisService");
 
-const jobAnalysisController = async (
-  req,
-  res
-) => {
+const jobAnalysisController = async (req, res) => {
   try {
     const { targetRole } = req.body;
 
     if (!targetRole) {
-      return res.status(400).json({
-        message:
-          "Target role is required",
-      });
+      return res.status(400).json({ success: false, message: "Target role parameter is required." });
     }
 
-    const result =
-      await jobAnalysisService(
-        req.user._id,
-        targetRole
-      );
-
-    res.json(result);
+    const result = await jobAnalysisService(req.user._id, targetRole);
+    return res.status(200).json({ success: true, ...result });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      message: "Something went wrong",
+    console.error("❌ Job Analysis Controller Exception:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Internal server error analyzing job metrics.",
     });
   }
 };

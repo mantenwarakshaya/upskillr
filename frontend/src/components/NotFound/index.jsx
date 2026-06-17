@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { useNavigate } from 'react-router-dom';
-import notfound from "../../assets/notfound.jpg";
 import './index.css';
 
 // Wrapper to use navigate in class component
@@ -19,11 +18,6 @@ class NotFound extends Component {
   render() {
     return (
       <div className="not-found-container">
-        <img
-          src={notfound}
-          alt="not found"
-          className="not-found-img"
-        />
         <button onClick={this.goBackHome}>Go back to Home</button>
       </div>
     )

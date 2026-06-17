@@ -1,124 +1,296 @@
-import { Link } from 'react-router-dom';
-import { Target, FileText, MessageSquare, Briefcase } from 'lucide-react';
-import Navbar from '../Navbar';
-import './index.css';
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  Briefcase,
+  FileText,
+  MessageSquare,
+  Target,
+} from "lucide-react";
+import Navbar from "../Navbar";
+import "./index.css";
 
-export const FEATURES = [
+const features = [
   {
-    id: 'gap-analysis',
-    icon: <Target className="feature-icon" />,
-    title: 'AI Skill Gap Analysis & Roadmaps',
-    description: 'Our core intelligence powerhouse. Compares your technical stack directly against target roles to output live readiness metrics, missing technologies, and a personalized, structured learning roadmap built specifically for your gaps.',
-    isHighlighted: true
+    id: "resume",
+    icon: FileText,
+    title: "Resume Analyzer",
+    description:
+      "Extract skills, spot missing keywords, and surface improvement signals directly from your resume.",
   },
   {
-    id: 'resume-analyzer',
-    icon: <FileText className="feature-icon" />,
-    title: 'Resume Analyzer',
-    description: 'Upload your resume PDF to extract detailed skill profiles. Receive actionable tracking scores, critical keyword optimizations, and industry alignment feedback powered by deep LLM parsing.',
-    isHighlighted: false
+    id: "gap",
+    icon: Target,
+    title: "AI Skill Gap Roadmaps",
+    description:
+      "Compare your stack with your target role and get a structured, prioritized learning path built for you.",
+    highlighted: true,
   },
   {
-    id: 'mock-interviews',
-    icon: <MessageSquare className="feature-icon" />,
-    title: 'Mock Interview System',
-    description: 'Practice with an AI interviewer covering Technical, HR, and Data Structures & Algorithms. Get precise, constructive response evaluations along with clarity metrics.',
-    isHighlighted: false
+    id: "mock",
+    icon: MessageSquare,
+    title: "Mock Interviews",
+    description:
+      "Practice technical, behavioral, and DSA interviews with focused feedback on clarity and depth.",
   },
   {
-    id: 'job-match',
-    icon: <Briefcase className="feature-icon" />,
-    title: 'Smart Job Match',
-    description: 'Skip the endless job board browsing. Our engine uses real-time search vectors to pull highly compatible roles directly from major industry ecosystems tailored to your upskilled profiles.',
-    isHighlighted: false
-  }
+    id: "jobs",
+    icon: Briefcase,
+    title: "Smart Job Match",
+    description:
+      "Find roles matched to your current readiness — with a fit score for each listing.",
+  },
+];
+
+const trustItems = [
+  "No credit card",
+  "Ready in 2 minutes",
+  "Cancel anytime",
 ];
 
 export default function Landing() {
   return (
-    <div className="landing-page-container">
+    <>
       <Navbar />
+      <div className="landing">
 
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="badge-pill">AI-Powered Career Intelligence</div>
-        <h1 className="hero-title">Bridge the Gap to Your Dream Role.</h1>
-        <p className="hero-subtitle">Don't guess what skills you need. Our AI analyzes your experience and engineering profile against real industry benchmarks to build your perfect career roadmap.</p>
-        <div className="cta-group">
-          <Link to="/signup" className="btn-primary">Get Started Free</Link>
-          <a href="#how-it-works" className="btn-secondary">See How It Works</a>
-        </div>
-      </section>
+        {/* HERO SECTION */}
+        <section id="home" className="hero-section">
+          <div className="hero-left">
+            <span className="hero-badge">
+              <span className="badge-dot" />
+              AI career intelligence for developers
+            </span>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="how-it-works-section">
-        <h2 className="section-title">Your Path to Success in 3 Steps</h2>
-        <div className="steps-container">
-          <div className="step-card">
-            <div className="step-number">01</div>
-            <h3>Upload & Select</h3>
-            <p>Parse your current resume and pick your target dream role.</p>
-          </div>
-          <div className="step-card">
-            <div className="step-number">02</div>
-            <h3>AI Analysis</h3>
-            <p>Our intelligence engine maps out your exact skill and experience gaps.</p>
-          </div>
-          <div className="step-card">
-            <div className="step-number">03</div>
-            <h3>Upskill & Match</h3>
-            <p>Follow a customized, structured roadmap and match with live jobs.</p>
-          </div>
-        </div>
-      </section>
+            <h1>
+              Know exactly <span>what to learn</span> for your next role.
+            </h1>
 
-      {/* Features Section */}
-      <section id="features" className="features-section">
-        <h2 className="section-title">Core Career Intelligence Features</h2>
-        <div className="features-grid">
-          {FEATURES.map((feature) => (
-            <div 
-              key={feature.id} 
-              className={`feature-card ${feature.isHighlighted ? 'highlight-card' : ''}`}
-            >
-              <div className="card-icon-container">
-                {feature.icon}
-              </div>
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
+            <p className="hero-description">
+              Upskillr maps your profile, resume, and target role into a ranked
+              learning plan — so you close the gap faster and land with
+              confidence.
+            </p>
+
+            <div className="hero-buttons">
+              <Link to="/signup" className="primary-btn">
+                Start for free <ArrowRight size={16} />
+              </Link>
+
+              <a href="#how-it-works" className="secondary-btn">
+                How it works
+              </a>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-brand">
-            <h3>Upskillr</h3>
-            <p>Empowering developers to bridge the gap between potential and reality.</p>
+            <div className="trust-line">
+              {trustItems.map((item) => (
+                <div key={item} className="trust-item">
+                  <span className="trust-check">✓</span>
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="footer-links">
-            <h4>Product</h4>
-            <a href="#features">Features</a>
-            <a href="/pricing">Pricing</a>
+
+          {/* HERO GRAPHIC / DASHBOARD CARD */}
+          <div className="readiness-card">
+            <div className="card-header">
+              <span className="card-title">Role Readiness</span>
+              <span className="role-badge">Full Stack Developer</span>
+            </div>
+
+            <div className="score-card">
+              <div className="score-main">
+                <div className="score">
+                  72<span>%</span>
+                </div>
+                <div className="score-meta">
+                  <h4>Ready for target role</h4>
+                  <p>Based on your current profile</p>
+                </div>
+              </div>
+              <RingProgress value={72} />
+            </div>
+
+            <div className="skill-list">
+              <SkillBar
+                label="React"
+                value={86}
+                badge="Strong"
+                color="var(--success)"
+              />
+
+              <SkillBar
+                label="Node.js"
+                value={74}
+                badge="Good"
+                color="var(--primary)"
+              />
+
+              <SkillBar
+                label="System Design"
+                value={48}
+                badge="Gap"
+                color="var(--warning)"
+              />
+            </div>
+
+            <div className="roadmap-box">
+              <span>3 skills to close the gap →</span>
+              <span className="action-text">View roadmap</span>
+            </div>
           </div>
-          <div className="footer-links">
-            <h4>Company</h4>
-            <a href="/about">About Us</a>
-            <a href="/contact">Contact</a>
+        </section>
+
+        {/* FEATURES SECTION */}
+        <section id="features" className="section">
+          <div className="section-header">
+            <div className="eyebrow">Features</div>
+            <h2>Everything connected to your career profile.</h2>
           </div>
-          <div className="footer-links">
-            <h4>Legal</h4>
-            <a href="/privacy">Privacy Policy</a>
-            <a href="/terms">Terms of Service</a>
+
+          <div className="features-grid">
+            {features.map(
+              ({ id, icon: Icon, title, description, highlighted }) => (
+                <article
+                  key={id}
+                  className={`feature-card ${
+                    highlighted ? "highlighted" : ""
+                  }`}
+                >
+                  <div className="feature-card-header">
+                    <div className="feature-icon">
+                      <Icon size={20} />
+                    </div>
+                    {highlighted && (
+                      <span className="popular-badge">
+                        Popular
+                      </span>
+                    )}
+                  </div>
+
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </article>
+              )
+            )}
           </div>
-        </div>
-        <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} Upskillr Inc. All Rights Reserved.</p>
-          <p className="crafted-by">Crafted by Mantenwar Akshaya</p>
-        </div>
-      </footer>
+        </section>
+
+        {/* WORKFLOW SECTION */}
+        <section id="how-it-works" className="section alt-bg">
+          <div className="section-header">
+            <div className="eyebrow">Workflow</div>
+            <h2>From scattered skills to a clear plan — in three steps.</h2>
+          </div>
+
+          <div className="steps-grid">
+            <StepCard
+              number="01"
+              title="Build your profile"
+              text="Add your target role, current skills, GitHub, and paste in your resume."
+            />
+
+            <StepCard
+              number="02"
+              title="See your gaps"
+              text="Upskillr compares your profile against real role expectations."
+            />
+
+            <StepCard
+              number="03"
+              title="Follow the roadmap"
+              text="Work through prioritized skills, mock interviews and job matches."
+            />
+          </div>
+        </section>
+
+        {/* CTA SECTION */}
+        <section className="cta-section">
+          <div className="cta-content">
+            <div className="eyebrow inverted">Get Started</div>
+            <h2>Your next role starts with knowing the gap.</h2>
+            <p>
+              Join thousands of developers who closed their skill gap
+              with Upskillr.
+            </p>
+
+            <div className="hero-buttons centered">
+              <Link to="/signup" className="primary-btn light">
+                Start for free
+              </Link>
+              <a href="#features" className="secondary-btn inverted">
+                Explore features
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </>
+  );
+}
+
+function RingProgress({ value }) {
+  const radius = 22;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (value / 100) * circumference;
+
+  return (
+    <div className="ring-progress">
+      <svg viewBox="0 0 56 56">
+        <circle
+          cx="28"
+          cy="28"
+          r={radius}
+          className="ring-bg"
+        />
+        <circle
+          cx="28"
+          cy="28"
+          r={radius}
+          className="ring-fill"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <span className="ring-text">{value}%</span>
     </div>
+  );
+}
+
+function SkillBar({ label, value, color, badge }) {
+  return (
+    <div className="skill-bar">
+      <div className="skill-header">
+        <span className="skill-label">{label}</span>
+        <div className="skill-meta">
+          <span className="skill-badge" style={{ color: color, backgroundColor: `${color}15` }}>
+            {badge}
+          </span>
+          <span className="skill-percentage">{value}%</span>
+        </div>
+      </div>
+
+      <div className="progress-bg">
+        <div
+          className="progress-fill"
+          style={{
+            width: `${value}%`,
+            background: color,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StepCard({ number, title, text }) {
+  return (
+    <article className="step-card">
+      <div className="step-card-header">
+        <span className="step-number">{number}</span>
+      </div>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </article>
   );
 }

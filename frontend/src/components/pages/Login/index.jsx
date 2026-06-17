@@ -1,18 +1,17 @@
 import { useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../AuthProvider"; // 1. Import your auth context hook
-
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { MdEmail, MdLock } from "react-icons/md";
-import logo from "../../../assets/nav_logo.png";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { useAuth } from "../../../AuthProvider";
 import "./index.css";
 
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || "http://localhost:7777";
+const API_BASE_URL =
+  import.meta.env?.VITE_API_BASE_URL || "http://localhost:7777";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { setUser } = useAuth(); // 2. Extract setUser to globally save the logged-in user
+  const location = useLocation();
+  const { setUser } = useAuth();
 
   const [formData, setFormData] = useState({
     emailId: "",
@@ -21,10 +20,9 @@ export default function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
+  const [successMsg, setSuccessMsg] =
+    useState(location.state?.message || "");
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Restoration properties
   const [showRestore, setShowRestore] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
 
@@ -33,42 +31,51 @@ export default function Login() {
       ...prev,
       [e.target.name]: e.target.value,
     }));
-    if (errorMsg) setErrorMsg("");
-    if (successMsg) setSuccessMsg("");
+
+    setErrorMsg("");
+    setSuccessMsg("");
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     setIsLoading(true);
     setErrorMsg("");
-    setSuccessMsg("");
     setShowRestore(false);
 
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/login`,
         formData,
-        { withCredentials: true } // Crucial for receiving cookies from your API server
+        {
+          withCredentials: true,
+        }
       );
 
-      // 3. Make sure user state is registered globally so ProtectedRoute lets them in instantly
       if (response.data?.user) {
         setUser(response.data.user);
       }
 
-      navigate("/dashboard", { replace: true });
+      navigate("/dashboard", {
+        replace: true,
+      });
     } catch (err) {
       const errorData = err.response?.data;
-      let message = errorData?.message || "Invalid email or password. Please try again.";
 
       if (errorData?.code === "ACCOUNT_DEACTIVATED") {
         setShowRestore(true);
-        setIsLoading(false);
-        return;
-      }
+        setErrorMsg(errorData.message);
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          password: "",
+        }));
 
-      setFormData((prev) => ({ ...prev, password: "" }));
-      setErrorMsg(message);
+        setErrorMsg(
+          errorData?.message ||
+            "Invalid email or password. Please try again."
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +83,9 @@ export default function Login() {
 
   const handleRestoreAccount = async () => {
     if (!formData.emailId || !formData.password) {
-      setErrorMsg("Please enter both email and password to restore your account.");
+      setErrorMsg(
+        "Enter your email and password to restore the account."
+      );
       return;
     }
 
@@ -84,147 +93,147 @@ export default function Login() {
     setErrorMsg("");
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/restore-account`, {
-        emailId: formData.emailId,
-        password: formData.password,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/restore-account`,
+        formData
+      );
 
       setShowRestore(false);
-      setSuccessMsg(response.data?.message || "Account restored successfully! You can sign in now.");
+
+      setSuccessMsg(
+        response.data?.message ||
+          "Account restored. You can sign in now."
+      );
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || "Account restoration failed. Please try again.");
+      setErrorMsg(
+        err.response?.data?.message ||
+          "Account restoration failed. Please try again."
+      );
     } finally {
       setIsRestoring(false);
     }
   };
 
   return (
-    <div className="login-viewport">
-      {/* LEFT BRAND SIDE PANEL */}
-      <div className="login-aside-brand">
-        <div className="radial-overlay"></div>
-        <div className="aside-content">
-          <img src={logo} alt="Upskillr" className="brand-logo-img" />
-          <div className="hero-status-badge">AI Career Intelligence</div>
-          <h1 className="aside-heading">
-            Bridge the Gap Between
-            <span> Skills & Success</span>
-          </h1>
-          <p className="aside-desc">
-            Analyze your resume, GitHub, projects, and career profile with AI-powered insights.
+    <div className="login-page">
+      {/* LEFT SIDEBAR PANEL */}
+      <aside className="login-left">
+        <div className="login-left-content">
+          <span className="login-tag">AI Career Intelligence</span>
+          <h1>Pick up your roadmap where you left off.</h1>
+          <p>
+            Review role readiness, improve weak areas, and keep your profile
+            aligned with your target role.
           </p>
-          <div className="stats-glass-grid">
-            <div className="stat-glass-card">
-              <h2>10K+</h2>
-              <span>Career Analyses</span>
-            </div>
-            <div className="stat-glass-card">
-              <h2>95%</h2>
-              <span>ATS Optimization</span>
-            </div>
-            <div className="stat-glass-card">
-              <h2>AI</h2>
-              <span>Mock Interviews</span>
-            </div>
-          </div>
         </div>
-      </div>
+        <div className="login-left-bg-glow" />
+      </aside>
 
-      {/* RIGHT AUTH CONSOLE SIDE */}
-      <div className="login-main-auth">
-        <form className="auth-surface-card" onSubmit={handleLogin}>
-          <div className="auth-card-header">
-            <h2>Welcome Back</h2>
-            <p>Continue your AI career growth journey</p>
-          </div>
-
-          <div className="auth-input-group">
-            <label htmlFor="emailId">Email Address</label>
-            <div className="interactive-input-wrapper">
-              <MdEmail className="input-field-icon" />
-              <input
-                id="emailId"
-                type="email"
-                name="emailId"
-                placeholder="name@gmail.com"
-                value={formData.emailId}
-                onChange={handleChange}
-                disabled={isLoading || isRestoring}
-                required
-              />
+      {/* RIGHT AUTH CARD FORM PANEL */}
+      <main className="login-right">
+        <div className="login-card-container">
+          <form onSubmit={handleLogin} className="login-card">
+            <div className="login-header">
+              <div className="logo-circle">U</div>
+              <div>
+                <h2>Welcome Back</h2>
+                <p>Sign in to continue your Upskillr workspace.</p>
+              </div>
             </div>
-          </div>
 
-          <div className="auth-input-group">
-            <label htmlFor="password">Password</label>
-            <div className="interactive-input-wrapper">
-              <MdLock className="input-field-icon" />
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                disabled={isLoading || isRestoring}
-                required
-              />
-              <button
-                type="button"
-                className="password-toggle-trigger"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                disabled={isLoading || isRestoring}
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
+            {/* MESSAGES SYSTEM */}
+            {errorMsg && <div className="auth-alert error-box">{errorMsg}</div>}
+            {successMsg && <div className="auth-alert success-box">{successMsg}</div>}
+
+            {/* ACCOUNT RESTORATION */}
+            {showRestore && (
+              <div className="restore-box">
+                <div className="restore-header">
+                  <span className="restore-dot" />
+                  <strong>Account Deactivated</strong>
+                </div>
+                <p>You can restore it within the 7-day recovery window.</p>
+                <button
+                  type="button"
+                  className="restore-btn"
+                  onClick={handleRestoreAccount}
+                  disabled={isRestoring}
+                >
+                  {isRestoring ? "Restoring Workspace..." : "Restore Account"}
+                </button>
+              </div>
+            )}
+
+            {/* INPUT FIELDS CONTAINER */}
+            <div className="form-fields">
+              {/* EMAIL */}
+              <div className="form-group">
+                <label htmlFor="emailId">Email Address</label>
+                <div className="input-box">
+                  <Mail size={18} className="input-icon" />
+                  <input
+                    id="emailId"
+                    type="email"
+                    name="emailId"
+                    placeholder="name@company.com"
+                    value={formData.emailId}
+                    onChange={handleChange}
+                    disabled={isLoading || isRestoring}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* PASSWORD */}
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <div className="input-box">
+                  <Lock size={18} className="input-icon" />
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    disabled={isLoading || isRestoring}
+                    autoComplete="current-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="eye-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {showRestore && (
-            <div className="restore-box">
-              <p className="restore-text">
-                Your account is currently deactivated. You can restore it immediately below.
-              </p>
-              <button
-                type="button"
-                className="action-submit-btn restore-btn"
-                onClick={handleRestoreAccount}
-                disabled={isRestoring}
-              >
-                {isRestoring ? "Restoring Profile..." : "Restore Account Now"}
-              </button>
-            </div>
-          )}
+            {/* LOGIN SUBMIT BUTTON */}
+            <button
+              type="submit"
+              className="login-btn"
+              disabled={isLoading || isRestoring}
+            >
+              {isLoading ? (
+                <span className="btn-spinner-content">
+                  <span className="spinner-dot" /> Authenticating...
+                </span>
+              ) : (
+                "Sign In"
+              )}
+            </button>
 
-          {errorMsg && (
-            <div className="status-error-box" role="alert">
-              {errorMsg}
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="status-success-box" role="alert">
-              {successMsg}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="action-submit-btn"
-            disabled={isLoading || isRestoring}
-          >
-            {isLoading ? "Signing In..." : "Sign In"}
-          </button>
-
-          <div className="switch-auth-context">
-            New to Upskillr?{" "}
-            <Link to="/signup" className="context-action-link">
-              Create Account
-            </Link>
-          </div>
-        </form>
-      </div>
+            <p className="signup-text">
+              New to Upskillr? <Link to="/signup">Create account</Link>
+            </p>
+          </form>
+        </div>
+      </main>
     </div>
   );
 }
