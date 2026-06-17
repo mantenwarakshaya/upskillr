@@ -81,7 +81,16 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={authState.user ? <Navigate to="/dashboard" replace /> : <Landing />} />
-        <Route path="/login" element={authState.user ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={checkSession} />} />
+        <Route 
+          path="/login" 
+          element={
+            authState.user ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Login onLoginSuccess={checkSession} /> // Ensure this prop is passed!
+            )
+          } 
+        />
         <Route path="/signup" element={authState.user ? <Navigate to="/dashboard" replace /> : <Signup />} />
 
         <Route element={authState.user ? <AppLayout user={authState.user} onLogout={handleLogout} /> : <Navigate to="/" replace />}>
