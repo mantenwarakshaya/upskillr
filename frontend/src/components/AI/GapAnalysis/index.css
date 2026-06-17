@@ -666,11 +666,155 @@
   }
 }
 
-/* Responsive */
+/* ============================================================
+   Gap Analysis Split-View Onboarding Additions
+   ============================================================ */
 
+.ga-split-onboarding-container {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: var(--ga-space-xl);
+  align-items: stretch;
+}
+
+.ga-onboarding-main-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-space-xl);
+  padding: var(--ga-space-xl);
+  background: var(--ga-surface);
+  border: 1px solid var(--ga-border);
+  border-radius: var(--ga-radius-lg);
+  box-shadow: var(--ga-shadow-soft);
+}
+
+.ga-card-header-lockup h1 {
+  margin: var(--ga-space-xs) 0 var(--ga-space-sm) 0;
+  font-size: 26px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.ga-card-header-lockup p {
+  margin: 0;
+  color: var(--ga-text-soft);
+  font-size: 14px;
+}
+
+.ga-onboarding-callout-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-space-lg);
+  background: var(--ga-bg);
+  padding: var(--ga-space-lg);
+  border-radius: var(--ga-radius-md);
+  border: 1px solid var(--ga-border);
+}
+
+.ga-callout-narrative {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ga-text-soft);
+  line-height: 1.5;
+}
+
+.ga-onboarding-actions-lockup {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.ga-onboarding-actions-lockup .ga-btn {
+  padding: 12px 24px;
+  font-size: 14px;
+  height: auto;
+}
+
+/* Sidebar Info Card Styles */
+.ga-onboarding-sidebar-card {
+  display: flex;
+  flex-direction: column; /* Allows footer to be pushed down */
+  justify-content: space-between; /* Spaces content and footer */
+  padding: var(--ga-space-xl);
+  background: var(--ga-surface);
+  border: 1px solid var(--ga-border);
+  border-radius: var(--ga-radius-lg);
+  box-shadow: var(--ga-shadow-soft);
+}
+
+.ga-sidebar-footer-lockup {
+  margin-top: var(--ga-space-2xl);
+  padding-top: var(--ga-space-lg);
+  border-top: 1px solid var(--ga-border);
+  color: var(--ga-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ga-onboarding-sidebar-card h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-space-xs);
+  margin: 0 0 var(--ga-space-md) 0;
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--ga-text);
+}
+
+.ga-sidebar-title-icon {
+  color: var(--ga-accent);
+}
+
+.ga-sidebar-intro {
+  margin: 0 0 var(--ga-space-lg) 0;
+  color: var(--ga-text-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ga-sidebar-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-space-lg);
+}
+
+.ga-sidebar-feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ga-space-md);
+}
+
+.ga-feat-icon {
+  color: var(--ga-accent);
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.ga-sidebar-feature-list strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ga-text);
+}
+
+.ga-sidebar-feature-list p {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: var(--ga-text-soft);
+  line-height: 1.4;
+}
+
+/* Responsive Overrides */
 @media (max-width: 960px) {
   .ga-viewport-workspace {
     padding: var(--ga-space-xl) var(--ga-space-md);
+  }
+
+  .ga-split-onboarding-container {
+    grid-template-columns: 1fr;
+    gap: var(--ga-space-lg);
   }
 
   .ga-hero-onboarding-panel,
@@ -686,7 +830,9 @@
 
   .ga-hero-onboarding-panel,
   .ga-workspace-block-card,
-  .ga-bento-panel {
+  .ga-bento-panel,
+  .ga-onboarding-sidebar-card,
+  .ga-onboarding-main-card {
     padding: var(--ga-space-lg);
   }
 
@@ -700,4 +846,40 @@
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+.ga-callout-header h5 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: var(--ga-text);
+}
+
+.ga-callout-header p {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  color: var(--ga-text-muted);
+}
+
+.ga-prereq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.ga-prereq-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ga-text-soft);
+  background: var(--ga-surface);
+  padding: 8px 12px;
+  border-radius: var(--ga-radius-sm);
+  border: 1px solid var(--ga-border);
+}
+
+.ga-prereq-item svg {
+  color: #10b981; /* Success green */
 }

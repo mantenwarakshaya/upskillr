@@ -9,7 +9,11 @@ import {
   FaRedo,
   FaRocket,
   FaArrowLeft,
-  FaSpinner
+  FaSpinner,
+  FaInfoCircle,
+  FaMapSigns,
+  FaChartLine,
+  FaLaptopCode
 } from "react-icons/fa";
 import { LoaderView, ErrorView, EmptyView } from "../../Common";
 import "./index.css";
@@ -45,31 +49,32 @@ export default function GapAnalysis() {
     }
   };
 
-  const initializeWorkspaceTelemetry = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setErrorContext(null);
+// Inside your component
+const initializeWorkspaceTelemetry = useCallback(async () => {
+  try {
+    setIsLoading(true);
+    setErrorContext(null);
 
-      const response = await axios.get(`${API_BASE_URL}/api/gap-analysis/latest`, {
-        withCredentials: true
-      });
+    const response = await axios.get(`${API_BASE_URL}/api/gap-analysis/latest`, {
+      withCredentials: true
+    });
 
-      if (response.data) {
-        await synchronizeWorkspaceMetrics();
-      }
-    } catch (err) {
-      if (err.response?.status !== 404) {
-        setErrorContext({
-          message:
-            err.response?.data?.message ||
-            "Unable to initialize skill gap analysis.",
-          status: err.response?.status
-        });
-      }
-    } finally {
-      setIsLoading(false);
+    // Only set roadmap data, do NOT trigger isWorkspaceActive(true) automatically
+    if (response.data) {
+      const payload = response.data?.data || response.data?.roadmap || response.data;
+      setRoadmap(payload);
     }
-  }, []);
+  } catch (err) {
+    if (err.response?.status !== 404) {
+      setErrorContext({
+        message: err.response?.data?.message || "Unable to initialize skill gap analysis.",
+        status: err.response?.status
+      });
+    }
+  } finally {
+    setIsLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     initializeWorkspaceTelemetry();
@@ -105,29 +110,91 @@ export default function GapAnalysis() {
           </div>
         )}
 
+        {/* 1. INITIAL SPLIT ONBOARDING STATE */}
         {!isWorkspaceActive && (
-          <section className="ga-hero-onboarding-panel">
-            <div className="ga-onboarding-text-lockup">
-              <span className="ga-badge-accent">Skill analysis</span>
-              <h1>Skill Gap Analysis</h1>
-              <p>
-                Review your current strengths, missing skills, learning milestones,
-                project recommendations, and interview preparation plan.
-              </p>
-            </div>
+          <div className="ga-split-onboarding-container">
+            {/* Left Primary Trigger Workspace Card */}
+            <section className="ga-onboarding-main-card">
+              <div className="ga-card-header-lockup">
+                <span className="ga-badge-accent">Market Alignment</span>
+                <h1>Skill Gap Analysis</h1>
+                <p>
+                  Map your current baseline competencies against real-time production team roles.
+                  Discover missing language modules, engineering layers, and design paths instantly.
+                </p>
+              </div>
 
-            <div className="ga-onboarding-actions-lockup">
-              <button
-                type="button"
-                className="ga-btn ga-btn-primary"
-                onClick={synchronizeWorkspaceMetrics}
-                disabled={isSyncing}
-              >
-                {isSyncing ? <FaSpinner className="ga-spin-engine" /> : <FaRedo />}
-                <span>{isSyncing ? "Syncing..." : "Open Analysis"}</span>
-              </button>
-            </div>
-          </section>
+              <div className="ga-onboarding-callout-panel">
+                <div className="ga-callout-header">
+                  <h5>Initialization Prerequisites</h5>
+                  <p>Before launching the engine, ensure your profile data is optimized for the best accuracy.</p>
+                </div>
+                
+                <div className="ga-prereq-grid">
+                  <div className="ga-prereq-item">
+                    <FaCheckCircle /> <span>Active Resume Uploaded</span>
+                  </div>
+                  <div className="ga-prereq-item">
+                    <FaCheckCircle /> <span>Target Role Defined</span>
+                  </div>
+                  <div className="ga-prereq-item">
+                    <FaCheckCircle /> <span>Industry Metrics Sync</span>
+                  </div>
+                </div>
+
+                <div className="ga-onboarding-actions-lockup">
+                  <button
+                    type="button"
+                    className="ga-btn ga-btn-primary"
+                    onClick={synchronizeWorkspaceMetrics}
+                    disabled={isSyncing}
+                  >
+                    {isSyncing ? <FaSpinner className="ga-spin-engine" /> : <FaRocket />}
+                    <span>{isSyncing ? "Compiling Alignment Matrix..." : "Initialize Workspace Analysis"}</span>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Right Educational Meta Sidebar */}
+            <aside className="ga-onboarding-sidebar-card">
+              <div className="ga-sidebar-content-anchor">
+                <h3>
+                  <FaInfoCircle className="ga-sidebar-title-icon" />
+                  <span>Roadmap Insights</span>
+                </h3>
+                <p className="ga-sidebar-intro">Initializing this dashboard interface exposes four strategic optimization vectors designed around your target positions:</p>
+                
+                <ul className="ga-sidebar-feature-list">
+                  <li>
+                    <FaChartLine className="ga-feat-icon" />
+                    <div>
+                      <strong>Match Discrepancy %</strong>
+                      <p>Get immediate numeric parity comparisons mapping current resume states to marketplace trends.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <FaMapSigns className="ga-feat-icon" />
+                    <div>
+                      <strong>Chronological Learning Steps</strong>
+                      <p>A step-by-step milestone schedule that isolates recommended external course tools.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <FaLaptopCode className="ga-feat-icon" />
+                    <div>
+                      <strong>Target Sandbox Projects</strong>
+                      <p>Access customized architecture suggestions tailored specifically around isolating current skill gaps.</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="ga-sidebar-footer-lockup">
+                <p>System status: Ready for integration.</p>
+              </div>
+            </aside>
+          </div>
         )}
 
         {isWorkspaceActive && !roadmap && (
@@ -137,6 +204,7 @@ export default function GapAnalysis() {
           />
         )}
 
+        {/* 2. ACTIVE SYSTEM GENERATED WORKSPACE STREAM */}
         {isWorkspaceActive && roadmap && (
           <>
             <header className="ga-control-bar">

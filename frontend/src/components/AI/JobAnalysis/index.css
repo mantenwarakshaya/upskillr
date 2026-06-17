@@ -119,14 +119,102 @@
 .j-job-search-dock-card,
 .j-job-analytics-strip-hero,
 .j-job-bento-panel,
-.j-job-workspace-block-card {
+.j-job-workspace-block-card,
+.j-onboarding-main-card,
+.j-onboarding-sidebar-card {
   background: var(--j-surface);
   border: 1px solid var(--j-border);
   border-radius: var(--j-radius-lg);
   box-shadow: var(--j-shadow-soft);
 }
 
-/* Intro panel */
+/* Immersive Split Onboarding Engine */
+
+.j-split-onboarding-container {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: var(--j-space-xl);
+  align-items: stretch; /* Forces equal heights on both columns */
+}
+
+.j-onboarding-main-card {
+  padding: var(--j-space-2xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Pins button deck cleanly to bottom */
+  gap: var(--j-space-xl);
+}
+
+.j-onboarding-sidebar-card {
+  padding: var(--j-space-2xl);
+  display: flex;
+  flex-direction: column;
+}
+
+.j-onboarding-sidebar-card h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--j-space-xs);
+  margin: 0 0 var(--j-space-md) 0;
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--j-text);
+}
+
+.j-sidebar-title-icon {
+  color: var(--j-accent);
+}
+
+.j-sidebar-intro {
+  margin: 0 0 var(--j-space-lg) 0;
+  color: var(--j-text-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.j-sidebar-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--j-space-lg);
+}
+
+.j-sidebar-feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--j-space-md);
+}
+
+.j-feat-icon {
+  margin-top: 3px;
+  font-size: 15px;
+  color: var(--j-accent);
+  flex-shrink: 0;
+}
+
+.j-sidebar-feature-list strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--j-text);
+  margin-bottom: 2px;
+}
+
+.j-sidebar-feature-list p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--j-text-muted);
+  line-height: 1.4;
+}
+
+.j-onboarding-main-card .j-onboarding-text-lockup h2 {
+  font-size: 26px;
+  margin: var(--j-space-xs) 0 var(--j-space-sm) 0;
+}
+
+/* Legacy Intro panel (Fallback adaptive layer) */
 
 .j-job-hero-onboarding-panel {
   display: flex;
@@ -142,7 +230,6 @@
 
 .j-sys-badge-accent {
   display: inline-flex;
-  margin-bottom: var(--j-space-md);
   padding: 4px 10px;
   border: 1px solid #dbeafe;
   border-radius: var(--j-radius-sm);
@@ -238,10 +325,11 @@
   align-self: center;
 }
 
-/* Search */
+/* Search Interface Dock */
 
 .j-job-search-dock-card {
   padding: var(--j-space-xl);
+  margin-bottom: var(--j-space-xl); /* Generates consistent breathing space for sub-views */
 }
 
 .j-search-flex-row {
@@ -499,12 +587,23 @@
   line-height: 1.5;
 }
 
-/* Utility states */
+/* Utility States & Dynamic Empty View Positioning */
 
 .j-empty-state-muted-text {
   margin: 0;
   color: var(--j-text-muted);
   font-size: 14px;
+}
+
+/* Centers the intermediate empty state container when form elements are rendering */
+.j-job-grid-shell > .j-empty-view-container, 
+.j-job-grid-shell > [class*="EmptyView"] {
+  margin-top: var(--j-space-2xl);
+  padding: var(--j-space-xl) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .j-nested-empty-card-block {
@@ -547,14 +646,19 @@
     opacity: 0;
     transform: translateY(6px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Responsive */
+/* Media Queries & Responsive Reflows */
+
+@media (max-width: 960px) {
+  .j-split-onboarding-container {
+    grid-template-columns: 1fr;
+  }
+}
 
 @media (max-width: 840px) {
   .j-job-intel-workspace {
@@ -563,7 +667,9 @@
 
   .j-job-control-bar,
   .j-job-hero-onboarding-panel,
-  .j-job-analytics-strip-hero {
+  .j-job-analytics-strip-hero,
+  .j-onboarding-main-card,
+  .j-onboarding-sidebar-card {
     align-items: flex-start;
   }
 
@@ -591,11 +697,122 @@
   .j-job-hero-onboarding-panel,
   .j-job-search-dock-card,
   .j-job-bento-panel,
-  .j-job-workspace-block-card {
+  .j-job-workspace-block-card,
+  .j-onboarding-main-card,
+  .j-onboarding-sidebar-card {
     padding: var(--j-space-lg);
   }
 
   .j-job-analytics-strip-hero {
     padding: var(--j-space-lg);
   }
+}
+
+/* Sequence Timeline additions */
+.j-onboarding-process-timeline {
+  margin-top: var(--j-space-2xl);
+  padding-top: var(--j-space-xl);
+  border-top: 1px solid var(--j-border);
+}
+
+.j-timeline-section-title {
+  margin: 0 0 var(--j-space-md) 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--j-text-muted);
+}
+
+.j-timeline-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--j-space-md);
+}
+
+.j-timeline-step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--j-space-md);
+}
+
+.j-step-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--j-accent-soft);
+  color: var(--j-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.j-step-content h5 {
+  margin: 0 0 2px 0;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--j-text);
+}
+
+.j-step-content p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--j-text-soft);
+  line-height: 1.4;
+}
+
+/* Sidebar status pulse engine additions */
+.j-sidebar-pulse-block {
+  margin-top: auto;
+  padding-top: var(--j-space-xl);
+  border-top: 1px solid var(--j-border);
+}
+
+.j-sidebar-pulse-block h4 {
+  margin: 0 0 var(--j-space-md) 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--j-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.j-pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--j-space-sm);
+}
+
+.j-pulse-item {
+  background: var(--j-surface-muted);
+  border: 1px solid var(--j-border);
+  border-radius: var(--j-radius-md);
+  padding: var(--j-space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--j-space-xs);
+}
+
+.j-pulse-icon {
+  color: var(--j-text-faint);
+  font-size: 12px;
+}
+
+.j-pulse-value {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--j-text);
+  line-height: 1.1;
+}
+
+.j-pulse-label {
+  display: block;
+  font-size: 10px;
+  color: var(--j-text-muted);
+  margin-top: 2px;
 }

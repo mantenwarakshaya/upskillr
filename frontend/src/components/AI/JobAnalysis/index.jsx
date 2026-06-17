@@ -10,7 +10,14 @@ import {
   FaRocket,
   FaRupeeSign,
   FaSearch,
-  FaSpinner
+  FaSpinner,
+  FaInfoCircle,
+  FaLevelUpAlt,
+  FaWallet,
+  FaLink,
+  FaShieldAlt,
+  FaDatabase,
+  FaClock
 } from "react-icons/fa";
 import { LoaderView, ErrorView, EmptyView } from "../../Common";
 import "./index.css";
@@ -185,43 +192,136 @@ export default function JobMatch() {
           </div>
         </header>
 
+        {/* 1. STATE DISPATCHER: IMMERSIVE INTEGRATED SPLIT ONBOARDING */}
         {!showSearchForm && !jobData && (
-          <section className="j-job-hero-onboarding-panel">
-            <div className="j-onboarding-text-lockup">
-              <span className="j-sys-badge-accent">Market analysis</span>
-              <h2>Understand your role fit</h2>
-              <p>
-                Compare your target role against current hiring demand,
-                compensation patterns, skill expectations, and active openings.
-              </p>
-            </div>
+          <div className="j-split-onboarding-container">
+            {/* Left Operational Segment */}
+            <section className="j-onboarding-main-card">
+              <div className="j-onboarding-text-lockup">
+                <span className="j-sys-badge-accent">Market Analytics</span>
+                <h2>Understand your role fit</h2>
+                <p>
+                  Compare your baseline technical competencies against global tech hiring demand,
+                  compensation patterns, real-time skill expectations, and live openings.
+                </p>
 
-            <div className="j-horizontal-actions">
-              {hasPreviousAnalysis && (
+                {/* Expanded Content: Analysis Sequence Timeline */}
+                <div className="j-onboarding-process-timeline">
+                  <h4 className="j-timeline-section-title">Evaluation Sequence</h4>
+                  <div className="j-timeline-steps">
+                    <div className="j-timeline-step">
+                      <div className="j-step-badge">1</div>
+                      <div className="j-step-content">
+                        <h5>Specify Context</h5>
+                        <p>Provide your exact intended corporate title or industrial niche target.</p>
+                      </div>
+                    </div>
+                    <div className="j-timeline-step">
+                      <div className="j-step-badge">2</div>
+                      <div className="j-step-content">
+                        <h5>Semantic Mapping</h5>
+                        <p>The engine matches profile indicators with live aggregator requirements.</p>
+                      </div>
+                    </div>
+                    <div className="j-timeline-step">
+                      <div className="j-step-badge">3</div>
+                      <div className="j-step-content">
+                        <h5>Intelligence Generation</h5>
+                        <p>Receive data structural charts detailing clear pay curves and skill actions.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="j-horizontal-actions">
+                {hasPreviousAnalysis && (
+                  <button
+                    type="button"
+                    className="j-job-btn j-job-btn-secondary"
+                    onClick={restoreHistoricalAnalysis}
+                    disabled={isLoading}
+                  >
+                    <FaRedo className={isLoading ? "j-spin-engine" : ""} />
+                    <span>Restore Last Analysis</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
-                  className="j-job-btn j-job-btn-secondary"
-                  onClick={restoreHistoricalAnalysis}
-                  disabled={isLoading}
+                  className="j-job-btn j-job-btn-primary"
+                  onClick={() => {
+                    setShowSearchForm(true);
+                    setMode("new");
+                  }}
                 >
-                  <FaRedo className={isLoading ? "j-spin-engine" : ""} />
-                  <span>Restore Analysis</span>
+                  <FaSearch />
+                  <span>Configure Target Analysis</span>
                 </button>
-              )}
+              </div>
+            </section>
 
-              <button
-                type="button"
-                className="j-job-btn j-job-btn-primary"
-                onClick={() => {
-                  setShowSearchForm(true);
-                  setMode("new");
-                }}
-              >
-                <FaSearch />
-                <span>New Analysis</span>
-              </button>
-            </div>
-          </section>
+            {/* Right Informational Segment */}
+            <aside className="j-onboarding-sidebar-card">
+              <h3>
+                <FaInfoCircle className="j-sidebar-title-icon" />
+                <span>Analytical Vectors</span>
+              </h3>
+              <p className="j-sidebar-intro">Running this evaluation correlates profile metadata to real-world employment points:</p>
+              
+              <ul className="j-sidebar-feature-list">
+                <li>
+                  <FaLevelUpAlt className="j-feat-icon" />
+                  <div>
+                    <strong>Market Readiness Index</strong>
+                    <p>A statistical score showing how closely matching your profile text is to open role requisitions.</p>
+                  </div>
+                </li>
+                <li>
+                  <FaWallet className="j-feat-icon" />
+                  <div>
+                    <strong>Salary Benchmarks</strong>
+                    <p>Aggregated local compensation curves parsed directly across current job listings.</p>
+                  </div>
+                </li>
+                <li>
+                  <FaLink className="j-feat-icon" />
+                  <div>
+                    <strong>Direct Openings</strong>
+                    <p>Curated external pipeline connections providing quick submission targets matching your skills.</p>
+                  </div>
+                </li>
+              </ul>
+
+              {/* Expanded Content: Platform Integrity & Scope Pulse */}
+              <div className="j-sidebar-pulse-block">
+                <h4>Engine Status</h4>
+                <div className="j-pulse-grid">
+                  <div className="j-pulse-item">
+                    <FaDatabase className="j-pulse-icon" />
+                    <div>
+                      <span className="j-pulse-value">Live</span>
+                      <span className="j-pulse-label">Data Stream</span>
+                    </div>
+                  </div>
+                  <div className="j-pulse-item">
+                    <FaShieldAlt className="j-pulse-icon" />
+                    <div>
+                      <span className="j-pulse-value">Verified</span>
+                      <span className="j-pulse-label">Aggregators</span>
+                    </div>
+                  </div>
+                  <div className="j-pulse-item">
+                    <FaClock className="j-pulse-icon" />
+                    <div>
+                      <span className="j-pulse-value">&lt; 24h</span>
+                      <span className="j-pulse-label">Index Age</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
         )}
 
         {(showSearchForm || jobData) && (
@@ -264,6 +364,7 @@ export default function JobMatch() {
                 message="Enter a target role above to generate market insights."
               />
             ) : (
+              /* 2. DYNAMIC INTEL STREAM DATA VISUALIZATION */
               <div className="j-dashboard-content-stream">
                 <section className="j-job-analytics-strip-hero">
                   <div className="j-radial-score-container">
