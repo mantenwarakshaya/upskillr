@@ -8,6 +8,7 @@ import {
   UserCircle,
   LogOut,
   Bell,
+  MessageSquareCode,
 } from "lucide-react";
 import "./index.css";
 
@@ -16,6 +17,7 @@ export const APP_PATHS = {
   resumeAnalyzer: "/resume-analyzer",
   gapAnalysis: "/gap-analysis",
   jobMatch: "/job-match",
+  mockInterview: "/mock-interview",
   profile: "/profile",
   landing: "/",
 };
@@ -43,6 +45,16 @@ const menuItems = [
         path: APP_PATHS.jobMatch,
         icon: <Briefcase size={18} strokeWidth={2.2} />,
         label: "Smart Job Match",
+      },
+    ],
+  },
+  {
+    title: "Practice",
+    items: [
+      {
+        path: APP_PATHS.mockInterview,
+        icon: <MessageSquareCode size={18} strokeWidth={2.2} />,
+        label: "Mock Interview",
       },
     ],
   },

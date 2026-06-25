@@ -1,0 +1,453 @@
+:root {
+  --primary: #0967d2;
+  --primary-light: #e6f6ff;
+  --primary-border: #bfdbfe;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+
+  --background: rgb(243, 243, 243);
+  --surface: #ffffff;
+
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --border: #e2e8f0;
+}
+
+/* ===========================
+   PAGE
+=========================== */
+
+.i-viewport-workspace {
+  min-height: 100vh;
+  background: var(--background);
+  padding: 32px;
+}
+
+.i-grid-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ===========================
+   CARDS
+=========================== */
+
+.i-main-card,
+.i-sidebar-card,
+.i-full-width-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.i-main-card {
+  padding: 40px;
+}
+
+.i-sidebar-card {
+  padding: 28px;
+}
+
+.i-full-width-card {
+  grid-column: 1 / -1;
+  padding: 32px;
+}
+
+/* ===========================
+   HEADER
+=========================== */
+
+.i-badge-accent {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.i-header-lockup h1 {
+  margin-top: 18px;
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.i-header-lockup p {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 720px;
+}
+
+/* ===========================
+   WORKFLOW
+=========================== */
+
+.i-process-section {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.i-process-section h3 {
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.i-process-step {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.i-step-number {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+
+  font-weight: 700;
+}
+
+.i-process-step h4 {
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.i-process-step p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ===========================
+   BUTTONS
+=========================== */
+
+.i-action-row {
+  display: flex;
+  gap: 14px;
+  margin-top: 36px;
+}
+
+.i-btn-primary,
+.i-btn-secondary {
+  height: 48px;
+  border-radius: 10px;
+  padding: 0 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  cursor: pointer;
+  font-weight: 600;
+
+  transition: all 0.25s ease;
+}
+
+.i-btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+}
+
+.i-btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.i-btn-secondary {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.i-btn-secondary:hover {
+  background: #f8fafc;
+}
+
+/* ===========================
+   SIDEBAR
+=========================== */
+
+.i-sidebar-card h3 {
+  margin-bottom: 22px;
+  color: var(--text-primary);
+}
+
+.i-metric-card {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.i-metric-card span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.i-metric-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+  color: var(--text-primary);
+}
+
+/* ===========================
+   PAGE HEADER
+=========================== */
+
+.i-page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.i-page-header h2 {
+  color: var(--text-primary);
+}
+
+/* ===========================
+   HISTORY
+=========================== */
+
+.i-session-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 22px;
+  margin-bottom: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.i-session-card h3 {
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.i-session-card p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.i-session-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.i-score-pill {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 999px;
+}
+
+.i-status-success {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--success);
+  font-weight: 600;
+}
+
+.i-status-pending {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--warning);
+  font-weight: 600;
+}
+
+/* ===========================
+   REPORT HERO
+=========================== */
+
+.i-report-hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+
+  margin-bottom: 30px;
+
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.i-report-score {
+  width: 110px;
+  height: 110px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--primary-light);
+  color: var(--primary);
+
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* ===========================
+   REPORT GRID
+=========================== */
+
+.i-report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.i-report-card {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.i-report-card h3 {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.i-report-card p,
+.i-report-card li {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.i-report-card ul {
+  padding-left: 18px;
+}
+
+.i-report-card li {
+  margin-bottom: 10px;
+}
+
+/* ===========================
+   Q&A SECTION
+=========================== */
+
+.i-qa-section {
+  margin-top: 30px;
+}
+
+.i-qa-section h3 {
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.i-qa-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 18px;
+}
+
+.i-qa-card h4 {
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+
+.i-question {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  margin-bottom: 18px;
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+.i-answer {
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+/* ===========================
+   SPINNER
+=========================== */
+
+.i-spin-engine {
+  animation: i-spin 1s linear infinite;
+}
+
+@keyframes i-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media (max-width: 1024px) {
+  .i-grid-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .i-report-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .i-viewport-workspace {
+    padding: 16px;
+  }
+
+  .i-action-row {
+    flex-direction: column;
+  }
+
+  .i-session-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .i-session-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .i-report-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .i-header-lockup h1 {
+    font-size: 30px;
+  }
+}

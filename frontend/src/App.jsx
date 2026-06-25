@@ -13,6 +13,7 @@ import Profile from "./components/Profile/ShowProfile"; // Standardized name mat
 import ResumeAnalyzer from "./components/AI/ResumeAnalysis";
 import GapAnalysis from "./components/AI/GapAnalysis";
 import JobMatch from "./components/AI/JobAnalysis";
+import Interview from "./components/AI/Interview";
 import NotFound from "./components/NotFound";
 
 import { LoaderView, ErrorView } from "./components/Common";
@@ -95,9 +96,12 @@ export default function App() {
 
         <Route element={authState.user ? <AppLayout user={authState.user} onLogout={handleLogout} /> : <Navigate to="/" replace />}>
           <Route path="/dashboard" element={<Dashboard />} />
+
           <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
           <Route path="/gap-analysis" element={<GapAnalysis />} />
           <Route path="/job-match" element={<JobMatch />} /> 
+          <Route path="/mock-interview" element={<Interview user={authState.user}/>} />
+          <Route path="/mock-interview/:id" element={<Interview />} />
 
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/edit" element={<EditProfile />} />
