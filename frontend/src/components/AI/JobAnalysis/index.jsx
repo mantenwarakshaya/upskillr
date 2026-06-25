@@ -171,26 +171,27 @@ export default function JobMatch() {
             <span>{notification}</span>
           </div>
         )}
+        {(showSearchForm || jobData) && (
+          <header className="j-job-control-bar">
+            <div className="j-bar-interactive-left">
+              <button
+                type="button"
+                className="j-job-action-icon-btn"
+                onClick={handleBack}
+                aria-label="Go back"
+              >
+                <FaArrowLeft />
+              </button>
 
-        <header className="j-job-control-bar">
-          <div className="j-bar-interactive-left">
-            <button
-              type="button"
-              className="j-job-action-icon-btn"
-              onClick={handleBack}
-              aria-label="Go back"
-            >
-              <FaArrowLeft />
-            </button>
-
-            <div className="j-bar-title-hierarchy">
-              <h1>Job Market Intelligence</h1>
-              <p className="j-timestamp-echo">
-                Review demand, compensation, skill gaps, and matching roles.
-              </p>
+              <div className="j-bar-title-hierarchy">
+                <h1>Job Market Intelligence</h1>
+                <p className="j-timestamp-echo">
+                  Review demand, compensation, skill gaps, and matching roles.
+                </p>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* 1. STATE DISPATCHER: IMMERSIVE INTEGRATED SPLIT ONBOARDING */}
         {!showSearchForm && !jobData && (

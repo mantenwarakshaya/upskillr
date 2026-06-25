@@ -145,38 +145,38 @@ export default function ResumeAnalyzer() {
             <span>{notification}</span>
           </div>
         )}
+        {showWorkspace && (
+          <header className="ra-control-bar">
+            <div className="ra-bar-interactive-left">
+              <button
+                type="button"
+                className="ra-action-icon-btn"
+                onClick={handleBack}
+                aria-label="Go back"
+              >
+                <FaArrowLeft />
+              </button>
 
-        {/* Dynamic Nav Header Bar */}
-        <header className="ra-control-bar">
-          <div className="ra-bar-interactive-left">
-            <button
-              type="button"
-              className="ra-action-icon-btn"
-              onClick={handleBack}
-              aria-label="Go back"
-            >
-              <FaArrowLeft />
-            </button>
-
-            <div className="ra-bar-title-hierarchy">
-              <h1>{showWorkspace ? "Resume Analysis Workspace" : "Resume Analyzer"}</h1>
-              <p className="ra-timestamp-echo">
-                {showWorkspace && latest?.createdAt
-                  ? `Analyzed ${new Date(latest.createdAt).toLocaleString(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short"
-                    })}`
-                  : "Optimize structural formatting, alignment metrics, and pipeline ready scoring."}
-              </p>
+              <div className="ra-bar-title-hierarchy">
+                <h1>{showWorkspace ? "Resume Analysis Workspace" : "Resume Analyzer"}</h1>
+                <p className="ra-timestamp-echo">
+                  {showWorkspace && latest?.createdAt
+                    ? `Analyzed ${new Date(latest.createdAt).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short"
+                      })}`
+                    : "Optimize structural formatting, alignment metrics, and pipeline ready scoring."}
+                </p>
+              </div>
             </div>
-          </div>
 
-          {showWorkspace && (
-            <div className="ra-workspace-right-group">
-              <span className="ra-badge-accent">Workspace active</span>
-            </div>
-          )}
-        </header>
+            {showWorkspace && (
+              <div className="ra-workspace-right-group">
+                <span className="ra-badge-accent">Workspace active</span>
+              </div>
+            )}
+          </header>
+        )}
 
         {/* 1. INITIAL SPLIT ONBOARDING VIEW */}
         {!showWorkspace && (

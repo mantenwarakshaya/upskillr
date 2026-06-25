@@ -656,7 +656,7 @@
 .ra-onboarding-action-row {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--ra-space-md);
   border-top: 1px solid var(--ra-border);
   padding-top: var(--ra-space-lg);
