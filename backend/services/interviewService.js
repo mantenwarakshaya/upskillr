@@ -34,9 +34,7 @@ Rules:
       "What are your strengths and weaknesses?"
     ];
 
-    return fallbackQuestions[
-      Math.min(questionNumber - 2, fallbackQuestions.length - 1)
-    ];
+    return fallbackQuestions[0];
   }
 
 };
