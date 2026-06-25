@@ -14,26 +14,42 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  * Returns a configured model instance based on the requested string identifier
  * @param {string} modelName - e.g., 'gemini-2.5-flash'
  */
-const getModel = (modelName = "gemini-2.5-flash") => {
+const getModel = (modelName = "gemini-2.0-flash") => {
   return genAI.getGenerativeModel({ model: modelName });
 };
 
 /**
  * Simple Exponential Backoff Retry Wrapper to prevent rate limit exceptions (429)
  */
-const callWithRetry = async (apiCallFn, retries = 3, delay = 1000) => {
+const callWithRetry = async (
+  apiCallFn,
+  retries = 5,
+  delay = 1000
+) => {
   for (let i = 0; i < retries; i++) {
     try {
       return await apiCallFn();
     } catch (error) {
-      // If we hit a rate limit (429) or temporary server block, wait and retry
-      if ((error.status === 429 || error.message?.includes("429")) && i < retries - 1) {
-        console.warn(`⚠️ Gemini Rate Limited. Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        delay *= 2; // Double the backoff duration
+      const isRetryable =
+        error.status === 429 ||
+        error.status === 503 ||
+        error.message?.includes("429") ||
+        error.message?.includes("503");
+
+      if (isRetryable && i < retries - 1) {
+        console.warn(
+          `⚠️ Gemini unavailable. Retrying in ${delay}ms...`
+        );
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, delay)
+        );
+
+        delay *= 2;
         continue;
       }
-      throw error; // If it's a structural or credential error, fail immediately
+
+      throw error;
     }
   }
 };
