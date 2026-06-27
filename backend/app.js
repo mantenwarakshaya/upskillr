@@ -41,9 +41,9 @@ app.use(cookieParser()); // Parses cookies so req.cookies works in auth middlewa
 // 2. Base Routes
 // We structure these cleanly to map with your backend architecture
 app.use("/api", authRouter);
-app.use("/api", resumeRouter);
-app.use("/api", analysisRoutes);
-app.use("/api", jobAnalysisRouter);
+app.use("/api/resume", resumeRouter);
+app.use("/api/gap", analysisRoutes);
+app.use("/api/job", jobAnalysisRouter);
 app.use("/api/interview", interviewRoutes);
 
 // Lightweight health endpoint — does not depend on DB

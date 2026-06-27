@@ -13,7 +13,7 @@ const ResumeAnalysis = require("../models/ResumeAnalysis");
  * @access  Protected
  */
 router.post(
-  "/resume-analysis",
+  "/analyze",
   userAuth,
   upload.single("resume"), // Listens for the form-data key named 'resume'
   analyzeResumeController
@@ -24,7 +24,7 @@ router.post(
  * @desc    Fetch the user's most recent resume analysis log for instant dashboard loads
  * @access  Protected
  */
-router.get("/resume-analysis/latest", userAuth, async (req, res) => { 
+router.get("/latest", userAuth, async (req, res) => { 
   try {
     if (!req.user || !req.user._id) {
       return res.status(401).json({ success: false, message: "Unauthorized profile request session." });
@@ -51,6 +51,35 @@ router.get("/resume-analysis/latest", userAuth, async (req, res) => {
       success: false, 
       message: err.message || "Internal database retrieval failure." 
     });
+  }
+});
+
+// backend/routes/resumeAnalysis.js
+
+// 1. Get all history for the user
+router.get("/history", userAuth, async (req, res) => {
+  try {
+    const analyses = await ResumeAnalysis.find({ userId: req.user._id })
+      .sort({ createdAt: -1 }); // Newest first
+    res.status(200).json({ success: true, analyses });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error fetching history" });
+  }
+});
+
+// 2. Get a single report by ID
+router.get("/:id", userAuth, async (req, res) => {
+  try {
+    const analysis = await ResumeAnalysis.findOne({ 
+        _id: req.params.id, 
+        userId: req.user._id 
+    });
+    
+    if (!analysis) return res.status(404).json({ success: false, message: "Report not found" });
+    
+    res.status(200).json({ success: true, analysis });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error fetching report" });
   }
 });
 
