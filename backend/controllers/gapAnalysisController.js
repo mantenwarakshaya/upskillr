@@ -83,36 +83,54 @@ const getRoadmap = async (req, res) => {
 /**
  * Fetches recent historical footprint metrics instantly out of the Roadmap collection for dashboard badging.
  */
-const getLatestAnalysis = async (req, res) => {
+const getHistory = async (req, res) => {
   try {
-    const latestRoadmap = await Roadmap.findOne({ userId: req.user._id }).sort({ createdAt: -1 });
+    const history = await Roadmap.find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .select("_id targetRole matchPercentage createdAt");
 
-    if (!latestRoadmap) {
-      return res.status(200).json({
-        success: true,
-        data: null,
-        hasRoadmap: false
+    return res.status(200).json({
+      success: true,
+      history,
+    });
+  } catch (error) {
+    console.error("History Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+const getRoadmapById = async (req, res) => {
+  try {
+    const roadmap = await Roadmap.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+
+    if (!roadmap) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found.",
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: {
-        role: latestRoadmap.targetRole,
-        matchPercentage: latestRoadmap.matchPercentage,
-        missingSkills: latestRoadmap.missingSkills,
-        strengths: latestRoadmap.strengths,
-        createdAt: latestRoadmap.createdAt
-      },
-      hasRoadmap: true 
+      data: roadmap,
     });
   } catch (error) {
-    console.error("❌ Latest Analysis Controller Error:", error);
-    return res.status(500).json({ success: false, message: "Server Error" });
+    console.error("Roadmap By Id Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 
 module.exports = {
   getRoadmap,
-  getLatestAnalysis
+  getHistory,
+  getRoadmapById,
 };

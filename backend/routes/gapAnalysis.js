@@ -10,13 +10,20 @@ const gapAnalysisController = require("../controllers/gapAnalysisController");
  * @desc    Retrieve cached or freshly generated career development tracks
  * @access  Protected
  */
-router.get("/gap-analysis", userAuth, gapAnalysisController.getRoadmap);
+router.get("/", userAuth, gapAnalysisController.getRoadmap);
 
-/**
- * @route   GET /api/gap-analysis/latest-analysis
- * @desc    Fetch quick metrics (match percentage, gaps) for dashboard rendering
- * @access  Protected
- */
-router.get("/gap-analysis/latest", userAuth, gapAnalysisController.getLatestAnalysis);
+// History
+router.get(
+  "/history",
+  userAuth,
+  gapAnalysisController.getHistory
+);
 
-module.exports = router;
+// Single report
+router.get(
+  "/:id",
+  userAuth,
+  gapAnalysisController.getRoadmapById
+);
+
+module.exports = router; 
