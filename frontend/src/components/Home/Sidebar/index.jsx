@@ -7,189 +7,177 @@ import {
   Briefcase,
   UserCircle,
   LogOut,
-  Bell,
   MessageSquareCode,
+  Zap,
+  ChevronRight,
 } from "lucide-react";
 import "./index.css";
 
 export const APP_PATHS = {
-  dashboard: "/dashboard",
+  dashboard:      "/dashboard",
   resumeAnalyzer: "/resume-analyzer",
-  gapAnalysis: "/gap-analysis",
-  jobMatch: "/job-match",
-  mockInterview: "/mock-interview",
-  profile: "/profile",
-  landing: "/",
+  gapAnalysis:    "/gap-analysis",
+  jobMatch:       "/job-match",
+  mockInterview:  "/mock-interview",
+  profile:        "/profile",
+  landing:        "/",
 };
 
 const menuItems = [
   {
     title: "Analyze",
     items: [
-      {
-        path: APP_PATHS.resumeAnalyzer,
-        icon: <FileSearch size={18} strokeWidth={2.2} />,
-        label: "Resume Analyzer",
-      },
-      {
-        path: APP_PATHS.gapAnalysis,
-        icon: <GraduationCap size={18} strokeWidth={2.2} />,
-        label: "Skill Gap Analysis",
-      },
+      { path: APP_PATHS.resumeAnalyzer, icon: <FileSearch size={17} strokeWidth={2.2} />,        label: "Resume Analyzer"   },
+      { path: APP_PATHS.gapAnalysis,    icon: <GraduationCap size={17} strokeWidth={2.2} />,     label: "Skill Gap Analysis" },
     ],
   },
   {
     title: "Grow & Land",
     items: [
-      {
-        path: APP_PATHS.jobMatch,
-        icon: <Briefcase size={18} strokeWidth={2.2} />,
-        label: "Smart Job Match",
-      },
+      { path: APP_PATHS.jobMatch, icon: <Briefcase size={17} strokeWidth={2.2} />, label: "Smart Job Match" },
     ],
   },
   {
     title: "Practice",
     items: [
-      {
-        path: APP_PATHS.mockInterview,
-        icon: <MessageSquareCode size={18} strokeWidth={2.2} />,
-        label: "Mock Interview",
-      },
+      { path: APP_PATHS.mockInterview, icon: <MessageSquareCode size={17} strokeWidth={2.2} />, label: "Mock Interview" },
     ],
   },
 ];
 
+/* ─── Credit colour helper ───────────────────────────────────── */
+function creditColor(pct) {
+  if (pct > 50) return "var(--sb-accent)";
+  if (pct > 20) return "#f59e0b";
+  return "#ef4444";
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN EXPORT
+═══════════════════════════════════════════════════════════════ */
 export default function Sidebar({ onLogout, user }) {
   const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState(null);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    if (!toastMessage) return;
-
-    const timer = setTimeout(() => setToastMessage(null), 3000);
-    return () => clearTimeout(timer);
-  }, [toastMessage]);
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const handleLogout = async () => {
     try {
-      setToastMessage("Signing out...");
+      setToast("Signing out…");
       await onLogout?.();
     } catch {
-      setToastMessage("Logout failed.");
+      setToast("Logout failed.");
     } finally {
       navigate(APP_PATHS.landing, { replace: true });
     }
   };
 
   const creditsRemaining = user?.aiUsage?.creditsRemaining ?? 0;
-  const maxCredits = 20;
-  const creditPercentage = (creditsRemaining / maxCredits) * 100;
+  const maxCredits       = 20;
+  const creditPct        = Math.min((creditsRemaining / maxCredits) * 100, 100);
+  const fillColor        = creditColor(creditPct);
 
   return (
-    <aside className="s-job-sidebar" aria-label="Main navigation">
-      {toastMessage && (
-        <div className="s-job-toast" role="status" aria-live="polite">
-          <Bell size={14} className="s-job-toast-icon" />
-          <span className="s-job-toast-text">{toastMessage}</span>
+    <aside className="sb-root" aria-label="Main navigation">
+
+      {/* Toast */}
+      {toast && (
+        <div className="sb-toast" role="status" aria-live="polite">
+          <Zap size={13} className="sb-toast-icon" />
+          <span>{toast}</span>
         </div>
       )}
 
-      {/* BRAND */}
-      <div className="s-job-brand">
-        <div className="s-job-logo-mark" aria-hidden="true">
-          <span>U</span>
-        </div>
-
-        <div className="s-job-brand-meta">
-          <h1 className="s-job-brand-title">Upskillr</h1>
-          <p className="s-job-brand-subtitle">AI Career Accelerator</p>
+      {/* ── Brand ─────────────────────────────────────────────── */}
+      <div className="sb-brand">
+        <div className="sb-logo" aria-hidden="true">U</div>
+        <div className="sb-brand-text">
+          <span className="sb-brand-name">Upskillr</span>
+          <span className="sb-brand-sub">AI Career Accelerator</span>
         </div>
       </div>
 
-      {/* NAVIGATION */}
-      <nav className="s-job-nav">
+      {/* ── Nav ───────────────────────────────────────────────── */}
+      <nav className="sb-nav">
         <SidebarLink
           to={APP_PATHS.dashboard}
-          icon={<LayoutDashboard size={18} strokeWidth={2.2} />}
+          icon={<LayoutDashboard size={17} strokeWidth={2.2} />}
           label="Dashboard"
           end
         />
 
         {menuItems.map((section) => (
-          <div key={section.title} className="s-job-section">
-            <h2 className="s-job-section-title">{section.title}</h2>
-
-            <div className="s-job-section-links">
-              {section.items.map((item) => (
-                <SidebarLink
-                  key={item.path}
-                  to={item.path}
-                  icon={item.icon}
-                  label={item.label}
-                />
-              ))}
-            </div>
+          <div key={section.title} className="sb-section">
+            <p className="sb-section-label">{section.title}</p>
+            {section.items.map((item) => (
+              <SidebarLink key={item.path} to={item.path} icon={item.icon} label={item.label} />
+            ))}
           </div>
         ))}
       </nav>
 
-      {/* FOOTER AREA */}
-      <div className="s-job-footer">
-        
-        {/* FIXED: AI Credits repositioned cleanly directly above the horizontal partition line */}
-        <div className="s-job-credits-card">
-          <div className="s-job-credits-header">
-            <span className="s-job-credits-label">⚡ AI Credits</span>
-            <strong className="s-job-credits-value">
+      {/* ── Footer ────────────────────────────────────────────── */}
+      <footer className="sb-footer">
+
+        {/* Credits card */}
+        <div className="sb-credits">
+          <div className="sb-credits-row">
+            <span className="sb-credits-label">
+              <Zap size={12} className="sb-credits-zap" />
+              AI Credits
+            </span>
+            <strong className="sb-credits-value" style={{ color: fillColor }}>
               {creditsRemaining}/{maxCredits}
             </strong>
           </div>
-
-          <div className="s-job-credits-progress">
+          <div className="sb-credits-track">
             <div
-              className="s-job-credits-progress-fill"
-              style={{ width: `${creditPercentage}%` }}
+              className="sb-credits-fill"
+              style={{ width: `${creditPct}%`, background: fillColor }}
             />
           </div>
+          {creditPct <= 20 && (
+            <p className="sb-credits-warn">Running low — top up soon</p>
+          )}
         </div>
 
-        <SidebarLink
-          to={APP_PATHS.profile}
-          icon={<UserCircle size={18} strokeWidth={2.2} />}
-          label="Profile Settings"
-        />
+        {/* Profile + Logout */}
+        <div className="sb-footer-links">
+          <SidebarLink
+            to={APP_PATHS.profile}
+            icon={<UserCircle size={17} strokeWidth={2.2} />}
+            label="Profile Settings"
+          />
 
-        <button
-          className="s-job-logout-btn"
-          onClick={handleLogout}
-          type="button"
-          aria-label="Log out"
-        >
-          <span className="s-job-icon-wrapper" aria-hidden="true">
-            <LogOut size={18} strokeWidth={2.2} />
-          </span>
-          <span className="s-job-link-text">Logout</span>
-        </button>
-      </div>
+          <button className="sb-link sb-logout" onClick={handleLogout} type="button" aria-label="Log out">
+            <span className="sb-icon"><LogOut size={17} strokeWidth={2.2} /></span>
+            <span className="sb-link-label">Logout</span>
+          </button>
+        </div>
+      </footer>
     </aside>
   );
 }
 
+/* ─── SidebarLink ────────────────────────────────────────────── */
 function SidebarLink({ to, icon, label, end = false }) {
   return (
     <NavLink
       to={to}
       end={end}
-      className={({ isActive }) =>
-        `s-job-link ${isActive ? "s-job-link-active" : ""}`
-      }
+      className={({ isActive }) => `sb-link${isActive ? " sb-link--active" : ""}`}
     >
-      <span className="s-job-icon-wrapper" aria-hidden="true">
-        {icon}
-      </span>
-
-      <span className="s-job-link-text">{label}</span>
+      {({ isActive }) => (
+        <>
+          <span className="sb-icon">{icon}</span>
+          <span className="sb-link-label">{label}</span>
+          {isActive && <ChevronRight size={13} className="sb-link-chevron" />}
+        </>
+      )}
     </NavLink>
   );
 }

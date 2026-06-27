@@ -1,520 +1,385 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
-  FaArrowLeft,
-  FaBriefcase,
-  FaChartLine,
-  FaLightbulb,
-  FaRedo,
   FaRocket,
-  FaRupeeSign,
-  FaSearch,
+  FaHistory,
   FaSpinner,
-  FaInfoCircle,
-  FaLevelUpAlt,
-  FaWallet,
-  FaLink,
+  FaSearch,
+  FaArrowLeft,
+  FaChartLine,
+  FaRupeeSign,
+  FaLightbulb,
+  FaBriefcase,
+  FaCoins,
+  FaClipboardCheck,
   FaShieldAlt,
-  FaDatabase,
-  FaClock
+  FaExternalLinkAlt,
+  FaBuilding,
+  FaCheckCircle,
 } from "react-icons/fa";
-import { LoaderView, ErrorView, EmptyView } from "../../Common";
+import { LoaderView, ErrorView } from "../../Common";
 import "./index.css";
 
 const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:7777";
 
-export default function JobMatch() {
-  const navigate = useNavigate();
+/* ─── Demand badge helper ────────────────────────────────────── */
+function DemandBadge({ level }) {
+  const map = {
+    High:   "sj-demand--high",
+    Medium: "sj-demand--mid",
+    Low:    "sj-demand--low",
+    Stable: "sj-demand--stable",
+  };
+  const cls = map[level] || "sj-demand--stable";
+  return <span className={`sj-demand-badge ${cls}`}>{level || "Stable"} Demand</span>;
+}
 
-  const [targetRole, setTargetRole] = useState("");
-  const [jobData, setJobData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(false);
-  const [errorContext, setErrorContext] = useState(null);
-  const [notification, setNotification] = useState("");
+/* ─── Score Ring ─────────────────────────────────────────────── */
+function ScoreRing({ value }) {
+  const num = parseInt(value) || 0;
+  const r = 52;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (num / 100) * circ;
+  const color = num >= 75 ? "var(--sj-green)" : num >= 50 ? "var(--sj-blue)" : "var(--sj-orange)";
+  const label = num >= 75 ? "Strong Fit" : num >= 50 ? "Good Fit" : "Needs Work";
 
-  const [showSearchForm, setShowSearchForm] = useState(false);
-  const [hasPreviousAnalysis, setHasPreviousAnalysis] = useState(false);
-  const [mode, setMode] = useState(null);
-
-  const analysis = jobData?.analysis || {};
-  const activeJobsList = useMemo(
-    () => (Array.isArray(jobData?.jobs) ? jobData.jobs : []),
-    [jobData?.jobs]
+  return (
+    <div className="sj-score-ring-wrap">
+      <svg className="sj-score-svg" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r={r} className="sj-ring-track" />
+        <circle
+          cx="60" cy="60" r={r}
+          className="sj-ring-fill"
+          style={{ strokeDasharray: circ, strokeDashoffset: offset, stroke: color }}
+        />
+        <text x="60" y="56" className="sj-ring-score">{num}%</text>
+        <text x="60" y="72" className="sj-ring-sub">readiness</text>
+      </svg>
+      <span className="sj-ring-label" style={{ color }}>{label}</span>
+    </div>
   );
-  const alignmentQuotient = analysis?.jobReadinessScore ?? "--";
+}
 
-  const executeJobMarketAnalysis = async (roleOverride) => {
-    const activeRole = roleOverride || targetRole;
+/* ═══════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+═══════════════════════════════════════════════════════════════ */
+export default function JobMatch({ user }) {
+  const [targetRole, setTargetRole]             = useState("");
+  const [jobData, setJobData]                   = useState(null);
+  const [mode, setMode]                         = useState("landing");
+  const [isLoading, setIsLoading]               = useState(true);
+  const [isStarting, setIsStarting]             = useState(false);
+  const [hasPreviousAnalysis, setHasPreviousAnalysis] = useState(false);
+  const [errorContext, setErrorContext]         = useState(null);
+  const [toast, setToast]                       = useState("");
 
-    if (!activeRole.trim()) {
-      setNotification("Enter a target role to continue.");
-      return;
-    }
+  const analysis        = jobData?.analysis || {};
+  const activeJobsList  = useMemo(() => (Array.isArray(jobData?.jobs) ? jobData.jobs : []), [jobData?.jobs]);
+  const readinessScore  = analysis?.jobReadinessScore ?? "--";
 
-    try {
-      setIsLoading(true);
-      setErrorContext(null);
-      setNotification("");
-
-      const response = await axios.post(
-        `${API_BASE_URL}/api/job-analysis`,
-        { targetRole: activeRole },
-        { withCredentials: true }
-      );
-
-      const dataset =
-        response.data?.data || response.data?.result || response.data || null;
-
-      setJobData(dataset);
-      setNotification("Market analysis updated.");
-    } catch (err) {
-      setErrorContext({
-        message:
-          err.response?.data?.message ||
-          "Unable to complete the job market analysis.",
-        status: err.response?.status
-      });
-    } finally {
-      setIsLoading(false);
-      setIsInitialLoading(false);
-    }
+  /* ── helpers ─────────────────────────────────────────────── */
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 4000);
   };
 
-  const checkAnalyticalHistory = useCallback(async () => {
+  const checkHistory = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/job-analysis/latest`, {
-        withCredentials: true
-      });
-
-      setHasPreviousAnalysis(Boolean(response.data?.data));
+      const res = await axios.get(`${API_BASE_URL}/api/job-analysis/latest`, { withCredentials: true });
+      setHasPreviousAnalysis(Boolean(res.data?.data));
     } catch {
       setHasPreviousAnalysis(false);
     }
   }, []);
 
-  const restoreHistoricalAnalysis = async () => {
+  const restoreHistory = async () => {
     try {
-      setIsLoading(true);
-      setErrorContext(null);
-      setMode("restore");
-
-      const response = await axios.get(`${API_BASE_URL}/api/job-analysis/latest`, {
-        withCredentials: true
-      });
-
-      const snapshot = response.data?.data;
-      setJobData(snapshot);
-
-      if (snapshot?.targetRole) {
-        setTargetRole(snapshot.targetRole);
-      }
-
-      setShowSearchForm(false);
+      setIsStarting(true);
+      const res = await axios.get(`${API_BASE_URL}/api/job-analysis/latest`, { withCredentials: true });
+      const snap = res.data?.data;
+      setJobData(snap);
+      if (snap?.targetRole) setTargetRole(snap.targetRole);
+      setMode("report");
+      showToast("Previous analysis restored.");
     } catch {
-      setNotification("No previous analysis could be restored.");
-      setMode(null);
+      showToast("No previous analysis found.");
     } finally {
-      setIsLoading(false);
+      setIsStarting(false);
     }
   };
 
-  const handleBack = () => {
-    if (jobData || showSearchForm) {
-      setJobData(null);
-      setShowSearchForm(false);
-      setTargetRole("");
-      setMode(null);
-      return;
+  const runAnalysis = async (e) => {
+    if (e) e.preventDefault();
+    if (!targetRole.trim()) { alert("Please enter a target role."); return; }
+    setIsStarting(true);
+    setErrorContext(null);
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/api/job-analysis`,
+        { targetRole },
+        { withCredentials: true }
+      );
+      const data = res.data?.data || res.data?.result || res.data || null;
+      setJobData(data);
+      await checkHistory();
+      setMode("report");
+    } catch (err) {
+      setErrorContext({
+        message: err.response?.data?.message || "Unable to complete market analysis.",
+        status: err.response?.status,
+      });
+    } finally {
+      setIsStarting(false);
     }
-
-    navigate("/dashboard");
   };
 
   useEffect(() => {
-    checkAnalyticalHistory();
-  }, [checkAnalyticalHistory]);
+    const init = async () => { await checkHistory(); setIsLoading(false); };
+    init();
+  }, [checkHistory]);
 
-  useEffect(() => {
-    if (targetRole) {
-      window.localStorage.setItem("upskillrTargetRole", targetRole);
-    }
-  }, [targetRole]);
-
-  useEffect(() => {
-    if (!notification) return;
-
-    const timer = setTimeout(() => setNotification(""), 4000);
-    return () => clearTimeout(timer);
-  }, [notification]);
-
-  if (isInitialLoading) {
-    return <LoaderView message="Loading job market analysis..." />;
-  }
-
-  if (errorContext) {
+  /* ── early returns ───────────────────────────────────────── */
+  if (isLoading) return <LoaderView message="Preparing market intelligence…" />;
+  if (errorContext)
     return (
       <ErrorView
         message={errorContext.message}
         statusCode={errorContext.status}
-        onRetry={() => executeJobMarketAnalysis()}
+        onRetry={() => { setErrorContext(null); setMode("landing"); }}
       />
     );
-  }
 
+  /* ════════════════════════════════════════════════════════════
+     RENDER
+  ════════════════════════════════════════════════════════════ */
   return (
-    <main className="j-job-intel-workspace">
-      <div className="j-job-grid-shell">
-        {notification && (
-          <div className="j-job-toast-notification" role="alert" aria-live="polite">
-            <span>{notification}</span>
-          </div>
-        )}
-        {(showSearchForm || jobData) && (
-          <header className="j-job-control-bar">
-            <div className="j-bar-interactive-left">
-              <button
-                type="button"
-                className="j-job-action-icon-btn"
-                onClick={handleBack}
-                aria-label="Go back"
-              >
-                <FaArrowLeft />
-              </button>
+    <main className="sj-root">
+      {toast && (
+        <div className="sj-toast" role="alert">{toast}</div>
+      )}
 
-              <div className="j-bar-title-hierarchy">
-                <h1>Job Market Intelligence</h1>
-                <p className="j-timestamp-echo">
-                  Review demand, compensation, skill gaps, and matching roles.
-                </p>
-              </div>
-            </div>
-          </header>
-        )}
+      {/* ══════════════  LANDING  ══════════════ */}
+      {mode === "landing" && (
+        <div className="sj-landing-layout">
 
-        {/* 1. STATE DISPATCHER: IMMERSIVE INTEGRATED SPLIT ONBOARDING */}
-        {!showSearchForm && !jobData && (
-          <div className="j-split-onboarding-container">
-            {/* Left Operational Segment */}
-            <section className="j-onboarding-main-card">
-              <div className="j-onboarding-text-lockup">
-                <span className="j-sys-badge-accent">Market Analytics</span>
-                <h2>Understand your role fit</h2>
-                <p>
-                  Compare your baseline technical competencies against global tech hiring demand,
-                  compensation patterns, real-time skill expectations, and live openings.
-                </p>
+          {/* Main */}
+          <section className="sj-card sj-main-card">
+            <span className="sj-eyebrow">Job Market Intelligence</span>
+            <h1 className="sj-display-title">Market Suitability</h1>
+            <p className="sj-lead">
+              Compare your technical skills against real-time global hiring demand,
+              salary structures, and live job listings.
+            </p>
 
-                {/* Expanded Content: Analysis Sequence Timeline */}
-                <div className="j-onboarding-process-timeline">
-                  <h4 className="j-timeline-section-title">Evaluation Sequence</h4>
-                  <div className="j-timeline-steps">
-                    <div className="j-timeline-step">
-                      <div className="j-step-badge">1</div>
-                      <div className="j-step-content">
-                        <h5>Specify Context</h5>
-                        <p>Provide your exact intended corporate title or industrial niche target.</p>
-                      </div>
-                    </div>
-                    <div className="j-timeline-step">
-                      <div className="j-step-badge">2</div>
-                      <div className="j-step-content">
-                        <h5>Semantic Mapping</h5>
-                        <p>The engine matches profile indicators with live aggregator requirements.</p>
-                      </div>
-                    </div>
-                    <div className="j-timeline-step">
-                      <div className="j-step-badge">3</div>
-                      <div className="j-step-content">
-                        <h5>Intelligence Generation</h5>
-                        <p>Receive data structural charts detailing clear pay curves and skill actions.</p>
-                      </div>
-                    </div>
+            <div className="sj-divider" />
+            <p className="sj-section-label">Evaluation Workflow</p>
+
+            <div className="sj-steps">
+              {[
+                { icon: <FaSearch />,     title: "Specify Your Role",      desc: "Enter your target job title or niche specialisation." },
+                { icon: <FaChartLine />,  title: "Market Scan",            desc: "AI cross-references live hiring data and skill demand vectors." },
+                { icon: <FaBriefcase />,  title: "Intelligence Report",    desc: "Review readiness score, salary insights, skill gaps, and open roles." },
+              ].map(({ icon, title, desc }) => (
+                <div key={title} className="sj-step-row">
+                  <div className="sj-step-circle">{icon}</div>
+                  <div className="sj-step-body">
+                    <strong>{title}</strong>
+                    <span>{desc}</span>
                   </div>
                 </div>
-              </div>
+              ))}
+            </div>
 
-              <div className="j-horizontal-actions">
-                {hasPreviousAnalysis && (
-                  <button
-                    type="button"
-                    className="j-job-btn j-job-btn-secondary"
-                    onClick={restoreHistoricalAnalysis}
-                    disabled={isLoading}
-                  >
-                    <FaRedo className={isLoading ? "j-spin-engine" : ""} />
-                    <span>Restore Last Analysis</span>
-                  </button>
-                )}
+            <div className="sj-action-row">
+              {hasPreviousAnalysis && (
+                <button className="sj-btn sj-btn--ghost" onClick={restoreHistory} disabled={isStarting}>
+                  {isStarting ? <FaSpinner className="sj-spin" /> : <FaHistory />}
+                  Previous Analysis
+                </button>
+              )}
+              <button className="sj-btn sj-btn--primary" onClick={() => setMode("search")}>
+                <FaSearch /> Analyse a Role
+              </button>
+            </div>
+          </section>
 
-                <button
-                  type="button"
-                  className="j-job-btn j-job-btn-primary"
-                  onClick={() => {
-                    setShowSearchForm(true);
-                    setMode("new");
-                  }}
-                >
-                  <FaSearch />
-                  <span>Configure Target Analysis</span>
+          {/* Sidebar */}
+          <aside className="sj-card sj-sidebar-card">
+            <p className="sj-section-label">Market Intelligence</p>
+            <div className="sj-metrics-stack">
+              {[
+                { icon: <FaCoins />,        label: "Credits Available",  value: user?.aiUsage?.creditsRemaining ?? 0, accent: "blue"   },
+                { icon: <FaClipboardCheck />, label: "Analysis Cost",    value: "4 credits",                           accent: "violet" },
+                { icon: <FaShieldAlt />,    label: "Data Sources",       value: "Verified",                            accent: "green"  },
+                { icon: <FaCheckCircle />,  label: "Engine Status",      value: "Live",                                accent: "green"  },
+              ].map(({ icon, label, value, accent }) => (
+                <div key={label} className={`sj-metric-tile sj-metric--${accent}`}>
+                  <span className="sj-metric-icon">{icon}</span>
+                  <div className="sj-metric-body">
+                    <span className="sj-metric-label">{label}</span>
+                    <strong className="sj-metric-value">{value}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* ══════════════  SEARCH  ══════════════ */}
+      {mode === "search" && (
+        <div className="sj-single-layout">
+          <section className="sj-card sj-full-card">
+            <div className="sj-page-nav">
+              <button className="sj-btn sj-btn--ghost sj-btn--sm" onClick={() => setMode("landing")}>
+                <FaArrowLeft /> Back
+              </button>
+              <h2 className="sj-page-title">Configure Target Role</h2>
+            </div>
+
+            <form onSubmit={runAnalysis} className="sj-search-form">
+              <label className="sj-search-label">
+                Target role or specialisation
+              </label>
+              <div className="sj-search-row">
+                <div className="sj-search-input-wrap">
+                  <FaSearch className="sj-search-icon" />
+                  <input
+                    value={targetRole}
+                    onChange={(e) => setTargetRole(e.target.value)}
+                    placeholder="e.g. Senior Frontend Engineer, DevOps Engineer…"
+                    className="sj-search-input"
+                    required
+                  />
+                </div>
+                <button type="submit" className="sj-btn sj-btn--primary" disabled={isStarting}>
+                  {isStarting ? <FaSpinner className="sj-spin" /> : <FaRocket />}
+                  {isStarting ? "Analysing…" : "Run Analysis"}
                 </button>
               </div>
-            </section>
+              <p className="sj-search-hint">
+                Analysis uses 4 credits and scans live job boards + salary data.
+              </p>
+            </form>
+          </section>
+        </div>
+      )}
 
-            {/* Right Informational Segment */}
-            <aside className="j-onboarding-sidebar-card">
-              <h3>
-                <FaInfoCircle className="j-sidebar-title-icon" />
-                <span>Analytical Vectors</span>
-              </h3>
-              <p className="j-sidebar-intro">Running this evaluation correlates profile metadata to real-world employment points:</p>
-              
-              <ul className="j-sidebar-feature-list">
-                <li>
-                  <FaLevelUpAlt className="j-feat-icon" />
-                  <div>
-                    <strong>Market Readiness Index</strong>
-                    <p>A statistical score showing how closely matching your profile text is to open role requisitions.</p>
-                  </div>
-                </li>
-                <li>
-                  <FaWallet className="j-feat-icon" />
-                  <div>
-                    <strong>Salary Benchmarks</strong>
-                    <p>Aggregated local compensation curves parsed directly across current job listings.</p>
-                  </div>
-                </li>
-                <li>
-                  <FaLink className="j-feat-icon" />
-                  <div>
-                    <strong>Direct Openings</strong>
-                    <p>Curated external pipeline connections providing quick submission targets matching your skills.</p>
-                  </div>
-                </li>
-              </ul>
+      {/* ══════════════  REPORT  ══════════════ */}
+      {mode === "report" && jobData && (
+        <div className="sj-single-layout">
+          <section className="sj-card sj-full-card">
 
-              {/* Expanded Content: Platform Integrity & Scope Pulse */}
-              <div className="j-sidebar-pulse-block">
-                <h4>Engine Status</h4>
-                <div className="j-pulse-grid">
-                  <div className="j-pulse-item">
-                    <FaDatabase className="j-pulse-icon" />
-                    <div>
-                      <span className="j-pulse-value">Live</span>
-                      <span className="j-pulse-label">Data Stream</span>
-                    </div>
-                  </div>
-                  <div className="j-pulse-item">
-                    <FaShieldAlt className="j-pulse-icon" />
-                    <div>
-                      <span className="j-pulse-value">Verified</span>
-                      <span className="j-pulse-label">Aggregators</span>
-                    </div>
-                  </div>
-                  <div className="j-pulse-item">
-                    <FaClock className="j-pulse-icon" />
-                    <div>
-                      <span className="j-pulse-value">&lt; 24h</span>
-                      <span className="j-pulse-label">Index Age</span>
-                    </div>
-                  </div>
+            {/* Nav */}
+            <div className="sj-page-nav">
+              <button className="sj-btn sj-btn--ghost sj-btn--sm" onClick={() => setMode("landing")}>
+                <FaArrowLeft /> Back
+              </button>
+              <h2 className="sj-page-title">Market Report — {targetRole}</h2>
+            </div>
+
+            {/* Hero */}
+            <div className="sj-report-hero">
+              <ScoreRing value={readinessScore} />
+              <div className="sj-hero-meta">
+                <span className="sj-eyebrow">Market Readiness</span>
+                <h3 className="sj-hero-role">{targetRole}</h3>
+                <p className="sj-hero-sub">
+                  Cross-reference alignment score against current market demand and your skills profile.
+                </p>
+                <DemandBadge level={analysis?.demandLevel} />
+              </div>
+            </div>
+
+            {/* Summary cards — 3 col */}
+            <div className="sj-insight-grid">
+              <div className="sj-insight-card">
+                <div className="sj-insight-header sj-insight--blue">
+                  <FaChartLine /> Market Summary
+                </div>
+                <p className="sj-insight-body">{analysis?.marketSummary || "—"}</p>
+              </div>
+
+              <div className="sj-insight-card">
+                <div className="sj-insight-header sj-insight--green">
+                  <FaRupeeSign /> Compensation
+                </div>
+                <p className="sj-insight-body">{analysis?.salaryInsights || "—"}</p>
+              </div>
+
+              <div className="sj-insight-card">
+                <div className="sj-insight-header sj-insight--violet">
+                  <FaRocket /> Role Outlook
+                </div>
+                <p className="sj-insight-body">{analysis?.futureOutlook || "—"}</p>
+              </div>
+            </div>
+
+            {/* Skill gaps */}
+            {Array.isArray(analysis?.skillGapForMarket) && analysis.skillGapForMarket.length > 0 && (
+              <div className="sj-section">
+                <div className="sj-section-header">
+                  <FaLightbulb />
+                  <h3>Skill Gaps & Core Competencies</h3>
+                </div>
+                <div className="sj-skills-grid">
+                  {analysis.skillGapForMarket.map((skill, i) => (
+                    <span key={i} className="sj-skill-pill">
+                      <FaCheckCircle className="sj-skill-check" /> {skill}
+                    </span>
+                  ))}
                 </div>
               </div>
-            </aside>
-          </div>
-        )}
-
-        {(showSearchForm || jobData) && (
-          <>
-            {mode === "new" && (
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  executeJobMarketAnalysis();
-                }}
-                className="j-job-search-dock-card"
-              >
-                <div className="j-search-flex-row">
-                  <div className="j-input-icon-lockup">
-                    <FaSearch className="j-input-prefix-icon" />
-                    <input
-                      value={targetRole}
-                      onChange={(event) => setTargetRole(event.target.value)}
-                      placeholder="Enter a target role, e.g. Senior Frontend Engineer"
-                      className="j-search-input-field"
-                      required
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="j-job-btn j-job-btn-primary j-height-override"
-                  >
-                    {isLoading && <FaSpinner className="j-spin-engine" />}
-                    <span>{isLoading ? "Analyzing..." : "Analyze Market"}</span>
-                  </button>
-                </div>
-              </form>
             )}
 
-            {!jobData ? (
-              <EmptyView
-                title="No analysis yet"
-                message="Enter a target role above to generate market insights."
-              />
-            ) : (
-              /* 2. DYNAMIC INTEL STREAM DATA VISUALIZATION */
-              <div className="j-dashboard-content-stream">
-                <section className="j-job-analytics-strip-hero">
-                  <div className="j-radial-score-container">
-                    <div className="j-score-inner-core">
-                      <span className="j-score-integer">{alignmentQuotient}</span>
-                      <span className="j-score-percentage-symbol">%</span>
-                    </div>
-                  </div>
+            {/* Job listings */}
+            <div className="sj-section">
+              <div className="sj-section-header">
+                <FaBriefcase />
+                <h3>
+                  Matching Opportunities
+                  <span className="sj-count-badge">{activeJobsList.length}</span>
+                </h3>
+              </div>
 
-                  <div className="j-hero-identity-block">
-                    <h3>Market Fit Index</h3>
-                    <p>
-                      Your alignment score compared with hiring expectations for
-                      this role.
-                    </p>
-
-                    <div className="j-system-metadata-pillbox">
-                      <div className="j-meta-pill-indicator">
-                        <FaChartLine />
-                        <span>{analysis?.demandLevel || "Unspecified"} Demand</span>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <div className="j-job-bento-quad-grid">
-                  <IntelTextPanel
-                    icon={<FaChartLine />}
-                    title="Market Summary"
-                    text={analysis?.marketSummary}
-                  />
-
-                  <IntelTextPanel
-                    icon={<FaRupeeSign />}
-                    title="Compensation Insights"
-                    text={analysis?.salaryInsights}
-                  />
-
-                  <IntelTextPanel
-                    icon={<FaRocket />}
-                    title="Role Outlook"
-                    text={analysis?.futureOutlook}
-                  />
-
-                  <section className="j-job-bento-panel">
-                    <div className="j-bento-panel-header">
-                      <div className="j-header-left-meta">
-                        <div className="j-bento-icon-frame">
-                          <FaLightbulb />
+              {activeJobsList.length > 0 ? (
+                <div className="sj-jobs-list">
+                  {activeJobsList.map((job, idx) => (
+                    <div key={job._id || idx} className="sj-job-card">
+                      <div className="sj-job-icon-col">
+                        <div className="sj-job-icon">
+                          <FaBuilding />
                         </div>
-                        <h4>Skill Gaps</h4>
                       </div>
-                    </div>
-
-                    <div className="j-bento-panel-content">
-                      {Array.isArray(analysis?.skillGapForMarket) &&
-                      analysis.skillGapForMarket.length > 0 ? (
-                        <div className="j-bento-tag-matrix">
-                          {analysis.skillGapForMarket.map((item, index) => (
-                            <span
-                              key={`gap-node-${index}`}
-                              className="j-matrix-node-pill"
-                            >
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="j-empty-state-muted-text">
-                          No major gaps were found for this role.
-                        </p>
+                      <div className="sj-job-body">
+                        <h4 className="sj-job-title">{job.title || "Open Position"}</h4>
+                        <span className="sj-job-company">{job.company || "Confidential"}</span>
+                        {job.location && <span className="sj-job-location">📍 {job.location}</span>}
+                      </div>
+                      {job.applyLink && (
+                        <a
+                          href={job.applyLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="sj-btn sj-btn--primary sj-btn--sm"
+                        >
+                          Apply <FaExternalLinkAlt style={{ fontSize: "10px" }} />
+                        </a>
                       )}
                     </div>
-                  </section>
+                  ))}
                 </div>
+              ) : (
+                <div className="sj-empty-jobs">
+                  <FaBriefcase className="sj-empty-icon" />
+                  <p>No live listings found for this role right now. Check back soon.</p>
+                </div>
+              )}
+            </div>
 
-                <section className="j-job-workspace-block-card">
-                  <div className="j-block-component-header">
-                    <div className="j-header-icon-shell">
-                      <FaBriefcase />
-                    </div>
-
-                    <div className="j-header-text-alignment-wrapper">
-                      <h3>Matching Opportunities</h3>
-                      <span className="j-sub-count-text">
-                        {activeJobsList.length} openings evaluated
-                      </span>
-                    </div>
-                  </div>
-
-                  {activeJobsList.length > 0 ? (
-                    <div className="j-job-opportunities-flex-grid">
-                      {activeJobsList.map((job, index) => (
-                        <article
-                          key={job._id || `job-card-${index}`}
-                          className="j-opportunity-listing-card"
-                        >
-                          <div className="j-opportunity-meta-top">
-                            <h4>{job.title || "Untitled role"}</h4>
-                            <p className="j-opportunity-organization">
-                              {job.company || "Company not listed"}
-                            </p>
-                          </div>
-
-                          {job.applyLink && (
-                            <a
-                              href={job.applyLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="j-job-btn j-job-btn-outline j-size-sm"
-                            >
-                              <span>Apply</span>
-                            </a>
-                          )}
-                        </article>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="j-nested-empty-card-block">
-                      <p className="j-empty-state-muted-text">
-                        No matching openings were found for this analysis.
-                      </p>
-                    </div>
-                  )}
-                </section>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </main>
-  );
-}
-
-function IntelTextPanel({ title, icon, text }) {
-  return (
-    <section className="j-job-bento-panel">
-      <div className="j-bento-panel-header">
-        <div className="j-header-left-meta">
-          <div className="j-bento-icon-frame">{icon}</div>
-          <h4>{title}</h4>
+          </section>
         </div>
-      </div>
-
-      <div className="j-bento-panel-content">
-        <p className="j-bento-narrative-paragraph">
-          {text || "No data available for this section."}
-        </p>
-      </div>
-    </section>
+      )}
+    </main>
   );
 }

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import {
   FileText,
   GraduationCap,
@@ -9,139 +10,289 @@ import {
   CheckCircle2,
   Circle,
   Clock,
+  Zap,
+  BarChart2,
+  Target,
 } from "lucide-react";
 import "./index.css";
 
-const quickActions = [
+const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:7777";
+
+/* ── workspace cards ─────────────────────────────────────────── */
+const workspaces = [
   {
-    path: "/resume-analyzer",
-    step: "01",
+    path:  "/resume-analyzer",
+    step:  "01",
     title: "Resume Analyzer",
-    desc: "Upload your technical profile for an instant AI alignment audit.",
-    icon: <FileText size={18} className="text-indigo-600" />,
+    desc:  "Upload your resume for an instant AI alignment audit and ATS score.",
+    accent: "blue",
+    Icon:  FileText,
   },
   {
-    path: "/gap-analysis",
-    step: "02",
+    path:  "/gap-analysis",
+    step:  "02",
     title: "Skill Gap Analysis",
-    desc: "Isolate missing stack layers and compile your upskilling roadmaps.",
-    icon: <GraduationCap size={18} className="text-violet-600" />,
+    desc:  "Identify missing skills and receive a phased learning roadmap.",
+    accent: "violet",
+    Icon:  GraduationCap,
   },
   {
-    path: "/mock-interview",
-    step: "03",
+    path:  "/mock-interview",
+    step:  "03",
     title: "Mock Interview",
-    desc: "Run dynamic, role-tailored audio or text mock sessions with feedback.",
-    icon: <MessageSquareCode size={18} className="text-emerald-600" />,
+    desc:  "Run adaptive AI interview sessions with detailed performance feedback.",
+    accent: "green",
+    Icon:  MessageSquareCode,
   },
   {
-    path: "/job-match",
-    step: "04",
+    path:  "/job-match",
+    step:  "04",
     title: "Smart Job Match",
-    desc: "Cross-reference live profile metrics directly against open market pipelines.",
-    icon: <SearchCode size={18} className="text-amber-600" />,
+    desc:  "Cross-reference your profile against live market demand and open roles.",
+    accent: "orange",
+    Icon:  SearchCode,
   },
 ];
 
+/* ── activity event formatter ────────────────────────────────── */
+function formatActivity(items) {
+  return items.slice(0, 5).map((item) => ({
+    id:    item._id,
+    label: item.targetRole || item.role || "General Scan",
+    type:  item.matchPercentage !== undefined
+      ? "gap"
+      : item.feedback?.score !== undefined
+      ? "interview"
+      : "resume",
+    score: item.matchPercentage ?? item.feedback?.score ?? item.aiAnalysis?.score ?? null,
+    date:  new Date(item.createdAt).toLocaleDateString("en-GB", {
+      day: "numeric", month: "short",
+    }),
+  }));
+}
+
+const activityMeta = {
+  gap:       { label: "Gap Analysis",    color: "var(--d-violet)", bg: "var(--d-violet-light)" },
+  interview: { label: "Mock Interview",  color: "var(--d-green)",  bg: "var(--d-green-light)"  },
+  resume:    { label: "Resume Scan",     color: "var(--d-blue)",   bg: "var(--d-blue-light)"   },
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+═══════════════════════════════════════════════════════════════ */
 export default function Dashboard({ user }) {
-  // Simulating state checks for user progress
-  const isResumeUploaded = user?.progress?.resumeUploaded || false;
-  const isGapAnalyzed = user?.progress?.gapAnalyzed || false;
-  const isInterviewDone = user?.progress?.interviewDone || false;
+  const [activity, setActivity]   = useState([]);
+  const [actLoading, setActLoading] = useState(true);
+
+  /* progress derived from user prop */
+  const isResumeUploaded = Boolean(user?.progress?.resumeUploaded);
+  const isGapAnalyzed    = Boolean(user?.progress?.gapAnalyzed);
+  const isInterviewDone  = Boolean(user?.progress?.interviewDone);
+  const completedSteps   = [isResumeUploaded, isGapAnalyzed, isInterviewDone].filter(Boolean).length;
+
+  /* fetch recent activity across modules */
+  const fetchActivity = useCallback(async () => {
+    try {
+      const [gapRes, ivRes] = await Promise.allSettled([
+        axios.get(`${API_BASE_URL}/api/gap-analysis/latest`,   { withCredentials: true }),
+        axios.get(`${API_BASE_URL}/api/interview/history`,     { withCredentials: true }),
+      ]);
+
+      const items = [];
+
+      if (gapRes.status === "fulfilled" && gapRes.value.data?.data) {
+        items.push(gapRes.value.data.data);
+      }
+      if (ivRes.status === "fulfilled" && Array.isArray(ivRes.value.data?.interviews)) {
+        items.push(...ivRes.value.data.interviews);
+      }
+
+      /* sort by date desc */
+      items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setActivity(formatActivity(items));
+    } catch {
+      /* silent — activity feed is non-critical */
+    } finally {
+      setActLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchActivity(); }, [fetchActivity]);
+
+  /* credits */
+  const credits    = user?.aiUsage?.creditsRemaining ?? 0;
+  const maxCredits = 20;
+  const creditPct  = Math.min((credits / maxCredits) * 100, 100);
 
   return (
-    <div className="dashboard-page">
-      <div className="dashboard-container">
-        
-        {/* HERO HEADER */}
-        <header className="dashboard-header" aria-label="Dashboard Overview">
-          <div className="header-meta">
-            <h1>Welcome back, {user?.firstName || "Developer"}</h1>
-            <p>
-              Analyze your engineering profile, remedy architecture gaps, and optimize your path to your target role.
+    <div className="d-root">
+      <div className="d-container">
+
+        {/* ── Hero header ─────────────────────────────────────── */}
+        <header className="d-hero">
+          <div className="d-hero-left">
+            <h1 className="d-hero-title">
+              Welcome back, <span className="d-hero-name">{user?.firstName || "Developer"}</span>
+            </h1>
+            <p className="d-hero-sub">
+              Track your career progress, run AI tools, and close the gap to your target role.
             </p>
           </div>
 
-          <div className="target-role" role="status">
-            <span className="role-pulse" aria-hidden="true"></span>
-            <span>Targeting: <strong>{user?.targetRole || "Software Engineer"}</strong></span>
+          <div className="d-hero-right">
+            <div className="d-target-pill">
+              <span className="d-pulse" aria-hidden="true" />
+              <Target size={13} />
+              <span>Targeting: <strong>{user?.targetRole || "Software Engineer"}</strong></span>
+            </div>
+
+            <div className="d-credits-pill">
+              <Zap size={13} className="d-credits-zap" />
+              <span>{credits}/{maxCredits} Credits</span>
+              <div className="d-credits-mini-bar">
+                <div className="d-credits-mini-fill" style={{ width: `${creditPct}%` }} />
+              </div>
+            </div>
           </div>
         </header>
 
-        {/* SPECIAL DASHBOARD CORE HUB */}
-        <div className="dashboard-main-grid">
-          
-          {/* LEFT: INTERACTIVE ONBOARDING */}
-          <section className="dashboard-card onboarding-card">
-            <div className="card-header-inline">
-              <h2>Preparation Roadmap</h2>
-              <span className="completion-badge">0/3 Complete</span>
+        {/* ── Main 2-col grid ─────────────────────────────────── */}
+        <div className="d-main-grid">
+
+          {/* Preparation roadmap */}
+          <section className="d-card d-checklist-card">
+            <div className="d-card-header">
+              <h2 className="d-card-title">Preparation Roadmap</h2>
+              <span className={`d-badge ${completedSteps === 3 ? "d-badge--done" : ""}`}>
+                {completedSteps}/3 Complete
+              </span>
             </div>
-            
-            <div className="checklist-container">
-              <Link to="/resume-analyzer" className={`checklist-item ${isResumeUploaded ? 'done' : ''}`}>
-                {isResumeUploaded ? <CheckCircle2 size={18} className="icon-done" /> : <Circle size={18} className="icon-todo" />}
-                <div className="checklist-text">
-                  <h4>Upload your master technical resume</h4>
-                  <p>Unlocks your Career Readiness Index score and structural profile insights.</p>
-                </div>
-                <ArrowRight size={14} className="checklist-arrow" />
-              </Link>
 
-              <Link to="/gap-analysis" className={`checklist-item ${isGapAnalyzed ? 'done' : ''}`}>
-                {isGapAnalyzed ? <CheckCircle2 size={18} className="icon-done" /> : <Circle size={18} className="icon-todo" />}
-                <div className="checklist-text">
-                  <h4>Run a role alignment skill assessment</h4>
-                  <p>Identify missing backend/frontend layers against market demand.</p>
-                </div>
-                <ArrowRight size={14} className="checklist-arrow" />
-              </Link>
+            {/* Progress bar */}
+            <div className="d-progress-bar">
+              <div
+                className="d-progress-fill"
+                style={{ width: `${(completedSteps / 3) * 100}%` }}
+              />
+            </div>
 
-              <Link to="/mock-interview" className={`checklist-item ${isInterviewDone ? 'done' : ''}`}>
-                {isInterviewDone ? <CheckCircle2 size={18} className="icon-done" /> : <Circle size={18} className="icon-todo" />}
-                <div className="checklist-text">
-                  <h4>Complete an AI mock interview stream</h4>
-                  <p>Practice live system architecture and coding interview scenarios.</p>
-                </div>
-                <ArrowRight size={14} className="checklist-arrow" />
-              </Link>
+            <div className="d-checklist">
+              {[
+                {
+                  to:    "/resume-analyzer",
+                  done:  isResumeUploaded,
+                  title: "Upload your resume",
+                  sub:   "Unlocks your ATS score and skill extraction.",
+                },
+                {
+                  to:    "/gap-analysis",
+                  done:  isGapAnalyzed,
+                  title: "Run a skill gap analysis",
+                  sub:   "Identify missing skills against market demand.",
+                },
+                {
+                  to:    "/mock-interview",
+                  done:  isInterviewDone,
+                  title: "Complete a mock interview",
+                  sub:   "Practice with AI and get scored performance feedback.",
+                },
+              ].map(({ to, done, title, sub }) => (
+                <Link key={to} to={to} className={`d-checklist-item ${done ? "d-checklist-item--done" : ""}`}>
+                  {done
+                    ? <CheckCircle2 size={17} className="d-check-icon d-check-icon--done" />
+                    : <Circle size={17} className="d-check-icon d-check-icon--todo" />
+                  }
+                  <div className="d-checklist-text">
+                    <h4>{title}</h4>
+                    <p>{sub}</p>
+                  </div>
+                  <ArrowRight size={13} className="d-checklist-arrow" />
+                </Link>
+              ))}
             </div>
           </section>
 
-          {/* RIGHT: LIVE ACTIVITY / PLATFORM SYSTEM FEED */}
-          <section className="dashboard-card activity-card">
-            <h2>Recent Activity Logs</h2>
-            <div className="activity-feed">
-              <div className="feed-item empty">
-                <Clock size={20} className="empty-feed-icon" />
-                <p>No optimization scans executed yet.</p>
-                <Link to="/resume-analyzer" className="feed-action-btn">Initialize Profile Scan</Link>
+          {/* Activity feed */}
+          <section className="d-card d-activity-card">
+            <div className="d-card-header">
+              <h2 className="d-card-title">Recent Activity</h2>
+              {activity.length > 0 && (
+                <span className="d-badge">{activity.length} record{activity.length > 1 ? "s" : ""}</span>
+              )}
+            </div>
+
+            {actLoading ? (
+              <div className="d-activity-loading">
+                <div className="d-skeleton" />
+                <div className="d-skeleton d-skeleton--short" />
+                <div className="d-skeleton" />
               </div>
-            </div>
+            ) : activity.length === 0 ? (
+              <div className="d-activity-empty">
+                <Clock size={22} className="d-empty-icon" />
+                <p>No activity yet</p>
+                <Link to="/resume-analyzer" className="d-empty-btn">
+                  Start with Resume Analyzer
+                </Link>
+              </div>
+            ) : (
+              <ul className="d-activity-list">
+                {activity.map((item) => {
+                  const meta = activityMeta[item.type] || activityMeta.resume;
+                  return (
+                    <li key={item.id} className="d-activity-item">
+                      <span
+                        className="d-activity-dot"
+                        style={{ background: meta.bg, color: meta.color }}
+                      >
+                        <BarChart2 size={11} />
+                      </span>
+                      <div className="d-activity-body">
+                        <span className="d-activity-label">{item.label}</span>
+                        <span
+                          className="d-activity-type"
+                          style={{ color: meta.color }}
+                        >
+                          {meta.label}
+                        </span>
+                      </div>
+                      <div className="d-activity-right">
+                        {item.score !== null && (
+                          <span className="d-activity-score">{item.score}%</span>
+                        )}
+                        <span className="d-activity-date">{item.date}</span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </section>
-
         </div>
 
-        {/* WORKSPACE MODULES */}
-        <section className="career-section">
-          <div className="section-header">
-            <h2>Quick Workspaces</h2>
+        {/* ── Quick workspaces ─────────────────────────────────── */}
+        <section className="d-workspaces">
+          <div className="d-section-header">
+            <h2 className="d-section-title">Quick Workspaces</h2>
+            <p className="d-section-sub">Jump directly into any tool</p>
           </div>
 
-          <div className="action-grid">
-            {quickActions.map((item) => (
-              <Link to={item.path} key={item.path} className="action-card">
-                <div className="action-card-header">
-                  <span className="action-step">Step {item.step}</span>
-                  <div className="action-icon">{item.icon}</div>
+          <div className="d-workspace-grid">
+            {workspaces.map(({ path, step, title, desc, accent, Icon }) => (
+              <Link key={path} to={path} className={`d-workspace-card d-workspace-card--${accent}`}>
+                <div className="d-workspace-top">
+                  <span className="d-workspace-step">Step {step}</span>
+                  <div className="d-workspace-icon">
+                    <Icon size={17} />
+                  </div>
                 </div>
-                <div className="action-card-body">
-                  <h3>{item.title}</h3>
-                  <p>{item.desc}</p>
+                <div className="d-workspace-body">
+                  <h3 className="d-workspace-title">{title}</h3>
+                  <p className="d-workspace-desc">{desc}</p>
                 </div>
-                <div className="action-card-footer">
-                  <span className="action-cta">Launch Workspace</span>
-                  <ArrowRight size={14} className="arrow-icon" />
+                <div className="d-workspace-footer">
+                  <span className="d-workspace-cta">Launch</span>
+                  <ArrowRight size={13} className="d-workspace-arrow" />
                 </div>
               </Link>
             ))}

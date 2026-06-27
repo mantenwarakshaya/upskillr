@@ -1,479 +1,433 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import {
-  FaCloudUploadAlt,
+  FaRocket,
+  FaHistory,
+  FaSpinner,
+  FaCoins,
   FaFileAlt,
+  FaChartLine,
+  FaArrowLeft,
   FaCheckCircle,
   FaExclamationTriangle,
+  FaCloudUploadAlt,
+  FaRegClock,
+  FaCode,
+  FaBullseye,
   FaLightbulb,
-  FaProjectDiagram,
-  FaGraduationCap,
-  FaRedo,
-  FaSpinner,
-  FaClipboardCheck,
-  FaArrowLeft,
-  FaInfoCircle,
-  FaAward,
-  FaRegCheckCircle
 } from "react-icons/fa";
-import { LoaderView, ErrorView, EmptyView } from "../../Common";
+import { LoaderView } from "../../Common";
 import "./index.css";
 
 const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:7777";
 
-export default function ResumeAnalyzer() {
-  const navigate = useNavigate();
+/* ─── Score Ring ─────────────────────────────────────────────── */
+function ScoreRing({ score }) {
+  const pct = Math.min(Math.max(score || 0, 0), 100);
+  const r = 52;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (pct / 100) * circ;
+  const color = pct >= 75 ? "var(--ra-green)" : pct >= 50 ? "var(--ra-blue)" : "var(--ra-orange)";
+  const label = pct >= 75 ? "Strong Resume" : pct >= 50 ? "Good Shape" : "Needs Work";
 
-  const [latest, setLatest] = useState(null);
-  const [resumeFile, setResumeFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [notification, setNotification] = useState("");
-  const [showWorkspace, setShowWorkspace] = useState(false);
+  return (
+    <div className="ra-score-ring-wrap">
+      <svg className="ra-score-svg" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r={r} className="ra-ring-track" />
+        <circle
+          cx="60" cy="60" r={r}
+          className="ra-ring-fill"
+          style={{ strokeDasharray: circ, strokeDashoffset: offset, stroke: color }}
+        />
+        <text x="60" y="56" className="ra-ring-score">{pct}</text>
+        <text x="60" y="72" className="ra-ring-sub">/100</text>
+      </svg>
+      <span className="ra-ring-label" style={{ color }}>{label}</span>
+    </div>
+  );
+}
 
-  const showToast = (message) => {
-    setNotification(message);
+/* ─── Upload Zone ────────────────────────────────────────────── */
+function UploadZone({ selectedFile, onChange }) {
+  const [dragging, setDragging] = useState(false);
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) onChange(file);
   };
 
-  const getLatestAnalysis = async () => {
+  return (
+    <div
+      className={`ra-upload-zone ${dragging ? "ra-upload-zone--drag" : ""} ${selectedFile ? "ra-upload-zone--selected" : ""}`}
+      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleDrop}
+    >
+      <label htmlFor="ra-file-input" className="ra-upload-label">
+        {selectedFile ? (
+          <>
+            <FaFileAlt className="ra-upload-icon ra-upload-icon--active" />
+            <span className="ra-upload-filename">{selectedFile.name}</span>
+            <span className="ra-upload-hint">Click to replace</span>
+          </>
+        ) : (
+          <>
+            <FaCloudUploadAlt className="ra-upload-icon" />
+            <span className="ra-upload-title">Drop your resume here</span>
+            <span className="ra-upload-hint">PDF, DOC, DOCX — click to browse</span>
+          </>
+        )}
+      </label>
+      <input
+        type="file"
+        id="ra-file-input"
+        accept=".pdf,.docx,.doc"
+        onChange={(e) => onChange(e.target.files?.[0] || null)}
+        style={{ display: "none" }}
+      />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+═══════════════════════════════════════════════════════════════ */
+export default function ResumeAnalysis({ user }) {
+  const [history, setHistory]                   = useState([]);
+  const [mode, setMode]                         = useState("landing");
+  const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+  const [selectedFile, setSelectedFile]         = useState(null);
+  const [reportLoading, setReportLoading]       = useState(false);
+  const [isLoading, setIsLoading]               = useState(true);
+  const [isStarting, setIsStarting]             = useState(false);
+
+  const fetchHistory = useCallback(async () => {
     try {
-      setLoading(true);
-      setErrorMsg("");
-
-      const response = await axios.get(
-        `${API_BASE_URL}/api/resume-analysis/latest`,
-        { withCredentials: true }
-      );
-
-      const data = response.data?.data || null;
-      setLatest(data);
-      if (data) {
-        setShowWorkspace(true);
-      } else {
-        showToast("No previous analysis found. Please upload a new resume.");
-      }
+      const res = await axios.get(`${API_BASE_URL}/api/resume/history`, { withCredentials: true });
+      setHistory(res.data?.analyses || []);
     } catch (err) {
-      if (err.response?.status === 404) {
-        setLatest(null);
-        showToast("No previous analysis found.");
-      } else {
-        setErrorMsg(
-          err.response?.data?.message || "Could not load the latest resume analysis."
-        );
-      }
-    } finally {
-      setLoading(false);
+      console.error("Failed to fetch resume history:", err);
     }
-  };
+  }, []);
 
-  const handleUpload = async (event) => {
-    event.preventDefault();
-
-    if (!resumeFile) {
-      showToast("Please select a resume file first.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("resume", resumeFile);
-
+  const fetchAnalysisReport = async (id) => {
     try {
-      setUploading(true);
-      setNotification("");
-
-      const response = await axios.post(
-        `${API_BASE_URL}/api/resume-analysis`,
-        formData,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" }
-        }
-      );
-
-      // Fetch newly made data and force toggle active workspace layout
-      const latestResp = await axios.get(`${API_BASE_URL}/api/resume-analysis/latest`, { withCredentials: true });
-      setLatest(latestResp.data?.data || null);
-      showToast(response.data?.message || "Resume analyzed successfully.");
-      setResumeFile(null);
-      setShowWorkspace(true);
-    } catch (err) {
-      showToast(
-        err.response?.data?.message || "Resume analysis failed. Please try again."
-      );
+      setReportLoading(true);
+      const res = await axios.get(`${API_BASE_URL}/api/resume/${id}`, { withCredentials: true });
+      setSelectedAnalysis(res.data.analysis);
+      setMode("report");
+    } catch {
+      alert("Unable to load analysis report");
     } finally {
-      setUploading(false);
+      setReportLoading(false);
     }
   };
 
-  const handleBack = () => {
-    if (showWorkspace) {
-      setShowWorkspace(false);
-      setLatest(null);
-      setResumeFile(null);
-      return;
+  const handleStart = async () => {
+    if (!selectedFile) { alert("Please upload a resume file first."); return; }
+    setIsStarting(true);
+    try {
+      const formData = new FormData();
+      formData.append("resume", selectedFile);
+      formData.append("role", user?.targetRole || "");
+      await axios.post(`${API_BASE_URL}/api/resume/analyze`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
+      setSelectedFile(null);
+      await fetchHistory();
+      setMode("history");
+    } catch {
+      alert("Unable to run resume analysis");
+    } finally {
+      setIsStarting(false);
     }
-    navigate("/dashboard");
   };
 
   useEffect(() => {
-    if (!notification) return;
-    const timer = setTimeout(() => setNotification(""), 4000);
-    return () => clearTimeout(timer);
-  }, [notification]);
+    const init = async () => { await fetchHistory(); setIsLoading(false); };
+    init();
+  }, [fetchHistory]);
 
-  if (loading) {
-    return <LoaderView message="Loading resume analysis..." />;
-  }
+  if (isLoading) return <LoaderView message="Preparing your resume analyser…" />;
 
-  if (errorMsg) {
-    return <ErrorView message={errorMsg} onRetry={getLatestAnalysis} />;
-  }
+  /* ─── derived stats ──────────────────────────────────────── */
+  const completedAnalyses = history.filter((h) => h.aiAnalysis?.score !== undefined);
+  const avgScore = completedAnalyses.length
+    ? Math.round(completedAnalyses.reduce((a, h) => a + (h.aiAnalysis?.score || 0), 0) / completedAnalyses.length)
+    : "--";
 
-  const ai = latest?.aiAnalysis || {};
-  const resume = latest?.resumeData || {};
-  const score = Number(ai?.overallScore || 0);
-  const skills = latest?.extractedSkills || resume?.skills || [];
-  const projects = resume?.projects || [];
-
+  /* ════════════════════════════════════════════════════════════
+     RENDER
+  ════════════════════════════════════════════════════════════ */
   return (
-    <main className="ra-intel-workspace">
-      <div className="ra-grid-shell">
-        {notification && (
-          <div className="ra-toast-notification" role="alert" aria-live="polite">
-            <span>{notification}</span>
-          </div>
-        )}
-        {showWorkspace && (
-          <header className="ra-control-bar">
-            <div className="ra-bar-interactive-left">
-              <button
-                type="button"
-                className="ra-action-icon-btn"
-                onClick={handleBack}
-                aria-label="Go back"
-              >
-                <FaArrowLeft />
-              </button>
+    <main className="ra-root">
 
-              <div className="ra-bar-title-hierarchy">
-                <h1>{showWorkspace ? "Resume Analysis Workspace" : "Resume Analyzer"}</h1>
-                <p className="ra-timestamp-echo">
-                  {showWorkspace && latest?.createdAt
-                    ? `Analyzed ${new Date(latest.createdAt).toLocaleString(undefined, {
-                        dateStyle: "medium",
-                        timeStyle: "short"
-                      })}`
-                    : "Optimize structural formatting, alignment metrics, and pipeline ready scoring."}
-                </p>
-              </div>
+      {/* ══════════════  LANDING  ══════════════ */}
+      {mode === "landing" && (
+        <div className="ra-landing-layout">
+
+          {/* Main card */}
+          <section className="ra-card ra-main-card">
+            <span className="ra-eyebrow">AI Resume Analyser</span>
+            <h1 className="ra-display-title">Resume Performance</h1>
+            <p className="ra-lead">
+              Upload your CV and get an ATS score, keyword gaps, structural
+              improvements, and skill extraction — all in one pass.
+            </p>
+
+            <div className="ra-divider" />
+            <p className="ra-section-label">Analysis Pipeline</p>
+
+            <div className="ra-steps">
+              {[
+                { icon: <FaFileAlt />,   title: "Resume Parsing",       desc: "AI extracts your skills, experience, and structure from the document." },
+                { icon: <FaBullseye />,  title: "ATS Scoring",          desc: "Your resume is scored against role-specific keyword requirements." },
+                { icon: <FaLightbulb />, title: "Improvement Blueprint", desc: "Receive actionable suggestions to boost recruiter visibility and ATS rank." },
+              ].map(({ icon, title, desc }) => (
+                <div key={title} className="ra-step-row">
+                  <div className="ra-step-circle">{icon}</div>
+                  <div className="ra-step-body">
+                    <strong>{title}</strong>
+                    <span>{desc}</span>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {showWorkspace && (
-              <div className="ra-workspace-right-group">
-                <span className="ra-badge-accent">Workspace active</span>
+            {/* Upload */}
+            <UploadZone selectedFile={selectedFile} onChange={setSelectedFile} />
+
+            <div className="ra-action-row">
+              {history.length > 0 && (
+                <button className="ra-btn ra-btn--ghost" onClick={() => setMode("history")}>
+                  <FaHistory /> Previous Analyses
+                </button>
+              )}
+              <button
+                className="ra-btn ra-btn--primary"
+                onClick={handleStart}
+                disabled={isStarting || !selectedFile}
+              >
+                {isStarting ? <FaSpinner className="ra-spin" /> : <FaRocket />}
+                {isStarting ? "Processing…" : "Run Analysis"}
+              </button>
+            </div>
+          </section>
+
+          {/* Sidebar */}
+          <aside className="ra-card ra-sidebar-card">
+            <p className="ra-section-label">System Metrics</p>
+            <div className="ra-metrics-stack">
+              {[
+                { icon: <FaCoins />,     label: "Credits Available",  value: user?.aiUsage?.creditsRemaining ?? 0, accent: "blue"   },
+                { icon: <FaFileAlt />,   label: "Total Submissions",  value: history.length,                        accent: "violet" },
+                { icon: <FaChartLine />, label: "Average ATS Score",  value: avgScore,                              accent: "green"  },
+                { icon: <FaCheckCircle />, label: "Scanner Status",   value: "Active",                              accent: "green"  },
+              ].map(({ icon, label, value, accent }) => (
+                <div key={label} className={`ra-metric-tile ra-metric--${accent}`}>
+                  <span className="ra-metric-icon">{icon}</span>
+                  <div className="ra-metric-body">
+                    <span className="ra-metric-label">{label}</span>
+                    <strong className="ra-metric-value">{value}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* ══════════════  HISTORY  ══════════════ */}
+      {mode === "history" && (
+        <div className="ra-single-layout">
+          <section className="ra-card ra-full-card">
+            <div className="ra-page-nav">
+              <button className="ra-btn ra-btn--ghost ra-btn--sm" onClick={() => setMode("landing")}>
+                <FaArrowLeft /> Back
+              </button>
+              <h2 className="ra-page-title">Analysis Records</h2>
+            </div>
+
+            {history.length === 0 ? (
+              <div className="ra-empty-state">
+                <FaFileAlt className="ra-empty-icon" />
+                <p>No analyses yet. Upload your resume to get started.</p>
+              </div>
+            ) : (
+              <div className="ra-history-list">
+                {history.map((item) => {
+                  const score = item.aiAnalysis?.score ?? item.feedback?.score ?? 0;
+                  const scoreClass = score >= 75 ? "ra-score--high" : score >= 50 ? "ra-score--mid" : "ra-score--low";
+                  return (
+                    <div key={item._id} className="ra-session-card">
+                      <div className="ra-session-left">
+                        <div className={`ra-session-score ${scoreClass}`}>
+                          {score}<span>/100</span>
+                        </div>
+                        <div className="ra-session-meta">
+                          <strong className="ra-session-role">
+                            {item.targetRole || item.role || "General Scan"}
+                          </strong>
+                          <span className="ra-session-date">
+                            <FaRegClock />
+                            {new Date(item.createdAt).toLocaleDateString("en-GB", {
+                              day: "numeric", month: "short", year: "numeric",
+                            })}
+                          </span>
+                          {item.extractedSkills?.length > 0 && (
+                            <span className="ra-session-skills-count">
+                              <FaCode /> {item.extractedSkills.length} skills extracted
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        className="ra-btn ra-btn--primary ra-btn--sm"
+                        onClick={() => fetchAnalysisReport(item._id)}
+                        disabled={reportLoading}
+                      >
+                        {reportLoading ? <FaSpinner className="ra-spin" /> : null}
+                        View Report
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
-          </header>
-        )}
+          </section>
+        </div>
+      )}
 
-        {/* 1. INITIAL SPLIT ONBOARDING VIEW */}
-        {!showWorkspace && (
-          <div className="ra-split-onboarding-container">
-            {/* Left Workspaces Card: Form Dropzone */}
-            <section className="ra-onboarding-main-card">
-              <div className="ra-card-header-lockup">
-                <span className="ra-badge-accent">Interactive Engine</span>
-                <h2>Upload your profile resume</h2>
-                <p>Select your master profile copy to evaluate alignment auditing scores and baseline criteria maps.</p>
-              </div>
+      {/* ══════════════  REPORT  ══════════════ */}
+      {mode === "report" && selectedAnalysis && (
+        <div className="ra-single-layout">
+          <section className="ra-card ra-full-card">
 
-              <form onSubmit={handleUpload} className="ra-onboarding-form-module">
-                <label className={`ra-upload-dropzone ${resumeFile ? "ra-has-file-attached" : ""}`}>
-                  <FaCloudUploadAlt className="ra-upload-prefix-icon" />
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    className="ra-hidden-native-input"
-                    onChange={(event) => setResumeFile(event.target.files?.[0] || null)}
-                  />
-                  <span className="ra-dropzone-text">
-                    {resumeFile ? resumeFile.name : "Drag & drop or browse your local files"}
-                  </span>
-                  <span className="ra-dropzone-sub-label">
-                    Supports high structural PDF, DOC, or DOCX options up to 5MB
-                  </span>
-                </label>
+            <div className="ra-page-nav">
+              <button className="ra-btn ra-btn--ghost ra-btn--sm" onClick={() => setMode("history")}>
+                <FaArrowLeft /> Back
+              </button>
+              <h2 className="ra-page-title">
+                {selectedAnalysis.targetRole || selectedAnalysis.role || "Resume"} — Analysis Report
+              </h2>
+            </div>
 
-                <div className="ra-onboarding-action-row">
-                  <button
-                    type="button"
-                    className="ra-btn ra-btn-secondary"
-                    onClick={getLatestAnalysis}
-                  >
-                    <FaRedo />
-                    <span>Restore Last Scan</span>
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={uploading || !resumeFile}
-                    className="ra-btn ra-btn-primary"
-                  >
-                    {uploading ? <FaSpinner className="ra-spin-engine" /> : <FaClipboardCheck />}
-                    <span>{uploading ? "Analyzing Profile..." : "Run Analysis Scan"}</span>
-                  </button>
-                </div>
-              </form>
-            </section>
-
-            {/* Right Workspaces Card: Educational Metadata Panel */}
-            <aside className="ra-onboarding-sidebar-card">
-              <h3>
-                <FaInfoCircle className="ra-sidebar-title-icon" />
-                <span>Analysis Metrics</span>
-              </h3>
-              <p className="ra-sidebar-intro">Every document uploaded undergoes systematic optimization audits measuring core production readiness attributes:</p>
-              
-              <ul className="ra-sidebar-feature-list">
-                <li>
-                  <FaAward className="ra-feat-icon" />
-                  <div>
-                    <strong>ATS Index Audit Score</strong>
-                    <p>Evaluates raw formatting layers and syntax structures against active parsing pipelines.</p>
-                  </div>
-                </li>
-                <li>
-                  <FaRegCheckCircle className="ra-feat-icon" />
-                  <div>
-                    <strong>Keyword Alignment Map</strong>
-                    <p>Cross-references stack indicators, frameworks, and tools directly to industry standards.</p>
-                  </div>
-                </li>
-                <li>
-                  <FaProjectDiagram className="ra-feat-icon" />
-                  <div>
-                    <strong>Architecture Assessment</strong>
-                    <p>Breaks down technical delivery details and project scale parameters automatically.</p>
-                  </div>
-                </li>
-              </ul>
-            </aside>
-          </div>
-        )}
-
-        {/* 2. LIVE ACTIVE DATA GENERATED STREAM WORKSPACE */}
-        {showWorkspace && (
-          <div className="ra-workspace-data-layers">
-            {!latest ? (
-              <EmptyView
-                title="No analysis found"
-                message="Upload a resume to generate your first analysis."
-              />
+            {reportLoading ? (
+              <LoaderView message="Loading report…" />
             ) : (
-              <div className="ra-workspace-composite-stream">
-                <section className="ra-analytics-strip-hero">
-                  <div className="ra-radial-score-container">
-                    <div className="ra-score-inner-core">
-                      <span className="ra-score-integer">{score || "--"}</span>
-                      <span className="ra-score-percentage-symbol">%</span>
-                    </div>
-                  </div>
-
-                  <div className="ra-hero-identity-block">
-                    <h3>{ai?.candidateLevel || "Resume Evaluation"}</h3>
-                    <p>
-                      Overall resume score based on structure, clarity,
-                      experience, project quality, and role readiness.
+              <>
+                {/* Hero */}
+                <div className="ra-report-hero">
+                  <ScoreRing score={selectedAnalysis.aiAnalysis?.score ?? selectedAnalysis.feedback?.score ?? 0} />
+                  <div className="ra-hero-meta">
+                    <span className="ra-eyebrow">ATS Match Score</span>
+                    <h3 className="ra-hero-role">
+                      {selectedAnalysis.targetRole || selectedAnalysis.role || "Resume Assessment"}
+                    </h3>
+                    <p className="ra-hero-sub">
+                      Analysed on{" "}
+                      {new Date(selectedAnalysis.createdAt).toLocaleDateString("en-GB", {
+                        day: "numeric", month: "long", year: "numeric",
+                      })}
                     </p>
-
-                    <div className="ra-system-metadata-pillbox">
-                      <div className="ra-meta-pill-indicator">
-                        <FaClipboardCheck />
-                        <span>
-                          Interview Readiness: {ai?.interviewReadiness || "Not specified"}
+                    <div className="ra-hero-chips">
+                      {selectedAnalysis.extractedSkills?.length > 0 && (
+                        <span className="ra-chip">
+                          <FaCode /> {selectedAnalysis.extractedSkills.length} skills found
                         </span>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="ra-bento-panel ra-full-width-bento">
-                  <div className="ra-bento-panel-header">
-                    <div className="ra-header-left-meta">
-                      <div className="ra-bento-icon-frame">
-                        <FaFileAlt />
-                      </div>
-                      <h4>Summary</h4>
-                    </div>
-                  </div>
-
-                  <div className="ra-bento-panel-content">
-                    <p className="ra-bento-narrative-paragraph">
-                      {ai?.summary || resume?.summary || "No summary was generated for this resume."}
-                    </p>
-                  </div>
-                </section>
-
-                <div className="ra-bento-quad-grid">
-                  <IntelListPanel
-                    icon={<FaCheckCircle />}
-                    title="Strengths"
-                    items={ai?.strengths}
-                  />
-
-                  <IntelListPanel
-                    icon={<FaExclamationTriangle />}
-                    title="Weaknesses"
-                    items={ai?.weaknesses}
-                  />
-
-                  <IntelListPanel
-                    icon={<FaLightbulb />}
-                    title="Recommended Improvements"
-                    items={ai?.resumeFeedback}
-                  />
-
-                  <IntelTextPanel
-                    icon={<FaProjectDiagram />}
-                    title="Project Evaluation"
-                    text={ai?.projectEvaluation}
-                  />
-                </div>
-
-                <div className="ra-bento-quad-grid">
-                  <section className="ra-bento-panel">
-                    <div className="ra-bento-panel-header">
-                      <div className="ra-header-left-meta">
-                        <div className="ra-bento-icon-frame">
-                          <FaCheckCircle />
-                        </div>
-                        <h4>Extracted Skills</h4>
-                      </div>
-                    </div>
-
-                    <div className="ra-bento-panel-content">
-                      {skills.length ? (
-                        <div className="ra-capsule-tag-matrix">
-                          {skills.map((skill, index) => (
-                            <span key={`skill-node-${index}`} className="ra-capsule-node">
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="ra-empty-state-muted-text">
-                          No skills were extracted from this resume.
-                        </p>
                       )}
                     </div>
-                  </section>
-
-                  <IntelListPanel
-                    icon={<FaGraduationCap />}
-                    title="Education"
-                    items={resume?.education}
-                  />
-                </div>
-
-                <section className="ra-workspace-block-card">
-                  <div className="ra-block-component-header">
-                    <div className="ra-header-icon-shell">
-                      <FaProjectDiagram />
-                    </div>
-
-                    <div className="ra-header-text-wrapper">
-                      <h3>Projects</h3>
-                      <span className="ra-sub-count-text">
-                        {projects.length} project{projects.length === 1 ? "" : "s"} found
-                      </span>
-                    </div>
                   </div>
 
-                  {projects.length ? (
-                    <div className="ra-projects-grid">
-                      {projects.map((project, index) => {
-                        const projectText =
-                          typeof project === "object"
-                            ? `${project?.name || project?.title || "Project"}${
-                                project?.description ? ` - ${project.description}` : ""
-                              }${project?.technologies ? ` Stack: ${project.technologies}` : ""}`
-                            : project;
-
-                        return (
-                          <article key={`project-card-${index}`} className="ra-project-card">
-                            <p className="ra-bento-narrative-paragraph">{projectText}</p>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="ra-nested-empty-card-block">
-                      <p className="ra-empty-state-muted-text">
-                        No structured projects were found in this resume.
-                      </p>
+                  {/* Summary inset */}
+                  {selectedAnalysis.aiAnalysis?.summary && (
+                    <div className="ra-summary-box">
+                      <p className="ra-section-label" style={{ marginBottom: "8px" }}>Summary</p>
+                      <p className="ra-summary-text">{selectedAnalysis.aiAnalysis.summary}</p>
                     </div>
                   )}
-                </section>
-              </div>
+                </div>
+
+                {/* Strengths + Improvements */}
+                <div className="ra-two-col">
+                  <div className="ra-panel">
+                    <div className="ra-panel-header ra-panel--green">
+                      <FaCheckCircle /> Identified Strengths
+                    </div>
+                    <ul className="ra-feedback-list">
+                      {(selectedAnalysis.aiAnalysis?.strengths || selectedAnalysis.feedback?.strengths || []).map((item, i) => (
+                        <li key={i}>
+                          <span className="ra-dot ra-dot--green">✓</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="ra-panel">
+                    <div className="ra-panel-header ra-panel--orange">
+                      <FaExclamationTriangle /> Improvements Needed
+                    </div>
+                    <ul className="ra-feedback-list">
+                      {(selectedAnalysis.aiAnalysis?.improvements || selectedAnalysis.feedback?.improvements || []).map((item, i) => (
+                        <li key={i}>
+                          <span className="ra-dot ra-dot--orange">→</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Extracted Skills */}
+                {selectedAnalysis.extractedSkills?.length > 0 && (
+                  <div className="ra-section">
+                    <div className="ra-section-header">
+                      <FaCode />
+                      <h3>Extracted Skills</h3>
+                      <span className="ra-count-badge">{selectedAnalysis.extractedSkills.length}</span>
+                    </div>
+                    <div className="ra-skills-grid">
+                      {selectedAnalysis.extractedSkills.map((skill, i) => (
+                        <span key={i} className="ra-skill-pill">{skill}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section diagnostics */}
+                {selectedAnalysis.questions?.length > 0 && (
+                  <div className="ra-section">
+                    <div className="ra-section-header">
+                      <FaLightbulb />
+                      <h3>Section Diagnostics</h3>
+                    </div>
+                    <div className="ra-diagnostics-list">
+                      {selectedAnalysis.questions.map((section, idx) => (
+                        <div key={idx} className="ra-diagnostic-card">
+                          <div className="ra-diagnostic-number">S{idx + 1}</div>
+                          <div className="ra-diagnostic-body">
+                            <p className="ra-diagnostic-title">{section}</p>
+                            {selectedAnalysis.answers?.[idx] && (
+                              <div className="ra-diagnostic-rec">
+                                <span className="ra-rec-label">Recommendation</span>
+                                <p className="ra-rec-text">{selectedAnalysis.answers[idx]}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
-          </div>
-        )}
-      </div>
+          </section>
+        </div>
+      )}
     </main>
-  );
-}
-
-function IntelTextPanel({ title, icon, text }) {
-  return (
-    <section className="ra-bento-panel">
-      <div className="ra-bento-panel-header">
-        <div className="ra-header-left-meta">
-          <div className="ra-bento-icon-frame">{icon}</div>
-          <h4>{title}</h4>
-        </div>
-      </div>
-
-      <div className="ra-bento-panel-content">
-        <p className="ra-bento-narrative-paragraph">
-          {text || "No evaluation was generated for this section."}
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function IntelListPanel({ icon, title, items = [] }) {
-  return (
-    <section className="ra-bento-panel">
-      <div className="ra-bento-panel-header">
-        <div className="ra-header-left-meta">
-          <div className="ra-bento-icon-frame">{icon}</div>
-          <h4>{title}</h4>
-        </div>
-      </div>
-
-      <div className="ra-bento-panel-content">
-        {items?.length ? (
-          <div className="ra-list-matrix">
-            {items.map((item, index) => {
-              const textValue =
-                typeof item === "object"
-                  ? `${item?.degree || item?.title || ""} ${item?.school || item?.field || ""}`.trim()
-                  : item;
-
-              return (
-                <span key={`node-row-${index}`} className="ra-list-node">
-                  {textValue}
-                </span>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="ra-empty-state-muted-text">No items were found for this section.</p>
-        )}
-      </div>
-    </section>
   );
 }
