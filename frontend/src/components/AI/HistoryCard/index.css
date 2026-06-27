@@ -1,0 +1,65 @@
+/* History Card Component Styles */
+.hc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border: 1px solid var(--i-border);
+  border-radius: var(--i-radius-sm);
+  background: var(--i-surface);
+  transition: box-shadow var(--i-ease), border-color var(--i-ease);
+}
+.hc-card:hover {
+  border-color: var(--i-blue-mid);
+  box-shadow: var(--i-shadow-md);
+}
+
+.hc-left { display: flex; align-items: center; gap: 18px; }
+
+.hc-score {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  min-width: 52px;
+  text-align: center;
+}
+.hc-score span { font-size: 13px; font-weight: 500; opacity: .7; margin-left: 1px; }
+
+.hc-role { display: block; font-size: 15px; font-weight: 600; color: var(--i-text); margin-bottom: 4px; }
+.hc-date { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--i-muted); }
+
+.hc-status-badge {
+  display: inline-flex;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.hc-status--done     { background: var(--i-green-light);  color: var(--i-green);  border: 1px solid var(--i-green-mid); }
+.hc-status--progress { background: var(--i-orange-light); color: var(--i-orange); border: 1px solid var(--i-orange-mid); }
+
+.hc-btn-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--i-radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--i-blue);
+  color: #fff;
+  border: none;
+  transition: background var(--i-ease);
+}
+.hc-btn-view:hover:not(:disabled) { background: var(--i-blue-hover); }
+.hc-btn-view:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Responsive adjustments for History Card */
+@media (max-width: 768px) {
+  .hc-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .hc-btn-view { width: 100%; }
+}
