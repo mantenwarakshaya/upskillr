@@ -1,6 +1,7 @@
 // components/HistoryCard.jsx
 import React from 'react';
 import { FaRegClock, FaSpinner } from 'react-icons/fa';
+import './index.css'
 
 export function HistoryCard({ score, scoreClass, label, date, status, onClick, isLoading }) {
   return (

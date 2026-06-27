@@ -17,6 +17,7 @@ import {
   FaLightbulb,
 } from "react-icons/fa";
 import { LoaderView } from "../../Common";
+import { HistoryCard } from "../HistoryCard";
 import "./index.css";
 
 const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:7777";
@@ -260,39 +261,22 @@ export default function ResumeAnalysis({ user }) {
               <div className="ra-history-list">
                 {history.map((item) => {
                   const score = item.aiAnalysis?.score ?? item.feedback?.score ?? 0;
-                  const scoreClass = score >= 75 ? "ra-score--high" : score >= 50 ? "ra-score--mid" : "ra-score--low";
+                  // Map your resume-specific score thresholds to the hc-score classes
+                  const scoreClass = score >= 75 ? "hc-score--high" : score >= 50 ? "hc-score--mid" : "hc-score--low";
+                  
                   return (
-                    <div key={item._id} className="ra-session-card">
-                      <div className="ra-session-left">
-                        <div className={`ra-session-score ${scoreClass}`}>
-                          {score}<span>/100</span>
-                        </div>
-                        <div className="ra-session-meta">
-                          <strong className="ra-session-role">
-                            {item.targetRole || item.role || "General Scan"}
-                          </strong>
-                          <span className="ra-session-date">
-                            <FaRegClock />
-                            {new Date(item.createdAt).toLocaleDateString("en-GB", {
-                              day: "numeric", month: "short", year: "numeric",
-                            })}
-                          </span>
-                          {item.extractedSkills?.length > 0 && (
-                            <span className="ra-session-skills-count">
-                              <FaCode /> {item.extractedSkills.length} skills extracted
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        className="ra-btn ra-btn--primary ra-btn--sm"
-                        onClick={() => fetchAnalysisReport(item._id)}
-                        disabled={reportLoading}
-                      >
-                        {reportLoading ? <FaSpinner className="ra-spin" /> : null}
-                        View Report
-                      </button>
-                    </div>
+                    <HistoryCard 
+                      key={item._id}
+                      score={score}
+                      denominator={100}
+                      scoreClass={scoreClass}
+                      label={item.targetRole || item.role || "General Scan"}
+                      date={new Date(item.createdAt).toLocaleDateString("en-GB", {
+                        day: "numeric", month: "short", year: "numeric",
+                      })}
+                      onClick={() => fetchAnalysisReport(item._id)}
+                      isLoading={reportLoading}
+                    />
                   );
                 })}
               </div>
