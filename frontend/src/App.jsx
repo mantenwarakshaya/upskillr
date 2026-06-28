@@ -97,8 +97,8 @@ export default function App() {
         <Route element={authState.user ? <AppLayout user={authState.user} onLogout={handleLogout} /> : <Navigate to="/" replace />}>
           <Route path="/dashboard" element={<Dashboard />} />
 
-          <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
-          <Route path="/gap-analysis" element={<GapAnalysis />} />
+          <Route path="/resume-analyzer" element={<ResumeAnalyzer user={authState.user} />} />
+          <Route path="/gap-analysis" element={<GapAnalysis user={authState.user} />} />
           <Route path="/job-match" element={<JobMatch />} /> 
           <Route path="/mock-interview" element={<Interview user={authState.user}/>} />
           <Route path="/mock-interview/:id" element={<Interview />} />

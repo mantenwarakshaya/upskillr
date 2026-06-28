@@ -11,10 +11,12 @@ import {
   FaCheckCircle,
   FaExclamationTriangle,
   FaCloudUploadAlt,
-  FaRegClock,
   FaCode,
   FaBullseye,
   FaLightbulb,
+  FaUserTie,
+  FaClipboardList,
+  FaCommentDots,
 } from "react-icons/fa";
 import { LoaderView } from "../../Common";
 import { HistoryCard } from "../HistoryCard";
@@ -100,9 +102,14 @@ export default function ResumeAnalysis({ user }) {
   const [mode, setMode]                         = useState("landing");
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [selectedFile, setSelectedFile]         = useState(null);
+  // targetRole is never edited here — read directly from the user prop
+  // so it always reflects the latest /api/me response without any sync lag
+  const targetRole = user?.targetRole || "";
+
   const [reportLoading, setReportLoading]       = useState(false);
   const [isLoading, setIsLoading]               = useState(true);
   const [isStarting, setIsStarting]             = useState(false);
+  const [submitError, setSubmitError]           = useState("");
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -127,21 +134,31 @@ export default function ResumeAnalysis({ user }) {
   };
 
   const handleStart = async () => {
-    if (!selectedFile) { alert("Please upload a resume file first."); return; }
+    setSubmitError("");
+    if (!selectedFile)  { setSubmitError("Please upload a resume file first."); return; }
+    if (!targetRole.trim()) { setSubmitError("Please enter your target role before running analysis."); return; }
     setIsStarting(true);
     try {
       const formData = new FormData();
       formData.append("resume", selectedFile);
-      formData.append("role", user?.targetRole || "");
+      formData.append("targetRole", targetRole.trim());
+      // Do NOT set Content-Type manually — browser must auto-generate it
+      // with the correct multipart boundary, otherwise the server can't
+      // parse either the file or the text fields from the FormData body.
       await axios.post(`${API_BASE_URL}/api/resume/analyze`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
       setSelectedFile(null);
       await fetchHistory();
       setMode("history");
-    } catch {
-      alert("Unable to run resume analysis");
+    } catch (err) {
+      // Surface the real server message so errors are debuggable
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unable to run resume analysis. Check the console for details.";
+      setSubmitError(msg);
+      console.error("Resume analysis error:", err?.response?.data || err);
     } finally {
       setIsStarting(false);
     }
@@ -155,9 +172,10 @@ export default function ResumeAnalysis({ user }) {
   if (isLoading) return <LoaderView message="Preparing your resume analyser…" />;
 
   /* ─── derived stats ──────────────────────────────────────── */
-  const completedAnalyses = history.filter((h) => h.aiAnalysis?.score !== undefined);
+  // FIX: backend stores score as aiAnalysis.overallScore, not aiAnalysis.score
+  const completedAnalyses = history.filter((h) => h.aiAnalysis?.overallScore !== undefined);
   const avgScore = completedAnalyses.length
-    ? Math.round(completedAnalyses.reduce((a, h) => a + (h.aiAnalysis?.score || 0), 0) / completedAnalyses.length)
+    ? Math.round(completedAnalyses.reduce((a, h) => a + (h.aiAnalysis?.overallScore || 0), 0) / completedAnalyses.length)
     : "--";
 
   /* ════════════════════════════════════════════════════════════
@@ -198,8 +216,32 @@ export default function ResumeAnalysis({ user }) {
               ))}
             </div>
 
+            {/* Target Role — read from user profile via /api/me */}
+            <div className="ra-field-group">
+              <span className="ra-section-label">Analysing for role</span>
+              {targetRole ? (
+                <div className="ra-role-display">
+                  <FaBullseye className="ra-role-icon" />
+                  <span className="ra-role-name">{targetRole}</span>
+                  <span className="ra-role-source">from your profile</span>
+                </div>
+              ) : (
+                <div className="ra-role-missing">
+                  <FaExclamationTriangle />
+                  No target role set — go to <strong>Profile Settings</strong> to add one.
+                </div>
+              )}
+            </div>
+
             {/* Upload */}
             <UploadZone selectedFile={selectedFile} onChange={setSelectedFile} />
+
+            {/* Inline error — replaces browser alert() */}
+            {submitError && (
+              <div className="ra-submit-error">
+                <FaExclamationTriangle /> {submitError}
+              </div>
+            )}
 
             <div className="ra-action-row">
               {history.length > 0 && (
@@ -210,7 +252,7 @@ export default function ResumeAnalysis({ user }) {
               <button
                 className="ra-btn ra-btn--primary"
                 onClick={handleStart}
-                disabled={isStarting || !selectedFile}
+                disabled={isStarting || !selectedFile || !targetRole}
               >
                 {isStarting ? <FaSpinner className="ra-spin" /> : <FaRocket />}
                 {isStarting ? "Processing…" : "Run Analysis"}
@@ -223,10 +265,10 @@ export default function ResumeAnalysis({ user }) {
             <p className="ra-section-label">System Metrics</p>
             <div className="ra-metrics-stack">
               {[
-                { icon: <FaCoins />,     label: "Credits Available",  value: user?.aiUsage?.creditsRemaining ?? 0, accent: "blue"   },
-                { icon: <FaFileAlt />,   label: "Total Submissions",  value: history.length,                        accent: "violet" },
-                { icon: <FaChartLine />, label: "Average ATS Score",  value: avgScore,                              accent: "green"  },
-                { icon: <FaCheckCircle />, label: "Scanner Status",   value: "Active",                              accent: "green"  },
+                { icon: <FaCoins />,       label: "Credits Available", value: user?.aiUsage?.creditsRemaining ?? 0, accent: "blue"   },
+                { icon: <FaFileAlt />,     label: "Total Submissions",  value: history.length,                      accent: "violet" },
+                { icon: <FaChartLine />,   label: "Average ATS Score",  value: avgScore,                            accent: "green"  },
+                { icon: <FaCheckCircle />, label: "Scanner Status",     value: "Active",                            accent: "green"  },
               ].map(({ icon, label, value, accent }) => (
                 <div key={label} className={`ra-metric-tile ra-metric--${accent}`}>
                   <span className="ra-metric-icon">{icon}</span>
@@ -260,17 +302,16 @@ export default function ResumeAnalysis({ user }) {
             ) : (
               <div className="ra-history-list">
                 {history.map((item) => {
-                  const score = item.aiAnalysis?.score ?? item.feedback?.score ?? 0;
-                  // Map your resume-specific score thresholds to the hc-score classes
+                  // FIX: use overallScore — the field the backend actually saves
+                  const score = item.aiAnalysis?.overallScore ?? 0;
                   const scoreClass = score >= 75 ? "hc-score--high" : score >= 50 ? "hc-score--mid" : "hc-score--low";
-                  
+
                   return (
-                    <HistoryCard 
+                    <HistoryCard
                       key={item._id}
                       score={score}
-                      denominator={100}
                       scoreClass={scoreClass}
-                      label={item.targetRole || item.role || "General Scan"}
+                      label={item.targetRole || "General Scan"}
                       date={new Date(item.createdAt).toLocaleDateString("en-GB", {
                         day: "numeric", month: "short", year: "numeric",
                       })}
@@ -295,7 +336,7 @@ export default function ResumeAnalysis({ user }) {
                 <FaArrowLeft /> Back
               </button>
               <h2 className="ra-page-title">
-                {selectedAnalysis.targetRole || selectedAnalysis.role || "Resume"} — Analysis Report
+                {selectedAnalysis.targetRole || "Resume"} — Analysis Report
               </h2>
             </div>
 
@@ -303,13 +344,15 @@ export default function ResumeAnalysis({ user }) {
               <LoaderView message="Loading report…" />
             ) : (
               <>
-                {/* Hero */}
+                {/* ── Hero ── */}
                 <div className="ra-report-hero">
-                  <ScoreRing score={selectedAnalysis.aiAnalysis?.score ?? selectedAnalysis.feedback?.score ?? 0} />
+                  {/* FIX: overallScore is the correct field from backend */}
+                  <ScoreRing score={selectedAnalysis.aiAnalysis?.overallScore ?? 0} />
+
                   <div className="ra-hero-meta">
                     <span className="ra-eyebrow">ATS Match Score</span>
                     <h3 className="ra-hero-role">
-                      {selectedAnalysis.targetRole || selectedAnalysis.role || "Resume Assessment"}
+                      {selectedAnalysis.targetRole || "Resume Assessment"}
                     </h3>
                     <p className="ra-hero-sub">
                       Analysed on{" "}
@@ -318,31 +361,44 @@ export default function ResumeAnalysis({ user }) {
                       })}
                     </p>
                     <div className="ra-hero-chips">
+                      {/* FIX: candidateLevel comes from aiAnalysis, not a top-level field */}
+                      {selectedAnalysis.aiAnalysis?.candidateLevel && (
+                        <span className="ra-chip">
+                          <FaUserTie /> {selectedAnalysis.aiAnalysis.candidateLevel}
+                        </span>
+                      )}
                       {selectedAnalysis.extractedSkills?.length > 0 && (
                         <span className="ra-chip">
                           <FaCode /> {selectedAnalysis.extractedSkills.length} skills found
                         </span>
                       )}
+                      {/* FIX: interviewReadiness — new field now surfaced */}
+                      {selectedAnalysis.aiAnalysis?.interviewReadiness && (
+                        <span className="ra-chip ra-chip--readiness">
+                          <FaCheckCircle /> {selectedAnalysis.aiAnalysis.interviewReadiness}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Summary inset */}
+                  {/* FIX: summary field is correct key, was already right */}
                   {selectedAnalysis.aiAnalysis?.summary && (
                     <div className="ra-summary-box">
-                      <p className="ra-section-label" style={{ marginBottom: "8px" }}>Summary</p>
+                      <p className="ra-section-label" style={{ marginBottom: "8px" }}>AI Summary</p>
                       <p className="ra-summary-text">{selectedAnalysis.aiAnalysis.summary}</p>
                     </div>
                   )}
                 </div>
 
-                {/* Strengths + Improvements */}
+                {/* ── Strengths + Weaknesses ── */}
                 <div className="ra-two-col">
                   <div className="ra-panel">
                     <div className="ra-panel-header ra-panel--green">
                       <FaCheckCircle /> Identified Strengths
                     </div>
                     <ul className="ra-feedback-list">
-                      {(selectedAnalysis.aiAnalysis?.strengths || selectedAnalysis.feedback?.strengths || []).map((item, i) => (
+                      {/* FIX: field is aiAnalysis.strengths — was already correct */}
+                      {(selectedAnalysis.aiAnalysis?.strengths || []).map((item, i) => (
                         <li key={i}>
                           <span className="ra-dot ra-dot--green">✓</span>
                           {item}
@@ -353,10 +409,11 @@ export default function ResumeAnalysis({ user }) {
 
                   <div className="ra-panel">
                     <div className="ra-panel-header ra-panel--orange">
-                      <FaExclamationTriangle /> Improvements Needed
+                      <FaExclamationTriangle /> Areas to Improve
                     </div>
                     <ul className="ra-feedback-list">
-                      {(selectedAnalysis.aiAnalysis?.improvements || selectedAnalysis.feedback?.improvements || []).map((item, i) => (
+                      {/* FIX: backend sends "weaknesses", not "improvements" */}
+                      {(selectedAnalysis.aiAnalysis?.weaknesses || []).map((item, i) => (
                         <li key={i}>
                           <span className="ra-dot ra-dot--orange">→</span>
                           {item}
@@ -366,7 +423,41 @@ export default function ResumeAnalysis({ user }) {
                   </div>
                 </div>
 
-                {/* Extracted Skills */}
+                {/* ── Resume Feedback ── NEW: was completely missing */}
+                {selectedAnalysis.aiAnalysis?.resumeFeedback?.length > 0 && (
+                  <div className="ra-section">
+                    <div className="ra-section-header">
+                      <FaClipboardList />
+                      <h3>Resume Feedback</h3>
+                      <span className="ra-count-badge">
+                        {selectedAnalysis.aiAnalysis.resumeFeedback.length}
+                      </span>
+                    </div>
+                    <ul className="ra-feedback-list ra-feedback-list--bordered">
+                      {selectedAnalysis.aiAnalysis.resumeFeedback.map((tip, i) => (
+                        <li key={i}>
+                          <span className="ra-dot ra-dot--blue">{i + 1}</span>
+                          {tip}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* ── Project Evaluation ── NEW: was completely missing */}
+                {selectedAnalysis.aiAnalysis?.projectEvaluation && (
+                  <div className="ra-section">
+                    <div className="ra-section-header">
+                      <FaCommentDots />
+                      <h3>Project Evaluation</h3>
+                    </div>
+                    <div className="ra-prose-box">
+                      <p>{selectedAnalysis.aiAnalysis.projectEvaluation}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Extracted Skills ── */}
                 {selectedAnalysis.extractedSkills?.length > 0 && (
                   <div className="ra-section">
                     <div className="ra-section-header">
@@ -377,32 +468,6 @@ export default function ResumeAnalysis({ user }) {
                     <div className="ra-skills-grid">
                       {selectedAnalysis.extractedSkills.map((skill, i) => (
                         <span key={i} className="ra-skill-pill">{skill}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Section diagnostics */}
-                {selectedAnalysis.questions?.length > 0 && (
-                  <div className="ra-section">
-                    <div className="ra-section-header">
-                      <FaLightbulb />
-                      <h3>Section Diagnostics</h3>
-                    </div>
-                    <div className="ra-diagnostics-list">
-                      {selectedAnalysis.questions.map((section, idx) => (
-                        <div key={idx} className="ra-diagnostic-card">
-                          <div className="ra-diagnostic-number">S{idx + 1}</div>
-                          <div className="ra-diagnostic-body">
-                            <p className="ra-diagnostic-title">{section}</p>
-                            {selectedAnalysis.answers?.[idx] && (
-                              <div className="ra-diagnostic-rec">
-                                <span className="ra-rec-label">Recommendation</span>
-                                <p className="ra-rec-text">{selectedAnalysis.answers[idx]}</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
                       ))}
                     </div>
                   </div>

@@ -701,3 +701,217 @@
   .ra-page-nav { flex-wrap: wrap; }
   .ra-session-card { flex-direction: column; align-items: flex-start; gap: 14px; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   ADDITIONS TO index.css  — paste these at the bottom
+   Covers: ra-chip--readiness, ra-dot--blue, ra-feedback-list--bordered,
+           ra-prose-box
+════════════════════════════════════════════════════════════════ */
+
+/* ── Readiness chip variant ─────────────────────────────────── */
+.ra-chip--readiness {
+  color: var(--ra-green);
+  border-color: var(--ra-green-mid);
+  background: var(--ra-green-light);
+}
+
+/* ── Blue dot for numbered resume-feedback list ─────────────── */
+.ra-dot--blue {
+  background: var(--ra-blue-light);
+  color: var(--ra-blue);
+}
+
+/* ── Bordered feedback list (resume-feedback section) ────────── */
+.ra-feedback-list--bordered {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-sm);
+  padding: 16px 18px;
+  gap: 14px;
+}
+
+.ra-feedback-list--bordered li {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.ra-feedback-list--bordered li:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* ── Prose box for project evaluation ───────────────────────── */
+.ra-prose-box {
+  padding: 20px 22px;
+  background: var(--ra-bg);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-sm);
+  border-left: 3px solid var(--ra-violet);
+}
+
+.ra-prose-box p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ra-text);
+  line-height: 1.75;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   ADDITIONS TO index.css  — paste these at the bottom
+   These override values defined earlier in the file.
+════════════════════════════════════════════════════════════════ */
+
+/* ── Wider layouts ───────────────────────────────────────────── */
+/* Original ra-single-layout caps at 900px — too narrow for the
+   report hero. Bump both layouts to use the full viewport better. */
+.ra-landing-layout {
+  max-width: 1400px;
+}
+
+.ra-single-layout {
+  max-width: 1140px;
+}
+
+/* ── Full-card padding bump for report view ─────────────────── */
+.ra-full-card {
+  padding: 40px 48px;
+}
+
+/* ── Report hero: 3-col with fixed summary column ───────────── */
+/* Original uses auto 1fr auto which collapses the summary.
+   Give it a fixed 300px so it never gets squeezed. */
+.ra-report-hero {
+  grid-template-columns: auto 1fr 300px;
+  gap: 36px;
+  padding: 32px 36px;
+}
+
+.ra-summary-box {
+  max-width: 100%; /* was 280px — let the column control the width */
+}
+
+/* ── Target role display (read from profile) ────────────────── */
+.ra-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 20px;
+}
+
+.ra-role-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid var(--ra-blue-mid);
+  border-radius: var(--ra-radius-sm);
+  background: var(--ra-blue-light);
+}
+
+.ra-role-icon {
+  color: var(--ra-blue);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.ra-role-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ra-blue);
+}
+
+.ra-role-source {
+  font-size: 11px;
+  color: var(--ra-muted);
+  margin-left: 2px;
+}
+
+.ra-role-missing {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--ra-orange-mid);
+  border-radius: var(--ra-radius-sm);
+  background: var(--ra-orange-light);
+  color: var(--ra-orange);
+  font-size: 13px;
+}
+
+/* ── Inline submit error ────────────────────────────────────── */
+.ra-submit-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: var(--ra-radius-xs);
+  background: var(--ra-orange-light);
+  border: 1px solid var(--ra-orange-mid);
+  color: var(--ra-orange);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ── Readiness chip variant ─────────────────────────────────── */
+.ra-chip--readiness {
+  color: var(--ra-green);
+  border-color: var(--ra-green-mid);
+  background: var(--ra-green-light);
+}
+
+/* ── Blue dot for numbered resume-feedback list ─────────────── */
+.ra-dot--blue {
+  background: var(--ra-blue-light);
+  color: var(--ra-blue);
+}
+
+/* ── Bordered feedback list (resume-feedback section) ────────── */
+.ra-feedback-list--bordered {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-sm);
+  padding: 16px 18px;
+  gap: 14px;
+}
+
+.ra-feedback-list--bordered li {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.ra-feedback-list--bordered li:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* ── Prose box for project evaluation ───────────────────────── */
+.ra-prose-box {
+  padding: 20px 22px;
+  background: var(--ra-bg);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-sm);
+  border-left: 3px solid var(--ra-violet);
+}
+
+.ra-prose-box p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ra-text);
+  line-height: 1.75;
+}
+
+/* ── Responsive overrides ────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .ra-single-layout  { max-width: 100%; }
+  .ra-landing-layout { max-width: 100%; }
+  .ra-full-card      { padding: 28px 32px; }
+}
+
+@media (max-width: 768px) {
+  .ra-report-hero {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 20px;
+  }
+  .ra-full-card { padding: 20px; }
+}
