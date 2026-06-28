@@ -640,3 +640,232 @@
 
   .i-session-card { flex-direction: column; align-items: flex-start; gap: 16px; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   ADDITIONS TO Interview/index.css — paste at the bottom
+════════════════════════════════════════════════════════════════ */
+
+/* ── Wider layouts ───────────────────────────────────────────── */
+.i-landing-layout { max-width: 1400px; }
+.i-single-layout  { max-width: 1140px; }
+.i-full-card      { padding: 40px 48px; }
+
+/* ── Role display (mirrors ra-role-display) ─────────────────── */
+.i-field-group    { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+
+.i-role-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid var(--i-blue-mid);
+  border-radius: var(--i-radius-sm);
+  background: var(--i-blue-light);
+}
+.i-role-icon   { color: var(--i-blue); font-size: 13px; flex-shrink: 0; }
+.i-role-name   { font-size: 14px; font-weight: 700; color: var(--i-blue); }
+.i-role-source { font-size: 11px; color: var(--i-muted); margin-left: 2px; }
+
+.i-role-missing {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--i-orange-mid);
+  border-radius: var(--i-radius-sm);
+  background: var(--i-orange-light);
+  color: var(--i-orange);
+  font-size: 13px;
+}
+
+/* ── Inline error ────────────────────────────────────────────── */
+.i-submit-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: var(--i-radius-xs);
+  background: var(--i-orange-light);
+  border: 1px solid var(--i-orange-mid);
+  color: var(--i-orange);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ── History list (HistoryCard wrapper) ─────────────────────── */
+.i-history-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* ══ LIVE INTERVIEW MODE ══════════════════════════════════════ */
+
+/* Progress header */
+.i-progress-header {
+  margin-bottom: 32px;
+}
+.i-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.i-progress-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--i-muted);
+}
+.i-progress-track {
+  height: 6px;
+  background: var(--i-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.i-progress-fill {
+  height: 100%;
+  background: var(--i-blue);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+/* Question bubble */
+.i-question-bubble {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #eff6ff 100%);
+  border: 1px solid var(--i-blue-mid);
+  border-radius: var(--i-radius);
+  margin-bottom: 28px;
+}
+.i-question-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--i-blue);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.i-question-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--i-blue);
+  margin-bottom: 8px;
+}
+.i-question-text {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--i-text);
+  line-height: 1.6;
+}
+
+/* Answer section */
+.i-answer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.i-answer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.i-answer-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--i-text);
+}
+.i-answer-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--i-border);
+  border-radius: var(--i-radius-sm);
+  font-size: 14px;
+  color: var(--i-text);
+  background: var(--i-surface);
+  resize: vertical;
+  outline: none;
+  line-height: 1.65;
+  transition: border-color var(--i-ease), box-shadow var(--i-ease);
+  font-family: inherit;
+}
+.i-answer-textarea:focus {
+  border-color: var(--i-blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.i-answer-textarea::placeholder { color: var(--i-xmuted); }
+.i-answer-textarea:disabled     { opacity: .6; cursor: not-allowed; }
+
+.i-answer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.i-answer-hint {
+  font-size: 12px;
+  color: var(--i-xmuted);
+}
+
+/* Voice button */
+.i-voice-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--i-radius-sm);
+  border: 1px solid var(--i-border);
+  background: var(--i-surface);
+  color: var(--i-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: border-color var(--i-ease), background var(--i-ease);
+}
+.i-voice-btn:hover:not(:disabled) {
+  border-color: var(--i-blue-mid);
+  background: var(--i-blue-light);
+  color: var(--i-blue);
+}
+.i-voice-btn--active {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #dc2626;
+}
+.i-voice-btn:disabled { opacity: .5; cursor: not-allowed; }
+.i-voice-icon { font-size: 13px; }
+
+/* Pulsing ring when recording */
+.i-voice-pulse {
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 2px solid #dc2626;
+  animation: i-pulse 1.2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes i-pulse {
+  0%   { opacity: 1;   transform: scale(1);    }
+  100% { opacity: 0;   transform: scale(1.18); }
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .i-single-layout  { max-width: 100%; }
+  .i-landing-layout { max-width: 100%; }
+  .i-full-card      { padding: 28px 32px; }
+}
+@media (max-width: 768px) {
+  .i-full-card          { padding: 20px; }
+  .i-report-hero        { grid-template-columns: 1fr; text-align: center; padding: 20px; }
+  .i-score-ring-wrap    { margin: 0 auto; }
+  .i-hero-chips         { justify-content: center; }
+  .i-summary-box        { max-width: 100%; }
+  .i-answer-actions     { flex-direction: column; align-items: flex-end; gap: 10px; }
+  .i-progress-meta      { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
