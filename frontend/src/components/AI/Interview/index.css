@@ -869,3 +869,115 @@
   .i-answer-actions     { flex-direction: column; align-items: flex-end; gap: 10px; }
   .i-progress-meta      { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
+
+/* Speaking bars animation */
+.i-speaking-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 20px;
+  margin-top: 8px;
+}
+.i-bar {
+  width: 3px;
+  background: var(--i-blue);
+  border-radius: 2px;
+  animation: i-bar-bounce 0.8s ease-in-out infinite alternate;
+  height: 6px;
+}
+@keyframes i-bar-bounce {
+  to { height: 20px; }
+}
+.i-bar:nth-child(2) { animation-delay: 0.1s; }
+.i-bar:nth-child(3) { animation-delay: 0.2s; }
+.i-bar:nth-child(4) { animation-delay: 0.3s; }
+.i-bar:nth-child(5) { animation-delay: 0.4s; }
+
+/* Rec indicator */
+.i-rec-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #dc2626;
+}
+.i-rec-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #dc2626;
+  animation: i-pulse 1s ease-in-out infinite;
+}
+
+/* Voice area */
+.i-voice-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 28px;
+  border: 2px dashed var(--i-border);
+  border-radius: var(--i-radius);
+  margin-top: 16px;
+}
+.i-voice-recorder {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.i-voice-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--i-muted);
+}
+.i-voice-status--speaking {
+  color: var(--i-blue);
+  font-weight: 600;
+}
+
+/* Mic button */
+.i-btn--mic {
+  background: var(--i-blue-light);
+  color: var(--i-blue);
+  border: 1.5px solid var(--i-blue-mid);
+  height: 48px;
+  padding: 0 24px;
+  font-size: 15px;
+}
+.i-btn--mic:hover { background: var(--i-blue); color: #fff; }
+
+/* Danger stop button */
+.i-btn--danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1.5px solid #fecaca;
+  height: 48px;
+  padding: 0 24px;
+  font-size: 15px;
+}
+.i-btn--danger:hover { background: #dc2626; color: #fff; }
+
+/* Transcript pill */
+.i-transcript-pill {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--i-bg);
+  border: 1px solid var(--i-border);
+  border-radius: var(--i-radius-sm);
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.i-transcript-label {
+  font-weight: 700;
+  color: var(--i-muted);
+  white-space: nowrap;
+}
+.i-transcript-text {
+  color: var(--i-text);
+  font-style: italic;
+  line-height: 1.5;
+}

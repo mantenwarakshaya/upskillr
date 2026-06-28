@@ -1,5 +1,6 @@
 const Interview = require("../models/Interview");
 const User = require("../models/user");
+const { textToSpeech } = require("../services/textToSpeechService");
 
 const {
 generateFirstQuestion,
@@ -275,9 +276,15 @@ return res.status(500).json({
 }
 };
 
-module.exports = {
-startInterview,
-submitAnswer,
-getInterviewHistory,
-getInterviewById,
+const speakText = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ success: false, message: "Text required" });
+    const audioUrl = await textToSpeech(text);
+    return res.status(200).json({ success: true, audioUrl });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
+
+module.exports = { startInterview, submitAnswer, getInterviewHistory, getInterviewById, speakText };
