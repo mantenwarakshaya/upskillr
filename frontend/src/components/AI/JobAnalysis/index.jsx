@@ -18,11 +18,12 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 import { LoaderView, ErrorView } from "../../Common";
+import { HistoryCard } from "../HistoryCard";
 import "./index.css";
 
 const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:7777";
 
-/* ─── Demand badge helper ────────────────────────────────────── */
+/* ─── Demand badge ────────────────────────────────────────────── */
 function DemandBadge({ level }) {
   const map = {
     High:   "sj-demand--high",
@@ -30,11 +31,14 @@ function DemandBadge({ level }) {
     Low:    "sj-demand--low",
     Stable: "sj-demand--stable",
   };
-  const cls = map[level] || "sj-demand--stable";
-  return <span className={`sj-demand-badge ${cls}`}>{level || "Stable"} Demand</span>;
+  return (
+    <span className={`sj-demand-badge ${map[level] || "sj-demand--stable"}`}>
+      {level || "Stable"} Demand
+    </span>
+  );
 }
 
-/* ─── Score Ring ─────────────────────────────────────────────── */
+/* ─── Score Ring ──────────────────────────────────────────────── */
 function ScoreRing({ value }) {
   const num = parseInt(value) || 0;
   const r = 52;
@@ -64,64 +68,71 @@ function ScoreRing({ value }) {
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════════ */
 export default function JobMatch({ user }) {
-  const [targetRole, setTargetRole]             = useState("");
-  const [jobData, setJobData]                   = useState(null);
-  const [mode, setMode]                         = useState("landing");
-  const [isLoading, setIsLoading]               = useState(true);
-  const [isStarting, setIsStarting]             = useState(false);
-  const [hasPreviousAnalysis, setHasPreviousAnalysis] = useState(false);
-  const [errorContext, setErrorContext]         = useState(null);
-  const [toast, setToast]                       = useState("");
+  const [targetRole, setTargetRole]   = useState("");
+  const [history, setHistory]         = useState([]);
+  const [jobData, setJobData]         = useState(null);
+  const [mode, setMode]               = useState("landing");
+  const [isLoading, setIsLoading]     = useState(true);
+  const [isStarting, setIsStarting]   = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [errorContext, setErrorContext]   = useState(null);
+  const [toast, setToast]             = useState("");
 
-  const analysis        = jobData?.analysis || {};
-  const activeJobsList  = useMemo(() => (Array.isArray(jobData?.jobs) ? jobData.jobs : []), [jobData?.jobs]);
-  const readinessScore  = analysis?.jobReadinessScore ?? "--";
+  const analysis       = jobData?.analysis || {};
+  const activeJobsList = useMemo(() => (Array.isArray(jobData?.jobs) ? jobData.jobs : []), [jobData?.jobs]);
+  const readinessScore = analysis?.jobReadinessScore ?? 0;
 
-  /* ── helpers ─────────────────────────────────────────────── */
+  /* ── toast helper ─────────────────────────────────────────── */
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(""), 4000);
   };
 
-  const checkHistory = useCallback(async () => {
+  /* ── fetch history list ───────────────────────────────────── */
+  // FIX: was GET /api/job-analysis/latest (wrong mount, wrong method, no route)
+  // Backend mounted at /api/job; GET /history is the new route we added
+  const fetchHistory = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/job-analysis/latest`, { withCredentials: true });
-      setHasPreviousAnalysis(Boolean(res.data?.data));
-    } catch {
-      setHasPreviousAnalysis(false);
+      const res = await axios.get(`${API_BASE_URL}/api/job/history`, { withCredentials: true });
+      setHistory(res.data?.history || []);
+    } catch (err) {
+      console.error("Failed to fetch job analysis history:", err);
     }
   }, []);
 
-  const restoreHistory = async () => {
+  /* ── fetch single report by id ────────────────────────────── */
+  // FIX: was no route at all. Now hits GET /api/job/:id
+  const fetchReportById = async (id) => {
     try {
-      setIsStarting(true);
-      const res = await axios.get(`${API_BASE_URL}/api/job-analysis/latest`, { withCredentials: true });
-      const snap = res.data?.data;
-      setJobData(snap);
-      if (snap?.targetRole) setTargetRole(snap.targetRole);
+      setReportLoading(true);
+      const res = await axios.get(`${API_BASE_URL}/api/job/${id}`, { withCredentials: true });
+      const doc = res.data?.data;
+      setJobData(doc);
+      if (doc?.targetRole) setTargetRole(doc.targetRole);
       setMode("report");
-      showToast("Previous analysis restored.");
-    } catch {
-      showToast("No previous analysis found.");
+    } catch (err) {
+      showToast(err.response?.data?.message || "Unable to load report.");
     } finally {
-      setIsStarting(false);
+      setReportLoading(false);
     }
   };
 
+  /* ── run analysis ─────────────────────────────────────────── */
+  // FIX: was POST /api/job-analysis — correct is POST /api/job
   const runAnalysis = async (e) => {
     if (e) e.preventDefault();
-    if (!targetRole.trim()) { alert("Please enter a target role."); return; }
+    if (!targetRole.trim()) { showToast("Please enter a target role."); return; }
     setIsStarting(true);
     setErrorContext(null);
     try {
       const res = await axios.post(
-        `${API_BASE_URL}/api/job-analysis`,
+        `${API_BASE_URL}/api/job`,
         { targetRole },
         { withCredentials: true }
       );
       const data = res.data?.data || res.data?.result || res.data || null;
       setJobData(data);
-      await checkHistory();
+      await fetchHistory();
       setMode("report");
     } catch (err) {
       setErrorContext({
@@ -133,12 +144,12 @@ export default function JobMatch({ user }) {
     }
   };
 
+  /* ── init ─────────────────────────────────────────────────── */
   useEffect(() => {
-    const init = async () => { await checkHistory(); setIsLoading(false); };
+    const init = async () => { await fetchHistory(); setIsLoading(false); };
     init();
-  }, [checkHistory]);
+  }, [fetchHistory]);
 
-  /* ── early returns ───────────────────────────────────────── */
   if (isLoading) return <LoaderView message="Preparing market intelligence…" />;
   if (errorContext)
     return (
@@ -154,15 +165,13 @@ export default function JobMatch({ user }) {
   ════════════════════════════════════════════════════════════ */
   return (
     <main className="sj-root">
-      {toast && (
-        <div className="sj-toast" role="alert">{toast}</div>
-      )}
+
+      {toast && <div className="sj-toast" role="alert">{toast}</div>}
 
       {/* ══════════════  LANDING  ══════════════ */}
       {mode === "landing" && (
         <div className="sj-landing-layout">
 
-          {/* Main */}
           <section className="sj-card sj-main-card">
             <span className="sj-eyebrow">Job Market Intelligence</span>
             <h1 className="sj-display-title">Market Suitability</h1>
@@ -176,9 +185,9 @@ export default function JobMatch({ user }) {
 
             <div className="sj-steps">
               {[
-                { icon: <FaSearch />,     title: "Specify Your Role",      desc: "Enter your target job title or niche specialisation." },
-                { icon: <FaChartLine />,  title: "Market Scan",            desc: "AI cross-references live hiring data and skill demand vectors." },
-                { icon: <FaBriefcase />,  title: "Intelligence Report",    desc: "Review readiness score, salary insights, skill gaps, and open roles." },
+                { icon: <FaSearch />,    title: "Specify Your Role",   desc: "Enter your target job title or niche specialisation." },
+                { icon: <FaChartLine />, title: "Market Scan",         desc: "AI cross-references live hiring data and skill demand vectors." },
+                { icon: <FaBriefcase />, title: "Intelligence Report", desc: "Review readiness score, salary insights, skill gaps, and open roles." },
               ].map(({ icon, title, desc }) => (
                 <div key={title} className="sj-step-row">
                   <div className="sj-step-circle">{icon}</div>
@@ -191,10 +200,9 @@ export default function JobMatch({ user }) {
             </div>
 
             <div className="sj-action-row">
-              {hasPreviousAnalysis && (
-                <button className="sj-btn sj-btn--ghost" onClick={restoreHistory} disabled={isStarting}>
-                  {isStarting ? <FaSpinner className="sj-spin" /> : <FaHistory />}
-                  Previous Analysis
+              {history.length > 0 && (
+                <button className="sj-btn sj-btn--ghost" onClick={() => setMode("history")}>
+                  <FaHistory /> Previous Analyses
                 </button>
               )}
               <button className="sj-btn sj-btn--primary" onClick={() => setMode("search")}>
@@ -203,15 +211,14 @@ export default function JobMatch({ user }) {
             </div>
           </section>
 
-          {/* Sidebar */}
           <aside className="sj-card sj-sidebar-card">
             <p className="sj-section-label">Market Intelligence</p>
             <div className="sj-metrics-stack">
               {[
-                { icon: <FaCoins />,        label: "Credits Available",  value: user?.aiUsage?.creditsRemaining ?? 0, accent: "blue"   },
-                { icon: <FaClipboardCheck />, label: "Analysis Cost",    value: "4 credits",                           accent: "violet" },
-                { icon: <FaShieldAlt />,    label: "Data Sources",       value: "Verified",                            accent: "green"  },
-                { icon: <FaCheckCircle />,  label: "Engine Status",      value: "Live",                                accent: "green"  },
+                { icon: <FaCoins />,         label: "Credits Available", value: user?.aiUsage?.creditsRemaining ?? 0,                         accent: "blue"   },
+                { icon: <FaClipboardCheck />, label: "Total Analyses",   value: history.length,                                               accent: "violet" },
+                { icon: <FaChartLine />,      label: "Last Readiness",   value: history[0]?.analysis?.jobReadinessScore ? `${history[0].analysis.jobReadinessScore}%` : "--", accent: "green"  },
+                { icon: <FaCheckCircle />,    label: "Engine Status",    value: "Live",                                                       accent: "green"  },
               ].map(({ icon, label, value, accent }) => (
                 <div key={label} className={`sj-metric-tile sj-metric--${accent}`}>
                   <span className="sj-metric-icon">{icon}</span>
@@ -238,9 +245,7 @@ export default function JobMatch({ user }) {
             </div>
 
             <form onSubmit={runAnalysis} className="sj-search-form">
-              <label className="sj-search-label">
-                Target role or specialisation
-              </label>
+              <label className="sj-search-label">Target role or specialisation</label>
               <div className="sj-search-row">
                 <div className="sj-search-input-wrap">
                   <FaSearch className="sj-search-icon" />
@@ -265,118 +270,161 @@ export default function JobMatch({ user }) {
         </div>
       )}
 
+      {/* ══════════════  HISTORY  ══════════════ */}
+      {mode === "history" && (
+        <div className="sj-single-layout">
+          <section className="sj-card sj-full-card">
+            <div className="sj-page-nav">
+              <button className="sj-btn sj-btn--ghost sj-btn--sm" onClick={() => setMode("landing")}>
+                <FaArrowLeft /> Back
+              </button>
+              <h2 className="sj-page-title">Analysis Records</h2>
+            </div>
+
+            {history.length === 0 ? (
+              <div className="sj-empty-jobs">
+                <FaBriefcase className="sj-empty-icon" />
+                <p>No analyses yet. Run your first market scan to get started.</p>
+              </div>
+            ) : (
+              <div className="sj-history-list">
+                {history.map((item) => {
+                  // analysis.jobReadinessScore is the score field from the model
+                  const score      = item.analysis?.jobReadinessScore ?? 0;
+                  const scoreClass = score >= 75 ? "hc-score--high" : score >= 50 ? "hc-score--mid" : "hc-score--low";
+                  return (
+                    <HistoryCard
+                      key={item._id}
+                      score={score}
+                      denominator={100}
+                      scoreClass={scoreClass}
+                      label={item.targetRole || "Market Analysis"}
+                      date={new Date(item.createdAt).toLocaleDateString("en-GB", {
+                        day: "numeric", month: "short", year: "numeric",
+                      })}
+                      onClick={() => fetchReportById(item._id)}
+                      isLoading={reportLoading}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
       {/* ══════════════  REPORT  ══════════════ */}
       {mode === "report" && jobData && (
         <div className="sj-single-layout">
           <section className="sj-card sj-full-card">
 
-            {/* Nav */}
             <div className="sj-page-nav">
-              <button className="sj-btn sj-btn--ghost sj-btn--sm" onClick={() => setMode("landing")}>
+              <button className="sj-btn sj-btn--ghost sj-btn--sm" onClick={() => setMode("history")}>
                 <FaArrowLeft /> Back
               </button>
-              <h2 className="sj-page-title">Market Report — {targetRole}</h2>
+              <h2 className="sj-page-title">Market Report — {targetRole || jobData.targetRole}</h2>
             </div>
 
-            {/* Hero */}
-            <div className="sj-report-hero">
-              <ScoreRing value={readinessScore} />
-              <div className="sj-hero-meta">
-                <span className="sj-eyebrow">Market Readiness</span>
-                <h3 className="sj-hero-role">{targetRole}</h3>
-                <p className="sj-hero-sub">
-                  Cross-reference alignment score against current market demand and your skills profile.
-                </p>
-                <DemandBadge level={analysis?.demandLevel} />
-              </div>
-            </div>
-
-            {/* Summary cards — 3 col */}
-            <div className="sj-insight-grid">
-              <div className="sj-insight-card">
-                <div className="sj-insight-header sj-insight--blue">
-                  <FaChartLine /> Market Summary
+            {reportLoading ? (
+              <LoaderView message="Loading report…" />
+            ) : (
+              <>
+                {/* Hero */}
+                <div className="sj-report-hero">
+                  <ScoreRing value={readinessScore} />
+                  <div className="sj-hero-meta">
+                    <span className="sj-eyebrow">Market Readiness</span>
+                    <h3 className="sj-hero-role">{targetRole || jobData.targetRole}</h3>
+                    <p className="sj-hero-sub">
+                      Cross-reference alignment score against current market demand and your skills profile.
+                    </p>
+                    <DemandBadge level={analysis?.demandLevel} />
+                  </div>
                 </div>
-                <p className="sj-insight-body">{analysis?.marketSummary || "—"}</p>
-              </div>
 
-              <div className="sj-insight-card">
-                <div className="sj-insight-header sj-insight--green">
-                  <FaRupeeSign /> Compensation
-                </div>
-                <p className="sj-insight-body">{analysis?.salaryInsights || "—"}</p>
-              </div>
-
-              <div className="sj-insight-card">
-                <div className="sj-insight-header sj-insight--violet">
-                  <FaRocket /> Role Outlook
-                </div>
-                <p className="sj-insight-body">{analysis?.futureOutlook || "—"}</p>
-              </div>
-            </div>
-
-            {/* Skill gaps */}
-            {Array.isArray(analysis?.skillGapForMarket) && analysis.skillGapForMarket.length > 0 && (
-              <div className="sj-section">
-                <div className="sj-section-header">
-                  <FaLightbulb />
-                  <h3>Skill Gaps & Core Competencies</h3>
-                </div>
-                <div className="sj-skills-grid">
-                  {analysis.skillGapForMarket.map((skill, i) => (
-                    <span key={i} className="sj-skill-pill">
-                      <FaCheckCircle className="sj-skill-check" /> {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Job listings */}
-            <div className="sj-section">
-              <div className="sj-section-header">
-                <FaBriefcase />
-                <h3>
-                  Matching Opportunities
-                  <span className="sj-count-badge">{activeJobsList.length}</span>
-                </h3>
-              </div>
-
-              {activeJobsList.length > 0 ? (
-                <div className="sj-jobs-list">
-                  {activeJobsList.map((job, idx) => (
-                    <div key={job._id || idx} className="sj-job-card">
-                      <div className="sj-job-icon-col">
-                        <div className="sj-job-icon">
-                          <FaBuilding />
-                        </div>
-                      </div>
-                      <div className="sj-job-body">
-                        <h4 className="sj-job-title">{job.title || "Open Position"}</h4>
-                        <span className="sj-job-company">{job.company || "Confidential"}</span>
-                        {job.location && <span className="sj-job-location">📍 {job.location}</span>}
-                      </div>
-                      {job.applyLink && (
-                        <a
-                          href={job.applyLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="sj-btn sj-btn--primary sj-btn--sm"
-                        >
-                          Apply <FaExternalLinkAlt style={{ fontSize: "10px" }} />
-                        </a>
-                      )}
+                {/* 3-col insight cards */}
+                <div className="sj-insight-grid">
+                  <div className="sj-insight-card">
+                    <div className="sj-insight-header sj-insight--blue">
+                      <FaChartLine /> Market Summary
                     </div>
-                  ))}
+                    <p className="sj-insight-body">{analysis?.marketSummary || "—"}</p>
+                  </div>
+                  <div className="sj-insight-card">
+                    <div className="sj-insight-header sj-insight--green">
+                      <FaRupeeSign /> Compensation
+                    </div>
+                    <p className="sj-insight-body">{analysis?.salaryInsights || "—"}</p>
+                  </div>
+                  <div className="sj-insight-card">
+                    <div className="sj-insight-header sj-insight--violet">
+                      <FaRocket /> Role Outlook
+                    </div>
+                    <p className="sj-insight-body">{analysis?.futureOutlook || "—"}</p>
+                  </div>
                 </div>
-              ) : (
-                <div className="sj-empty-jobs">
-                  <FaBriefcase className="sj-empty-icon" />
-                  <p>No live listings found for this role right now. Check back soon.</p>
-                </div>
-              )}
-            </div>
 
+                {/* Skill gaps */}
+                {Array.isArray(analysis?.skillGapForMarket) && analysis.skillGapForMarket.length > 0 && (
+                  <div className="sj-section">
+                    <div className="sj-section-header">
+                      <FaLightbulb />
+                      <h3>Skill Gaps & Core Competencies</h3>
+                    </div>
+                    <div className="sj-skills-grid">
+                      {analysis.skillGapForMarket.map((skill, i) => (
+                        <span key={i} className="sj-skill-pill">
+                          <FaCheckCircle className="sj-skill-check" /> {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Job listings */}
+                <div className="sj-section">
+                  <div className="sj-section-header">
+                    <FaBriefcase />
+                    <h3>
+                      Matching Opportunities
+                      <span className="sj-count-badge">{activeJobsList.length}</span>
+                    </h3>
+                  </div>
+
+                  {activeJobsList.length > 0 ? (
+                    <div className="sj-jobs-list">
+                      {activeJobsList.map((job, idx) => (
+                        <div key={job._id || idx} className="sj-job-card">
+                          <div className="sj-job-icon-col">
+                            <div className="sj-job-icon"><FaBuilding /></div>
+                          </div>
+                          <div className="sj-job-body">
+                            <h4 className="sj-job-title">{job.title || "Open Position"}</h4>
+                            <span className="sj-job-company">{job.company || "Confidential"}</span>
+                            {job.location && <span className="sj-job-location">📍 {job.location}</span>}
+                          </div>
+                          {job.applyLink && (
+                            <a
+                              href={job.applyLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="sj-btn sj-btn--primary sj-btn--sm"
+                            >
+                              Apply <FaExternalLinkAlt style={{ fontSize: "10px" }} />
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="sj-empty-jobs">
+                      <FaBriefcase className="sj-empty-icon" />
+                      <p>No live listings found for this role right now. Check back soon.</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </section>
         </div>
       )}

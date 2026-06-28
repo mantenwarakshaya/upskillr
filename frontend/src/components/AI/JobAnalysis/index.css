@@ -597,3 +597,37 @@
 
   .sj-job-card { flex-wrap: wrap; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   ADDITIONS TO JobMatch/index.css — paste at the bottom
+════════════════════════════════════════════════════════════════ */
+
+/* ── Wider layouts ───────────────────────────────────────────── */
+.sj-landing-layout {
+  max-width: 1400px;
+}
+
+.sj-single-layout {
+  max-width: 1140px;
+}
+
+.sj-full-card {
+  padding: 40px 48px;
+}
+
+/* ── History list ────────────────────────────────────────────── */
+.sj-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .sj-single-layout  { max-width: 100%; }
+  .sj-landing-layout { max-width: 100%; }
+  .sj-full-card      { padding: 28px 32px; }
+}
+
+@media (max-width: 768px) {
+  .sj-full-card { padding: 20px; }
+}

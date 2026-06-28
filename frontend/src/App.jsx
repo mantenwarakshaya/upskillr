@@ -99,9 +99,9 @@ export default function App() {
 
           <Route path="/resume-analyzer" element={<ResumeAnalyzer user={authState.user} />} />
           <Route path="/gap-analysis" element={<GapAnalysis user={authState.user} />} />
-          <Route path="/job-match" element={<JobMatch />} /> 
+          <Route path="/job-match" element={<JobMatch user={authState.user} />} /> 
           <Route path="/mock-interview" element={<Interview user={authState.user}/>} />
-          <Route path="/mock-interview/:id" element={<Interview />} />
+          <Route path="/mock-interview/:id" element={<Interview user={authState.user} />} />
 
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/edit" element={<EditProfile />} />
