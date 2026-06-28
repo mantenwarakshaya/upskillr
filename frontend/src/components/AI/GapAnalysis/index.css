@@ -771,3 +771,37 @@
     flex-wrap: wrap;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   ADDITIONS TO GapAnalysis/index.css — paste at the bottom
+════════════════════════════════════════════════════════════════ */
+
+/* ── Wider layouts (sidebar is ~180px; original 960px too narrow) */
+.ga-landing-layout {
+  max-width: 1400px;
+}
+
+.ga-report-layout {
+  max-width: 1140px;
+}
+
+.ga-report-card {
+  padding: 40px 48px;
+}
+
+@media (max-width: 1024px) {
+  .ga-report-layout  { max-width: 100%; }
+  .ga-landing-layout { max-width: 100%; }
+  .ga-report-card    { padding: 28px 32px; }
+}
+
+@media (max-width: 768px) {
+  .ga-report-card { padding: 20px; }
+}
+
+/* ── History list (mirrors ra-history-list) ─────────────────── */
+.ga-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

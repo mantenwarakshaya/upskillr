@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import {
   FaRocket,
+  FaHistory,
   FaArrowLeft,
   FaSpinner,
   FaChartLine,
@@ -15,31 +16,26 @@ import {
 } from "react-icons/fa";
 
 import { LoaderView, ErrorView, EmptyView } from "../../Common";
+import { HistoryCard } from "../HistoryCard";
 import "./index.css";
 
 const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:7777";
 
-/* ─── tiny helper ─────────────────────────────────────────────── */
+/* ─── Score Ring ──────────────────────────────────────────────── */
 function ScoreRing({ value }) {
   const r = 54;
   const circ = 2 * Math.PI * r;
   const offset = circ - (value / 100) * circ;
   const color =
-    value >= 75 ? "var(--success)" : value >= 50 ? "var(--warning)" : "var(--danger)";
+    value >= 75 ? "var(--ga-green)" : value >= 50 ? "var(--ga-orange)" : "var(--ga-danger)";
 
   return (
     <svg className="ga-score-ring" viewBox="0 0 120 120">
       <circle cx="60" cy="60" r={r} className="ga-ring-track" />
       <circle
-        cx="60"
-        cy="60"
-        r={r}
+        cx="60" cy="60" r={r}
         className="ga-ring-fill"
-        style={{
-          strokeDasharray: circ,
-          strokeDashoffset: offset,
-          stroke: color,
-        }}
+        style={{ strokeDasharray: circ, strokeDashoffset: offset, stroke: color }}
       />
       <text x="60" y="65" className="ga-ring-text">
         {value ?? "--"}%
@@ -48,64 +44,78 @@ function ScoreRing({ value }) {
   );
 }
 
-/* ─── main component ──────────────────────────────────────────── */
+/* ─── Main Component ──────────────────────────────────────────── */
 export default function GapAnalysis() {
-  const [roadmap, setRoadmap] = useState(null);
-  const [mode, setMode] = useState("landing");
-  const [loading, setLoading] = useState(true);
-  const [starting, setStarting] = useState(false);
-  const [error, setError] = useState(null);
+  const [history, setHistory]               = useState([]);
+  const [roadmap, setRoadmap]               = useState(null);
+  const [mode, setMode]                     = useState("landing");
+  const [loading, setLoading]               = useState(true);
+  const [starting, setStarting]             = useState(false);
+  const [reportLoading, setReportLoading]   = useState(false);
+  const [error, setError]                   = useState(null);
 
-  const loadRoadmap = useCallback(async () => {
+  /* ── fetch history list (sidebar metric + history view) ─────── */
+  const fetchHistory = useCallback(async () => {
     try {
-      setError(null);
-      const response = await axios.get(`${API_BASE_URL}/api/gap-analysis/latest`, {
-        withCredentials: true,
-      });
-      const data = response.data?.data || response.data?.roadmap || response.data;
-      if (data) setRoadmap(data);
+      const res = await axios.get(`${API_BASE_URL}/api/gap/history`, { withCredentials: true });
+      setHistory(res.data?.history || []);
     } catch (err) {
-      if (err.response?.status !== 404) {
-        setError({
-          message: err.response?.data?.message || "Unable to load skill gap analysis.",
-          status: err.response?.status,
-        });
-      }
-    } finally {
-      setLoading(false);
+      console.error("Failed to fetch gap analysis history:", err);
     }
   }, []);
 
+  /* ── fetch a single report by id ────────────────────────────── */
+  const fetchReportById = async (id) => {
+    try {
+      setReportLoading(true);
+      const res = await axios.get(`${API_BASE_URL}/api/gap/${id}`, { withCredentials: true });
+      setRoadmap(res.data?.data || null);
+      setMode("report");
+    } catch (err) {
+      console.error("Failed to load gap analysis report:", err);
+      alert(err.response?.data?.message || "Unable to load report.");
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  /* ── generate (or return cached) roadmap ────────────────────── */
   const generateAnalysis = async () => {
     try {
       setStarting(true);
-      await axios.get(`${API_BASE_URL}/api/gap-analysis`, { withCredentials: true });
-      await loadRoadmap();
-      setMode("report");
+      setError(null);
+      const res = await axios.get(`${API_BASE_URL}/api/gap`, { withCredentials: true });
+      const data = res.data?.data || null;
+      if (data) {
+        setRoadmap(data);
+        await fetchHistory(); // refresh history list & metrics
+        setMode("report");
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Unable to generate analysis.");
+      const msg = err.response?.data?.message || "Unable to generate analysis.";
+      setError({ message: msg, status: err.response?.status });
     } finally {
       setStarting(false);
     }
   };
 
+  /* ── initial load ────────────────────────────────────────────── */
   useEffect(() => {
-    loadRoadmap();
-  }, [loadRoadmap]);
+    const init = async () => {
+      await fetchHistory();
+      setLoading(false);
+    };
+    init();
+  }, [fetchHistory]);
 
   if (loading) return <LoaderView message="Preparing your skill gap analysis…" />;
-  if (error)
-    return (
-      <ErrorView message={error.message} statusCode={error.status} onRetry={loadRoadmap} />
-    );
+  if (error)   return <ErrorView message={error.message} statusCode={error.status} onRetry={() => setError(null)} />;
 
-  /* ─── score colour helper ──────────────────────────────────── */
+  /* ─── score colour helper ─────────────────────────────────── */
   const scoreClass =
-    (roadmap?.matchPercentage ?? 0) >= 75
-      ? "ga-score--high"
-      : (roadmap?.matchPercentage ?? 0) >= 50
-      ? "ga-score--mid"
-      : "ga-score--low";
+    (roadmap?.matchPercentage ?? 0) >= 75 ? "ga-score--high"
+    : (roadmap?.matchPercentage ?? 0) >= 50 ? "ga-score--mid"
+    : "ga-score--low";
 
   /* ════════════════════════════════════════════════════════════
      RENDER
@@ -117,7 +127,6 @@ export default function GapAnalysis() {
       {mode === "landing" && (
         <div className="ga-landing-layout">
 
-          {/* Left — main card */}
           <section className="ga-card ga-main-card">
             <span className="ga-eyebrow">AI Career Intelligence</span>
             <h1 className="ga-display-title">Skill Gap Analysis</h1>
@@ -128,24 +137,10 @@ export default function GapAnalysis() {
 
             <div className="ga-steps-section">
               <p className="ga-section-label">Analysis Workflow</p>
-
               {[
-                {
-                  step: "01",
-                  title: "Resume Evaluation",
-                  desc: "AI reads your resume and maps your current technical profile.",
-                },
-                {
-                  step: "02",
-                  title: "Skill Comparison",
-                  desc: "Your profile is matched against live industry requirements.",
-                },
-                {
-                  step: "03",
-                  title: "Personalised Roadmap",
-                  desc:
-                    "Receive phased milestones, projects, interview prep, and resume tips.",
-                },
+                { step: "01", title: "Resume Evaluation",    desc: "AI reads your resume and maps your current technical profile." },
+                { step: "02", title: "Skill Comparison",     desc: "Your profile is matched against live industry requirements." },
+                { step: "03", title: "Personalised Roadmap", desc: "Receive phased milestones, projects, interview prep, and resume tips." },
               ].map(({ step, title, desc }) => (
                 <div key={step} className="ga-step-row">
                   <span className="ga-step-badge">Step {step}</span>
@@ -158,9 +153,9 @@ export default function GapAnalysis() {
             </div>
 
             <div className="ga-action-row">
-              {roadmap?.matchPercentage !== undefined && (
-                <button className="ga-btn ga-btn--ghost" onClick={() => setMode("report")}>
-                  View Previous Analysis
+              {history.length > 0 && (
+                <button className="ga-btn ga-btn--ghost" onClick={() => setMode("history")}>
+                  <FaHistory /> Previous Analyses
                 </button>
               )}
               <button
@@ -168,45 +163,20 @@ export default function GapAnalysis() {
                 onClick={generateAnalysis}
                 disabled={starting}
               >
-                {starting ? (
-                  <FaSpinner className="ga-spin" />
-                ) : (
-                  <FaRocket />
-                )}
+                {starting ? <FaSpinner className="ga-spin" /> : <FaRocket />}
                 {starting ? "Generating…" : "Generate Analysis"}
               </button>
             </div>
           </section>
 
-          {/* Right — sidebar */}
           <aside className="ga-card ga-sidebar-card">
             <p className="ga-section-label">Analysis Insights</p>
             <div className="ga-metrics-stack">
               {[
-                {
-                  icon: <FaChartLine />,
-                  label: "Match Score",
-                  value: `${roadmap?.matchPercentage ?? "--"}%`,
-                  accent: "blue",
-                },
-                {
-                  icon: <FaExclamationTriangle />,
-                  label: "Missing Skills",
-                  value: roadmap?.missingSkills?.length ?? 0,
-                  accent: "orange",
-                },
-                {
-                  icon: <FaLaptopCode />,
-                  label: "Roadmap Phases",
-                  value: roadmap?.milestones?.length ?? 0,
-                  accent: "violet",
-                },
-                {
-                  icon: <FaCheckCircle />,
-                  label: "AI Status",
-                  value: "Ready",
-                  accent: "green",
-                },
+                { icon: <FaChartLine />,          label: "Last Match Score",  value: history[0] ? `${history[0].matchPercentage}%` : "--", accent: "blue"   },
+                { icon: <FaExclamationTriangle />, label: "Total Analyses",   value: history.length,                                        accent: "orange" },
+                { icon: <FaLaptopCode />,          label: "Roadmap Phases",   value: roadmap?.milestones?.length ?? 0,                      accent: "violet" },
+                { icon: <FaCheckCircle />,         label: "AI Status",        value: "Ready",                                               accent: "green"  },
               ].map(({ icon, label, value, accent }) => (
                 <div key={label} className={`ga-metric-tile ga-metric--${accent}`}>
                   <span className="ga-metric-icon">{icon}</span>
@@ -221,27 +191,70 @@ export default function GapAnalysis() {
         </div>
       )}
 
+      {/* ══════════════  HISTORY  ══════════════ */}
+      {mode === "history" && (
+        <div className="ga-report-layout">
+          <section className="ga-card ga-report-card">
+            <div className="ga-report-nav">
+              <button className="ga-btn ga-btn--ghost ga-btn--sm" onClick={() => setMode("landing")}>
+                <FaArrowLeft /> Back
+              </button>
+              <h2 className="ga-report-title">Analysis Records</h2>
+            </div>
+
+            {history.length === 0 ? (
+              <EmptyView
+                title="No Analyses Yet"
+                message="Generate your first analysis to see your history here."
+              />
+            ) : (
+              <div className="ga-history-list">
+                {history.map((item) => {
+                  const score      = item.matchPercentage ?? 0;
+                  const scoreClass = score >= 75 ? "hc-score--high" : score >= 50 ? "hc-score--mid" : "hc-score--low";
+                  return (
+                    <HistoryCard
+                      key={item._id}
+                      score={score}
+                      denominator={100}
+                      scoreClass={scoreClass}
+                      label={item.targetRole || "Gap Analysis"}
+                      date={new Date(item.createdAt).toLocaleDateString("en-GB", {
+                        day: "numeric", month: "short", year: "numeric",
+                      })}
+                      onClick={() => fetchReportById(item._id)}
+                      isLoading={reportLoading}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
       {/* ══════════════  REPORT  ══════════════ */}
       {mode === "report" && (
         <div className="ga-report-layout">
           <section className="ga-card ga-report-card">
 
-            {/* ── Nav bar ── */}
             <div className="ga-report-nav">
-              <button className="ga-btn ga-btn--ghost ga-btn--sm" onClick={() => setMode("landing")}>
+              <button className="ga-btn ga-btn--ghost ga-btn--sm" onClick={() => setMode("history")}>
                 <FaArrowLeft /> Back
               </button>
               <h2 className="ga-report-title">Skill Gap Analysis Report</h2>
             </div>
 
-            {!roadmap ? (
+            {reportLoading ? (
+              <LoaderView message="Loading report…" />
+            ) : !roadmap ? (
               <EmptyView
                 title="No Analysis Available"
                 message="Generate your first analysis to view your personalised roadmap."
               />
             ) : (
               <>
-                {/* ── Hero banner ── */}
+                {/* Hero banner */}
                 <div className="ga-hero-banner">
                   <div className="ga-hero-ring-wrap">
                     <ScoreRing value={roadmap.matchPercentage} />
@@ -251,16 +264,11 @@ export default function GapAnalysis() {
                     <span className="ga-eyebrow">Target Role</span>
                     <h3 className="ga-hero-role">{roadmap.targetRole || "—"}</h3>
                     <p className="ga-hero-sub">
-                      Personalised roadmap built from your resume, current skills
-                      and target job role.
+                      Personalised roadmap built from your resume, current skills and target job role.
                     </p>
                     <div className="ga-hero-chips">
-                      <span className="ga-chip">
-                        ⏱ {roadmap.totalEstimatedDuration || "Flexible"}
-                      </span>
-                      <span className="ga-chip">
-                        🗺 {roadmap.milestones?.length ?? 0} Milestones
-                      </span>
+                      <span className="ga-chip">⏱ {roadmap.totalEstimatedDuration || "Flexible"}</span>
+                      <span className="ga-chip">🗺 {roadmap.milestones?.length ?? 0} Milestones</span>
                       <span className={`ga-chip ga-chip--score ${scoreClass}`}>
                         {roadmap.matchPercentage ?? "--"}% Ready
                       </span>
@@ -268,7 +276,7 @@ export default function GapAnalysis() {
                   </div>
                 </div>
 
-                {/* ── Strengths + Gaps ── */}
+                {/* Strengths + Gaps */}
                 <div className="ga-two-col">
                   <div className="ga-panel">
                     <div className="ga-panel-header ga-panel-header--green">
@@ -301,13 +309,12 @@ export default function GapAnalysis() {
                   </div>
                 </div>
 
-                {/* ── Learning Roadmap ── */}
+                {/* Learning Roadmap */}
                 <div className="ga-section">
                   <div className="ga-section-header">
                     <FaLayerGroup />
                     <h3>Learning Roadmap</h3>
                   </div>
-
                   <div className="ga-phases-list">
                     {roadmap.milestones?.map((phase, idx) => (
                       <div key={phase._id || idx} className="ga-phase-card">
@@ -321,7 +328,6 @@ export default function GapAnalysis() {
                             <p className="ga-phase-obj">{phase.objective}</p>
                           </div>
                         </div>
-
                         <div className="ga-phase-body">
                           {phase.skills?.length > 0 && (
                             <div className="ga-phase-group">
@@ -333,7 +339,6 @@ export default function GapAnalysis() {
                               </div>
                             </div>
                           )}
-
                           {phase.topics?.length > 0 && (
                             <div className="ga-phase-group">
                               <span className="ga-group-label">Topics</span>
@@ -344,7 +349,6 @@ export default function GapAnalysis() {
                               </div>
                             </div>
                           )}
-
                           {phase.projects?.length > 0 && (
                             <div className="ga-phase-group">
                               <span className="ga-group-label">Practice Projects</span>
@@ -367,7 +371,7 @@ export default function GapAnalysis() {
                   </div>
                 </div>
 
-                {/* ── Capstone ── */}
+                {/* Capstone */}
                 {roadmap.capstoneProject?.title && (
                   <div className="ga-section">
                     <div className="ga-section-header">
@@ -388,7 +392,7 @@ export default function GapAnalysis() {
                   </div>
                 )}
 
-                {/* ── Resume + Interview ── */}
+                {/* Resume + Interview */}
                 <div className="ga-two-col">
                   <div className="ga-panel">
                     <div className="ga-panel-header ga-panel-header--blue">

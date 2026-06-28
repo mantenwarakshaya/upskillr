@@ -1,7 +1,7 @@
 // backend/controllers/gapAnalysisController.js
 const ResumeAnalysis = require("../models/ResumeAnalysis");
 const generateRoadmap = require("../utils/GapAnalysis/roadmapGenerator");
-const Roadmap = require("../models/Roadmap");
+const Roadmap = require("../models/GapAnalysis");
 const User = require("../models/user");
 
 const { deductCredits } = require("../utils/credits/creditManager");
