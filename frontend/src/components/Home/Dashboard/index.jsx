@@ -81,37 +81,63 @@ const activityMeta = {
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════════ */
 export default function Dashboard({ user }) {
-  const [activity, setActivity]   = useState([]);
-  const [actLoading, setActLoading] = useState(true);
+  const [activity, setActivity]         = useState([]);
+  const [actLoading, setActLoading]     = useState(true);
 
-  /* progress derived from user prop */
-  const isResumeUploaded = Boolean(user?.progress?.resumeUploaded);
-  const isGapAnalyzed    = Boolean(user?.progress?.gapAnalyzed);
-  const isInterviewDone  = Boolean(user?.progress?.interviewDone);
-  const completedSteps   = [isResumeUploaded, isGapAnalyzed, isInterviewDone].filter(Boolean).length;
+  // Real progress flags — derived from API responses, not user.progress.*
+  const [isResumeUploaded, setIsResumeUploaded] = useState(false);
+  const [isGapAnalyzed,    setIsGapAnalyzed]    = useState(false);
+  const [isInterviewDone,  setIsInterviewDone]  = useState(false);
 
-  /* fetch recent activity across modules */
+  const completedSteps = [isResumeUploaded, isGapAnalyzed, isInterviewDone].filter(Boolean).length;
+
+  /* ── Fetch all dashboard data in one pass ─────────────────── */
   const fetchActivity = useCallback(async () => {
     try {
-      const [gapRes, ivRes] = await Promise.allSettled([
-        axios.get(`${API_BASE_URL}/api/gap-analysis/latest`,   { withCredentials: true }),
-        axios.get(`${API_BASE_URL}/api/interview/history`,     { withCredentials: true }),
+      const [resumeRes, gapRes, ivRes] = await Promise.allSettled([
+        axios.get(`${API_BASE_URL}/api/resume/latest`,       { withCredentials: true }),
+        axios.get(`${API_BASE_URL}/api/gap/history`, { withCredentials: true }), // ← was /api/gap-analysis
+        axios.get(`${API_BASE_URL}/api/interview/history`,   { withCredentials: true }),
       ]);
 
+      // Resume done: 200 + data present
+      if (resumeRes.status === "fulfilled" && resumeRes.value.data?.success) {
+        setIsResumeUploaded(true);
+      }
+
+      // Gap done: history array has at least one entry
+      const gapHistory = gapRes.status === "fulfilled"
+        ? (gapRes.value.data?.history ?? [])
+        : [];
+      if (gapHistory.length > 0) {
+        setIsGapAnalyzed(true);
+      }
+
+      // Interview done: at least one completed interview
+      const interviews = ivRes.status === "fulfilled"
+        ? (ivRes.value.data?.interviews ?? [])
+        : [];
+      if (interviews.some((iv) => iv.completed)) {
+        setIsInterviewDone(true);
+      }
+
+      // Build activity feed
       const items = [];
 
-      if (gapRes.status === "fulfilled" && gapRes.value.data?.data) {
-        items.push(gapRes.value.data.data);
+      if (gapHistory.length > 0) {
+        items.push(...gapHistory);
       }
-      if (ivRes.status === "fulfilled" && Array.isArray(ivRes.value.data?.interviews)) {
-        items.push(...ivRes.value.data.interviews);
+      if (interviews.length) {
+        items.push(...interviews);
+      }
+      if (resumeRes.status === "fulfilled" && resumeRes.value.data?.data) {
+        items.push(resumeRes.value.data.data);
       }
 
-      /* sort by date desc */
       items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setActivity(formatActivity(items));
     } catch {
-      /* silent — activity feed is non-critical */
+      /* silent */
     } finally {
       setActLoading(false);
     }
@@ -120,7 +146,7 @@ export default function Dashboard({ user }) {
   useEffect(() => { fetchActivity(); }, [fetchActivity]);
 
   /* credits */
-  const credits    = user?.aiUsage?.creditsRemaining ?? 0;
+  const credits = user?.aiUsage?.creditsRemaining ?? 20;
   const maxCredits = 20;
   const creditPct  = Math.min((credits / maxCredits) * 100, 100);
 
@@ -164,7 +190,7 @@ export default function Dashboard({ user }) {
             <div className="d-card-header">
               <h2 className="d-card-title">Preparation Roadmap</h2>
               <span className={`d-badge ${completedSteps === 3 ? "d-badge--done" : ""}`}>
-                {completedSteps}/3 Complete
+                {actLoading ? "…" : `${completedSteps}/3 Complete`}
               </span>
             </div>
 
@@ -172,7 +198,7 @@ export default function Dashboard({ user }) {
             <div className="d-progress-bar">
               <div
                 className="d-progress-fill"
-                style={{ width: `${(completedSteps / 3) * 100}%` }}
+                style={{ width: actLoading ? "0%" : `${(completedSteps / 3) * 100}%` }}
               />
             </div>
 
@@ -200,7 +226,7 @@ export default function Dashboard({ user }) {
                 <Link key={to} to={to} className={`d-checklist-item ${done ? "d-checklist-item--done" : ""}`}>
                   {done
                     ? <CheckCircle2 size={17} className="d-check-icon d-check-icon--done" />
-                    : <Circle size={17} className="d-check-icon d-check-icon--todo" />
+                    : <Circle       size={17} className="d-check-icon d-check-icon--todo" />
                   }
                   <div className="d-checklist-text">
                     <h4>{title}</h4>
